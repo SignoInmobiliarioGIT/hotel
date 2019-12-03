@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateReservationsRequest;
-use App\Http\Requests\UpdateReservationRequest;
 use App\Models\CleaningStatus;
 use App\Models\Reservation;
 use App\Models\ReservationCompanion;
 use App\Models\Room;
 use App\Models\StateOfService;
-use Facades\App\Services\ReservationService;
 use Illuminate\Http\Request;
-use Auth;
 use Carbon\Carbon;
 use DB;
 
@@ -23,7 +19,6 @@ class ReservationController extends Controller
      */
     public function index()
     {
-
         return view('reservations.index');
     }
 

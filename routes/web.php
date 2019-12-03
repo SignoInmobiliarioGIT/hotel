@@ -27,7 +27,5 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     });
 
-    Route::get('user/profile', function () {
-        // Uses first & second Middleware
-    });
+    Route::get('reservations', 'ReservationController@index');
 });
