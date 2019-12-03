@@ -47,3 +47,4 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 window.moment = require('moment');
 window.daterangepicker = require('daterangepicker');
 window.DataTable = require('datatables');
+window.dhtmlxscheduler = require('dhtmlx-scheduler');
