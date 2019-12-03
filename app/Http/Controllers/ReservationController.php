@@ -28,7 +28,7 @@ class ReservationController extends Controller
             $dateFrom = Carbon::create($dateRangeExplode[0])->toDateString();
             $dateTo = Carbon::create($dateRangeExplode[1])->toDateString();
         }
-        $reservations = Reservation::whereBetween($dateFrom,$dateTo)->get();
+
         return view('reservations.index');
     }
 

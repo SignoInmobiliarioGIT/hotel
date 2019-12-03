@@ -122,4 +122,11 @@ class Reservation extends Model
     {
         return $this->belongsTo(Currency::class);
     }
+
+    static function betweenDates($from, $to)
+    {
+        return Reservation::whereBetween('from_date',[$from,$to])->orWhereBetween('to_date',[$from,$to])
+        ->with(['reserved_rooms', 'rooms'])
+        ->get();
+    }
 }
