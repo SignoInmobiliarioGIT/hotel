@@ -17,8 +17,18 @@ class ReservationController extends Controller
      * Pantalla inicial del modulo de reservas.
      * Formulario para realizar una reserva.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $dateRange = $request->filled('dateRange') ? $request->dateRange : null;
+        if(!$dateRange){
+            $dateFrom = Carbon::now()->toDateString();
+            $dateTo = Carbon::now()->toDateString();
+        } else {
+            $dateRangeExplode = explode(' - ', $dateRange);
+            $dateFrom = Carbon::create($dateRangeExplode[0])->toDateString();
+            $dateTo = Carbon::create($dateRangeExplode[1])->toDateString();
+        }
+        $reservations = Reservation::whereBetween($dateFrom,$dateTo)->get();
         return view('reservations.index');
     }
 

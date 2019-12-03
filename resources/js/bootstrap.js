@@ -10,6 +10,10 @@ try {
     window.Popper = require('popper.js').default;
     window.$ = window.jQuery = require('jquery');
 
+    // https://github.com/jeroennoten/Laravel-AdminLTE#68-laravel-mix
+    require('overlayscrollbars');
+    require('../../vendor/almasaeed2010/adminlte/dist/js/adminlte');
+
     require('bootstrap');
 } catch (e) {}
 
@@ -39,3 +43,6 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     encrypted: true
 // });
+
+window.moment = require('moment');
+window.daterangepicker = require('daterangepicker');

@@ -24,6 +24,10 @@
         "vue-template-compiler": "^2.6.10"
     },
     "dependencies": {
-        "moment": "^2.24.0"
+        "@fortawesome/fontawesome-free": "^5.11.2",
+        "daterangepicker": "^3.0.5",
+        "icheck-bootstrap": "^3.0.1",
+        "moment": "^2.24.0",
+        "overlayscrollbars": "^1.10.0"
     }
 }
