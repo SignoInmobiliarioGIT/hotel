@@ -47,23 +47,36 @@ $yy = isset($_GET['yyyy']) ? $_GET['yyyy'] : $now->year;
         </div>
     </div>
 </div>
-@section('scripts')
-<script type="text/javascript" src="./js/dhtmlxscheduler/dhtmlxscheduler.js">
+
+{{-- <script>
+    var dd = {{$dd}};
+var mm = {{$mm}};
+var yy = {{$yy}};
+var size = {{$size}};
+var reservations = @JSON($reservations);
+var rooms = @JSON($rooms);
+var date_pick= dd + '/' + mm + '/' + yy;
+var date_pick_scheduler = yy + '/' + mm + '/' + dd;
+</script> --}}
+
+
+@push('scripts')
+{{-- <script type="text/javascript" src="./js/dhtmlxscheduler/dhtmlxscheduler.js">
 </script>
 <script type="text/javascript"
     src="./js/dhtmlxscheduler/dhtmlxscheduler_timeline.js">
 </script>
 <script type="text/javascript"
     src="./js/dhtmlxscheduler/dhtmlxscheduler_collision.js"></script>
-<script type="text/javascript" src="./js/calendar/calendar.js"></script>
+<script type="text/javascript" src="./js/calendar/calendar.js"></script> --}}
 <script>
     var dd = {{$dd}};
-    var mm = {{$mm}};
-    var yy = {{$yy}};
-    var size = {{$size}};
-    var reservations = @JSON($reservations);
-    var rooms = @JSON($rooms);
-    var date_pick= dd + '/' + mm + '/' + yy;
-    var date_pick_scheduler = yy + '/' + mm + '/' + dd;
+var mm = {{$mm}};
+var yy = {{$yy}};
+var size = {{$size}};
+var reservations = @JSON($reservations);
+var rooms = @JSON($rooms);
+var date_pick= dd + '/' + mm + '/' + yy;
+var date_pick_scheduler = yy + '/' + mm + '/' + dd;
 </script>
-@endsection
+@endpush

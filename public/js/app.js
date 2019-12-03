@@ -90910,6 +90910,8 @@ __webpack_require__(/*! ./reservations/filters */ "./resources/js/reservations/f
 
 __webpack_require__(/*! ./custom-datatables */ "./resources/js/custom-datatables.js");
 
+__webpack_require__(/*! ./calendar/calendar */ "./resources/js/calendar/calendar.js");
+
 /***/ }),
 
 /***/ "./resources/js/bootstrap.js":
@@ -90963,6 +90965,6939 @@ window.moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.
 window.daterangepicker = __webpack_require__(/*! daterangepicker */ "./node_modules/daterangepicker/daterangepicker.js");
 window.DataTable = __webpack_require__(/*! datatables */ "./node_modules/datatables/media/js/jquery.dataTables.js");
 window.dhtmlxscheduler = __webpack_require__(/*! dhtmlx-scheduler */ "./node_modules/dhtmlx-scheduler/codebase/dhtmlxscheduler.js");
+
+/***/ }),
+
+/***/ "./resources/js/calendar/calendar.js":
+/*!*******************************************!*\
+  !*** ./resources/js/calendar/calendar.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*! ./dhtmlxscheduler */ "./resources/js/calendar/dhtmlxscheduler.js");
+
+__webpack_require__(/*! ./dhtmlxscheduler_timeline */ "./resources/js/calendar/dhtmlxscheduler_timeline.js");
+
+__webpack_require__(/*! ./dhtmlxscheduler_collision */ "./resources/js/calendar/dhtmlxscheduler_collision.js");
+
+window.onload = function () {
+  scheduler.config.dblclick_create = false;
+  scheduler.config.details_on_create = false;
+  scheduler.config.details_on_dblclick = false;
+  scheduler.config.drag_resize = false;
+  scheduler.config.drag_move = false;
+  scheduler.config.drag_create = false;
+  scheduler.attachEvent("onDblClick", function () {
+    return false;
+  });
+
+  window.showRooms = function showRooms(type) {
+    var allRooms = scheduler.serverList("rooms");
+    var visibleRooms;
+
+    if (type == 'all') {
+      visibleRooms = allRooms.slice();
+    } else {
+      visibleRooms = allRooms.filter(function (room) {
+        return room.type == type;
+      });
+    }
+
+    scheduler.updateCollection("visibleRooms", visibleRooms);
+  }; //===============
+  //Configuration
+  //===============
+
+
+  scheduler.serverList("roomTypes");
+  scheduler.serverList("roomStatuses");
+  scheduler.serverList("bookingStatuses");
+  scheduler.serverList("rooms");
+  scheduler.createTimelineView({
+    fit_events: true,
+    name: "timeline",
+    y_property: "room",
+    render: 'bar',
+    x_unit: "day",
+    x_date: "%d",
+    x_size: typeof syze === 'undefined' ? '15' : size,
+    dy: 52,
+    dx: 52,
+    event_dy: 48,
+    section_autoheight: false,
+    round_position: true,
+    y_unit: scheduler.serverList("visibleRooms"),
+    second_scale: {
+      x_unit: "month",
+      x_date: "%F %Y"
+    }
+  }); //===============
+  //Data loading
+  //===============
+
+  scheduler.config.lightbox.sections = [{
+    name: "description",
+    height: 130,
+    map_to: "text",
+    type: "textarea",
+    focus: true
+  }, {
+    name: "custom",
+    height: 23,
+    type: "select",
+    options: scheduler.serverList("rooms"),
+    map_to: "room"
+  }, {
+    name: "time",
+    height: 72,
+    type: "time",
+    map_to: "auto"
+  }]; // scheduler.attachEvent('onEventCreated', function (event_id) {
+  // var ev = scheduler.getEvent(event_id);
+  // ev.status = 1;
+  // ev.is_paid = false;
+  // ev.text = 'new booking';
+  // });
+
+  scheduler.attachEvent("onParse", function () {
+    showRooms("all");
+    var roomSelect = document.querySelector("#room_filter");
+    var types = scheduler.serverList("roomTypes");
+    var typeElements = ["<option value='all'>All</option>"];
+    types.forEach(function (type) {
+      typeElements.push("<option value='" + type.key + "'>" + type.label + "</option>");
+    });
+    if (roomSelect != null) roomSelect.innerHTML = typeElements.join("");
+  });
+  scheduler.attachEvent("onEventCollision", function (ev, evs) {
+    for (var i = 0; i < evs.length; i++) {
+      if (ev.room != evs[i].room) continue;
+      dhtmlx.message({
+        type: "error",
+        text: "This room is already booked for this date."
+      });
+    }
+
+    return true;
+  });
+  scheduler.init('scheduler_here', typeof date_pick_scheduler === 'undefined' ? '' : date_pick_scheduler, "timeline");
+  scheduler.parse(JSON.stringify({
+    "data": reservations,
+    "collections": {
+      "rooms": rooms
+    }
+  }), "json");
+  $.ajaxSetup({
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
+  $('input[name="birthday"]').val(date_pick);
+  $('input[name="birthday"]').daterangepicker({
+    singleDatePicker: true,
+    showDropdowns: true,
+    minYear: 1901,
+    maxYear: parseInt(moment().format('YYYY'), 10),
+    locale: {
+      format: 'DD/MM/YYYY'
+    }
+  }, function (start, end, label) {
+    window.location.replace('?size=' + size + "&dd=" + start.format('DD') + "&mm=" + start.format('MM') + "&yyyy=" + start.format('YYYY'));
+  });
+};
+
+/***/ }),
+
+/***/ "./resources/js/calendar/dhtmlxscheduler.js":
+/*!**************************************************!*\
+  !*** ./resources/js/calendar/dhtmlxscheduler.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+/*
+
+@license
+dhtmlxScheduler v.5.3.2 Professional
+
+This software can be used only as part of dhtmlx.com site.
+You are not allowed to use it on any other site
+
+(c) XB Software Ltd.
+
+*/
+!function () {
+  function dtmlXMLLoaderObject(t, e, i, a) {
+    return this.xmlDoc = "", this.async = void 0 === i || i, this.onloadAction = t || null, this.mainObject = e || null, this.waitCall = null, this.rSeed = a || !1, this;
+  }
+
+  function dhtmlDragAndDropObject() {
+    return window.dhtmlDragAndDrop ? window.dhtmlDragAndDrop : (this.lastLanding = 0, this.dragNode = 0, this.dragStartNode = 0, this.dragStartObject = 0, this.tempDOMU = null, this.tempDOMM = null, this.waitDrag = 0, window.dhtmlDragAndDrop = this, this);
+  }
+
+  function _dhtmlxError(t, e, i) {
+    return this.catches || (this.catches = []), this;
+  }
+
+  function dhtmlXHeir(t, e) {
+    for (var i in e) {
+      "function" == typeof e[i] && (t[i] = e[i]);
+    }
+
+    return t;
+  }
+
+  window.dhtmlx || (window.dhtmlx = function (t) {
+    for (var e in t) {
+      dhtmlx[e] = t[e];
+    }
+
+    return dhtmlx;
+  }), dhtmlx.extend_api = function (t, e, i) {
+    var a = window[t];
+    a && (window[t] = function (t) {
+      var i;
+
+      if (t && "object" == _typeof(t) && !t.tagName) {
+        i = a.apply(this, e._init ? e._init(t) : arguments);
+
+        for (var n in dhtmlx) {
+          e[n] && this[e[n]](dhtmlx[n]);
+        }
+
+        for (var n in t) {
+          e[n] ? this[e[n]](t[n]) : 0 === n.indexOf("on") && this.attachEvent(n, t[n]);
+        }
+      } else i = a.apply(this, arguments);
+
+      return e._patch && e._patch(this), i || this;
+    }, window[t].prototype = a.prototype, i && dhtmlXHeir(window[t].prototype, i));
+  }, window.dhtmlxAjax = {
+    get: function get(t, e) {
+      var i = new dtmlXMLLoaderObject(!0);
+      return i.async = arguments.length < 3, i.waitCall = e, i.loadXML(t), i;
+    },
+    post: function post(t, e, i) {
+      var a = new dtmlXMLLoaderObject(!0);
+      return a.async = arguments.length < 4, a.waitCall = i, a.loadXML(t, !0, e), a;
+    },
+    getSync: function getSync(t) {
+      return this.get(t, null, !0);
+    },
+    postSync: function postSync(t, e) {
+      return this.post(t, e, null, !0);
+    }
+  }, window.dtmlXMLLoaderObject = dtmlXMLLoaderObject, dtmlXMLLoaderObject.count = 0, dtmlXMLLoaderObject.prototype.waitLoadFunction = function (t) {
+    var e = !0;
+    return this.check = function () {
+      if (t && t.onloadAction && (!t.xmlDoc.readyState || 4 == t.xmlDoc.readyState)) {
+        if (!e) return;
+        e = !1, dtmlXMLLoaderObject.count++, "function" == typeof t.onloadAction && t.onloadAction(t.mainObject, null, null, null, t), t.waitCall && (t.waitCall.call(this, t), t.waitCall = null);
+      }
+    }, this.check;
+  }, dtmlXMLLoaderObject.prototype.getXMLTopNode = function (t, e) {
+    var i;
+
+    if (this.xmlDoc.responseXML) {
+      var a = this.xmlDoc.responseXML.getElementsByTagName(t);
+      if (0 === a.length && -1 != t.indexOf(":")) var a = this.xmlDoc.responseXML.getElementsByTagName(t.split(":")[1]);
+      i = a[0];
+    } else i = this.xmlDoc.documentElement;
+
+    if (i) return this._retry = !1, i;
+
+    if (!this._retry && _isIE) {
+      this._retry = !0;
+      var e = this.xmlDoc;
+      return this.loadXMLString(this.xmlDoc.responseText.replace(/^[\s]+/, ""), !0), this.getXMLTopNode(t, e);
+    }
+
+    return dhtmlxError.throwError("LoadXML", "Incorrect XML", [e || this.xmlDoc, this.mainObject]), document.createElement("div");
+  }, dtmlXMLLoaderObject.prototype.loadXMLString = function (t, e) {
+    if (_isIE) this.xmlDoc = new ActiveXObject("Microsoft.XMLDOM"), this.xmlDoc.async = this.async, this.xmlDoc.onreadystatechange = function () {}, this.xmlDoc.loadXML(t);else {
+      var i = new DOMParser();
+      this.xmlDoc = i.parseFromString(t, "text/xml");
+    }
+    e || (this.onloadAction && this.onloadAction(this.mainObject, null, null, null, this), this.waitCall && (this.waitCall(), this.waitCall = null));
+  }, dtmlXMLLoaderObject.prototype.loadXML = function (t, e, i, a) {
+    this.rSeed && (t += (-1 != t.indexOf("?") ? "&" : "?") + "a_dhx_rSeed=" + new Date().valueOf()), this.filePath = t, !_isIE && window.XMLHttpRequest ? this.xmlDoc = new XMLHttpRequest() : this.xmlDoc = new ActiveXObject("Microsoft.XMLHTTP"), this.async && (this.xmlDoc.onreadystatechange = new this.waitLoadFunction(this)), "string" == typeof e ? this.xmlDoc.open(e, t, this.async) : this.xmlDoc.open(e ? "POST" : "GET", t, this.async), a ? (this.xmlDoc.setRequestHeader("User-Agent", "dhtmlxRPC v0.1 (" + navigator.userAgent + ")"), this.xmlDoc.setRequestHeader("Content-type", "text/xml")) : e && this.xmlDoc.setRequestHeader("Content-type", "application/x-www-form-urlencoded"), this.xmlDoc.setRequestHeader("X-Requested-With", "XMLHttpRequest"), this.xmlDoc.send(i), this.async || new this.waitLoadFunction(this)();
+  }, dtmlXMLLoaderObject.prototype.destructor = function () {
+    return this._filterXPath = null, this._getAllNamedChilds = null, this._retry = null, this.async = null, this.rSeed = null, this.filePath = null, this.onloadAction = null, this.mainObject = null, this.xmlDoc = null, this.doXPath = null, this.doXPathOpera = null, this.doXSLTransToObject = null, this.doXSLTransToString = null, this.loadXML = null, this.loadXMLString = null, this.doSerialization = null, this.xmlNodeToJSON = null, this.getXMLTopNode = null, this.setXSLParamValue = null, null;
+  }, dtmlXMLLoaderObject.prototype.xmlNodeToJSON = function (t) {
+    for (var e = {}, i = 0; i < t.attributes.length; i++) {
+      e[t.attributes[i].name] = t.attributes[i].value;
+    }
+
+    e._tagvalue = t.firstChild ? t.firstChild.nodeValue : "";
+
+    for (var i = 0; i < t.childNodes.length; i++) {
+      var a = t.childNodes[i].tagName;
+      a && (e[a] || (e[a] = []), e[a].push(this.xmlNodeToJSON(t.childNodes[i])));
+    }
+
+    return e;
+  }, window.dhtmlDragAndDropObject = dhtmlDragAndDropObject, dhtmlDragAndDropObject.prototype.removeDraggableItem = function (t) {
+    t.onmousedown = null, t.dragStarter = null, t.dragLanding = null;
+  }, dhtmlDragAndDropObject.prototype.addDraggableItem = function (t, e) {
+    t.onmousedown = this.preCreateDragCopy, t.dragStarter = e, this.addDragLanding(t, e);
+  }, dhtmlDragAndDropObject.prototype.addDragLanding = function (t, e) {
+    t.dragLanding = e;
+  }, dhtmlDragAndDropObject.prototype.preCreateDragCopy = function (t) {
+    if (!t && !window.event || 2 != (t || event).button) return window.dhtmlDragAndDrop.waitDrag ? (window.dhtmlDragAndDrop.waitDrag = 0, document.body.onmouseup = window.dhtmlDragAndDrop.tempDOMU, document.body.onmousemove = window.dhtmlDragAndDrop.tempDOMM, !1) : (window.dhtmlDragAndDrop.dragNode && window.dhtmlDragAndDrop.stopDrag(t), window.dhtmlDragAndDrop.waitDrag = 1, window.dhtmlDragAndDrop.tempDOMU = document.body.onmouseup, window.dhtmlDragAndDrop.tempDOMM = document.body.onmousemove, window.dhtmlDragAndDrop.dragStartNode = this, window.dhtmlDragAndDrop.dragStartObject = this.dragStarter, document.body.onmouseup = window.dhtmlDragAndDrop.preCreateDragCopy, document.body.onmousemove = window.dhtmlDragAndDrop.callDrag, window.dhtmlDragAndDrop.downtime = new Date().valueOf(), !(!t || !t.preventDefault) && (t.preventDefault(), !1));
+  }, dhtmlDragAndDropObject.prototype.callDrag = function (t) {
+    t || (t = window.event);
+    var e = window.dhtmlDragAndDrop;
+
+    if (!(new Date().valueOf() - e.downtime < 100)) {
+      if (!e.dragNode) {
+        if (!e.waitDrag) return e.stopDrag(t, !0);
+        if (e.dragNode = e.dragStartObject._createDragNode(e.dragStartNode, t), !e.dragNode) return e.stopDrag();
+        e.dragNode.onselectstart = function () {
+          return !1;
+        }, e.gldragNode = e.dragNode, document.body.appendChild(e.dragNode), document.body.onmouseup = e.stopDrag, e.waitDrag = 0, e.dragNode.pWindow = window, e.initFrameRoute();
+      }
+
+      if (e.dragNode.parentNode != window.document.body && e.gldragNode) {
+        var i = e.gldragNode;
+        e.gldragNode.old && (i = e.gldragNode.old), i.parentNode.removeChild(i);
+        var a = e.dragNode.pWindow;
+
+        if (i.pWindow && i.pWindow.dhtmlDragAndDrop.lastLanding && i.pWindow.dhtmlDragAndDrop.lastLanding.dragLanding._dragOut(i.pWindow.dhtmlDragAndDrop.lastLanding), _isIE) {
+          var n = document.createElement("div");
+          n.innerHTML = e.dragNode.outerHTML, e.dragNode = n.childNodes[0];
+        } else e.dragNode = e.dragNode.cloneNode(!0);
+
+        e.dragNode.pWindow = window, e.gldragNode.old = e.dragNode, document.body.appendChild(e.dragNode), a.dhtmlDragAndDrop.dragNode = e.dragNode;
+      }
+
+      e.dragNode.style.left = t.clientX + 15 + (e.fx ? -1 * e.fx : 0) + (document.body.scrollLeft || document.documentElement.scrollLeft) + "px", e.dragNode.style.top = t.clientY + 3 + (e.fy ? -1 * e.fy : 0) + (document.body.scrollTop || document.documentElement.scrollTop) + "px";
+      var r;
+      r = t.srcElement ? t.srcElement : t.target, e.checkLanding(r, t);
+    }
+  }, dhtmlDragAndDropObject.prototype.calculateFramePosition = function (t) {
+    if (window.name) {
+      for (var e = parent.frames[window.name].frameElement.offsetParent, i = 0, a = 0; e;) {
+        i += e.offsetLeft, a += e.offsetTop, e = e.offsetParent;
+      }
+
+      if (parent.dhtmlDragAndDrop) {
+        var n = parent.dhtmlDragAndDrop.calculateFramePosition(1);
+        i += 1 * n.split("_")[0], a += 1 * n.split("_")[1];
+      }
+
+      if (t) return i + "_" + a;
+      this.fx = i, this.fy = a;
+    }
+
+    return "0_0";
+  }, dhtmlDragAndDropObject.prototype.checkLanding = function (t, e) {
+    t && t.dragLanding ? (this.lastLanding && this.lastLanding.dragLanding._dragOut(this.lastLanding), this.lastLanding = t, this.lastLanding = this.lastLanding.dragLanding._dragIn(this.lastLanding, this.dragStartNode, e.clientX, e.clientY, e), this.lastLanding_scr = _isIE ? e.srcElement : e.target) : t && "BODY" != t.tagName ? this.checkLanding(t.parentNode, e) : (this.lastLanding && this.lastLanding.dragLanding._dragOut(this.lastLanding, e.clientX, e.clientY, e), this.lastLanding = 0, this._onNotFound && this._onNotFound());
+  }, dhtmlDragAndDropObject.prototype.stopDrag = function (t, e) {
+    var i = window.dhtmlDragAndDrop;
+
+    if (!e) {
+      i.stopFrameRoute();
+      var a = i.lastLanding;
+      i.lastLanding = null, a && a.dragLanding._drag(i.dragStartNode, i.dragStartObject, a, _isIE ? event.srcElement : t.target);
+    }
+
+    i.lastLanding = null, i.dragNode && i.dragNode.parentNode == document.body && i.dragNode.parentNode.removeChild(i.dragNode), i.dragNode = 0, i.gldragNode = 0, i.fx = 0, i.fy = 0, i.dragStartNode = 0, i.dragStartObject = 0, document.body.onmouseup = i.tempDOMU, document.body.onmousemove = i.tempDOMM, i.tempDOMU = null, i.tempDOMM = null, i.waitDrag = 0;
+  }, dhtmlDragAndDropObject.prototype.stopFrameRoute = function (t) {
+    t && window.dhtmlDragAndDrop.stopDrag(1, 1);
+
+    for (var e = 0; e < window.frames.length; e++) {
+      try {
+        window.frames[e] != t && window.frames[e].dhtmlDragAndDrop && window.frames[e].dhtmlDragAndDrop.stopFrameRoute(window);
+      } catch (t) {}
+    }
+
+    try {
+      parent.dhtmlDragAndDrop && parent != window && parent != t && parent.dhtmlDragAndDrop.stopFrameRoute(window);
+    } catch (t) {}
+  }, dhtmlDragAndDropObject.prototype.initFrameRoute = function (t, e) {
+    t && (window.dhtmlDragAndDrop.preCreateDragCopy(), window.dhtmlDragAndDrop.dragStartNode = t.dhtmlDragAndDrop.dragStartNode, window.dhtmlDragAndDrop.dragStartObject = t.dhtmlDragAndDrop.dragStartObject, window.dhtmlDragAndDrop.dragNode = t.dhtmlDragAndDrop.dragNode, window.dhtmlDragAndDrop.gldragNode = t.dhtmlDragAndDrop.dragNode, window.document.body.onmouseup = window.dhtmlDragAndDrop.stopDrag, window.waitDrag = 0, !_isIE && e && (!_isFF || _FFrv < 1.8) && window.dhtmlDragAndDrop.calculateFramePosition());
+
+    try {
+      parent.dhtmlDragAndDrop && parent != window && parent != t && parent.dhtmlDragAndDrop.initFrameRoute(window);
+    } catch (t) {}
+
+    for (var i = 0; i < window.frames.length; i++) {
+      try {
+        window.frames[i] != t && window.frames[i].dhtmlDragAndDrop && window.frames[i].dhtmlDragAndDrop.initFrameRoute(window, !t || e ? 1 : 0);
+      } catch (t) {}
+    }
+  };
+
+  var _isFF = !1,
+      _isIE = !1,
+      _isOpera = !1,
+      _isKHTML = !1,
+      _isMacOS = !1,
+      _isChrome = !1,
+      _FFrv = !1,
+      _KHTMLrv = !1,
+      _OperaRv = !1;
+
+  -1 != navigator.userAgent.indexOf("Macintosh") && (_isMacOS = !0), navigator.userAgent.toLowerCase().indexOf("chrome") > -1 && (_isChrome = !0), -1 != navigator.userAgent.indexOf("Safari") || -1 != navigator.userAgent.indexOf("Konqueror") ? (_KHTMLrv = parseFloat(navigator.userAgent.substr(navigator.userAgent.indexOf("Safari") + 7, 5)), _KHTMLrv > 525 ? (_isFF = !0, _FFrv = 1.9) : _isKHTML = !0) : -1 != navigator.userAgent.indexOf("Opera") ? (_isOpera = !0, _OperaRv = parseFloat(navigator.userAgent.substr(navigator.userAgent.indexOf("Opera") + 6, 3))) : -1 != navigator.appName.indexOf("Microsoft") ? (_isIE = !0, -1 == navigator.appVersion.indexOf("MSIE 8.0") && -1 == navigator.appVersion.indexOf("MSIE 9.0") && -1 == navigator.appVersion.indexOf("MSIE 10.0") || "BackCompat" == document.compatMode || (_isIE = 8)) : "Netscape" == navigator.appName && -1 != navigator.userAgent.indexOf("Trident") ? _isIE = 8 : (_isFF = !0, _FFrv = parseFloat(navigator.userAgent.split("rv:")[1])), dtmlXMLLoaderObject.prototype.doXPath = function (t, e, i, a) {
+    if (_isKHTML || !_isIE && !window.XPathResult) return this.doXPathOpera(t, e);
+    if (_isIE) return e || (e = this.xmlDoc.nodeName ? this.xmlDoc : this.xmlDoc.responseXML), e || dhtmlxError.throwError("LoadXML", "Incorrect XML", [e || this.xmlDoc, this.mainObject]), i && e.setProperty("SelectionNamespaces", "xmlns:xsl='" + i + "'"), "single" == a ? e.selectSingleNode(t) : e.selectNodes(t) || new Array(0);
+    var n = e;
+    e || (e = this.xmlDoc.nodeName ? this.xmlDoc : this.xmlDoc.responseXML), e || dhtmlxError.throwError("LoadXML", "Incorrect XML", [e || this.xmlDoc, this.mainObject]), -1 != e.nodeName.indexOf("document") ? n = e : (n = e, e = e.ownerDocument);
+    var r = XPathResult.ANY_TYPE;
+    "single" == a && (r = XPathResult.FIRST_ORDERED_NODE_TYPE);
+    var s = [],
+        o = e.evaluate(t, n, function (t) {
+      return i;
+    }, r, null);
+    if (r == XPathResult.FIRST_ORDERED_NODE_TYPE) return o.singleNodeValue;
+
+    for (var d = o.iterateNext(); d;) {
+      s[s.length] = d, d = o.iterateNext();
+    }
+
+    return s;
+  }, _dhtmlxError.prototype.catchError = function (t, e) {
+    this.catches[t] = e;
+  }, _dhtmlxError.prototype.throwError = function (t, e, i) {
+    return this.catches[t] ? this.catches[t](t, e, i) : this.catches.ALL ? this.catches.ALL(t, e, i) : (window.alert("Error type: " + arguments[0] + "\nDescription: " + arguments[1]), null);
+  }, window.dhtmlxError = new _dhtmlxError(), dtmlXMLLoaderObject.prototype.doXPathOpera = function (t, e) {
+    var i = t.replace(/[\/]+/gi, "/").split("/"),
+        a = null,
+        n = 1;
+    if (!i.length) return [];
+    if ("." == i[0]) a = [e];else {
+      if ("" !== i[0]) return [];
+      a = (this.xmlDoc.responseXML || this.xmlDoc).getElementsByTagName(i[n].replace(/\[[^\]]*\]/g, "")), n++;
+    }
+
+    for (n; n < i.length; n++) {
+      a = this._getAllNamedChilds(a, i[n]);
+    }
+
+    return -1 != i[n - 1].indexOf("[") && (a = this._filterXPath(a, i[n - 1])), a;
+  }, dtmlXMLLoaderObject.prototype._filterXPath = function (t, e) {
+    for (var i = [], e = e.replace(/[^\[]*\[\@/g, "").replace(/[\[\]\@]*/g, ""), a = 0; a < t.length; a++) {
+      t[a].getAttribute(e) && (i[i.length] = t[a]);
+    }
+
+    return i;
+  }, dtmlXMLLoaderObject.prototype._getAllNamedChilds = function (t, e) {
+    var i = [];
+    _isKHTML && (e = e.toUpperCase());
+
+    for (var a = 0; a < t.length; a++) {
+      for (var n = 0; n < t[a].childNodes.length; n++) {
+        _isKHTML ? t[a].childNodes[n].tagName && t[a].childNodes[n].tagName.toUpperCase() == e && (i[i.length] = t[a].childNodes[n]) : t[a].childNodes[n].tagName == e && (i[i.length] = t[a].childNodes[n]);
+      }
+    }
+
+    return i;
+  }, void 0 === window.dhtmlxEvent && (window.dhtmlxEvent = function (t, e, i) {
+    t.addEventListener ? t.addEventListener(e, i, !1) : t.attachEvent && t.attachEvent("on" + e, i);
+  }), dtmlXMLLoaderObject.prototype.xslDoc = null, dtmlXMLLoaderObject.prototype.setXSLParamValue = function (t, e, i) {
+    i || (i = this.xslDoc), i.responseXML && (i = i.responseXML);
+    var a = this.doXPath("/xsl:stylesheet/xsl:variable[@name='" + t + "']", i, "http://www.w3.org/1999/XSL/Transform", "single");
+    a && (a.firstChild.nodeValue = e);
+  }, dtmlXMLLoaderObject.prototype.doXSLTransToObject = function (t, e) {
+    t || (t = this.xslDoc), t.responseXML && (t = t.responseXML), e || (e = this.xmlDoc), e.responseXML && (e = e.responseXML);
+    var i;
+
+    if (_isIE) {
+      i = new ActiveXObject("Msxml2.DOMDocument.3.0");
+
+      try {
+        e.transformNodeToObject(t, i);
+      } catch (a) {
+        i = e.transformNode(t);
+      }
+    } else this.XSLProcessor || (this.XSLProcessor = new XSLTProcessor(), this.XSLProcessor.importStylesheet(t)), i = this.XSLProcessor.transformToDocument(e);
+
+    return i;
+  }, dtmlXMLLoaderObject.prototype.doXSLTransToString = function (t, e) {
+    var i = this.doXSLTransToObject(t, e);
+    return "string" == typeof i ? i : this.doSerialization(i);
+  }, dtmlXMLLoaderObject.prototype.doSerialization = function (t) {
+    return t || (t = this.xmlDoc), t.responseXML && (t = t.responseXML), _isIE ? t.xml : new XMLSerializer().serializeToString(t);
+  }, window.dhtmlxEventable = function (obj) {
+    obj.attachEvent = function (t, e, i) {
+      return t = "ev_" + t.toLowerCase(), this[t] || (this[t] = new this.eventCatcher(i || this)), t + ":" + this[t].addEvent(e);
+    }, obj.callEvent = function (t, e) {
+      return t = "ev_" + t.toLowerCase(), !this[t] || this[t].apply(this, e);
+    }, obj.checkEvent = function (t) {
+      return !!this["ev_" + t.toLowerCase()];
+    }, obj.eventCatcher = function (obj) {
+      var dhx_catch = [],
+          z = function z() {
+        for (var t = !0, e = 0; e < dhx_catch.length; e++) {
+          if (dhx_catch[e]) {
+            var i = dhx_catch[e].apply(obj, arguments);
+            t = t && i;
+          }
+        }
+
+        return t;
+      };
+
+      return z.addEvent = function (ev) {
+        return "function" != typeof ev && (ev = eval(ev)), !!ev && dhx_catch.push(ev) - 1;
+      }, z.removeEvent = function (t) {
+        dhx_catch[t] = null;
+      }, z;
+    }, obj.detachEvent = function (t) {
+      if (t) {
+        var e = t.split(":");
+        this[e[0]].removeEvent(e[1]);
+      }
+    }, obj.detachAllEvents = function () {
+      for (var t in this) {
+        0 === t.indexOf("ev_") && (this.detachEvent(t), this[t] = null);
+      }
+    }, obj = null;
+  }, window.dhtmlx || (window.dhtmlx = {}), function () {
+    function t(t, e) {
+      setTimeout(function () {
+        if (t.box) {
+          var a = t.callback;
+          i(!1), t.box.parentNode.removeChild(t.box), dhtmlx.callEvent("onAfterMessagePopup", [t.box]), c = t.box = null, a && a(e);
+        }
+      }, 1);
+    }
+
+    function e(e) {
+      if (c) {
+        e = e || event;
+        var i = e.which || event.keyCode,
+            a = !1;
+
+        if (dhtmlx.message.keyboard) {
+          if (13 == i || 32 == i) {
+            var n = e.target || e.srcElement;
+            scheduler._getClassName(n).indexOf("dhtmlx_popup_button") > -1 && n.click ? n.click() : (t(c, !0), a = !0);
+          }
+
+          27 == i && (t(c, !1), a = !0);
+        }
+
+        if (a) return e.preventDefault && e.preventDefault(), !(e.cancelBubble = !0);
+      } else ;
+    }
+
+    function i(t) {
+      i.cover || (i.cover = document.createElement("div"), i.cover.onkeydown = e, i.cover.className = "dhx_modal_cover", document.body.appendChild(i.cover));
+      document.body.scrollHeight;
+      i.cover.style.display = t ? "inline-block" : "none";
+    }
+
+    function a(t, e, i) {
+      return "<div " + scheduler._waiAria.messageButtonAttrString(t) + "class='dhtmlx_popup_button dhtmlx_" + (i || t || "").toLowerCase().replace(/ /g, "_") + "_button' result='" + e + "' ><div>" + t + "</div></div>";
+    }
+
+    function n(t) {
+      u.area || (u.area = document.createElement("div"), u.area.className = "dhtmlx_message_area", u.area.style[u.position] = "5px", document.body.appendChild(u.area)), u.hide(t.id);
+      var e = document.createElement("div");
+      return e.innerHTML = "<div>" + t.text + "</div>", e.className = "dhtmlx-info dhtmlx-" + t.type, e.onclick = function () {
+        u.hide(t.id), t = null;
+      }, scheduler._waiAria.messageInfoAttr(e), "bottom" == u.position && u.area.firstChild ? u.area.insertBefore(e, u.area.firstChild) : u.area.appendChild(e), t.expire > 0 && (u.timers[t.id] = window.setTimeout(function () {
+        u.hide(t.id);
+      }, t.expire)), u.pull[t.id] = e, e = null, t.id;
+    }
+
+    function r(e, i, n) {
+      var r = document.createElement("div");
+      r.className = " dhtmlx_modal_box dhtmlx-" + e.type, r.setAttribute("dhxbox", 1);
+      var s = scheduler.uid();
+
+      scheduler._waiAria.messageModalAttr(r, s);
+
+      var o = "",
+          d = !1;
+
+      if (e.width && (r.style.width = e.width), e.height && (r.style.height = e.height), e.title && (o += '<div class="dhtmlx_popup_title" id="' + s + '">' + e.title + "</div>", d = !0), o += '<div class="dhtmlx_popup_text" ' + (d ? "" : ' id="' + s + '" ') + "><span>" + (e.content ? "" : e.text) + '</span></div><div  class="dhtmlx_popup_controls">', i) {
+        var _ = e.ok || scheduler.locale.labels.message_ok;
+
+        void 0 === _ && (_ = "OK"), o += a(_, !0, "ok");
+      }
+
+      if (n) {
+        var l = e.cancel || scheduler.locale.labels.message_cancel;
+        void 0 === l && (l = "Cancel"), o += a(l, !1, "cancel");
+      }
+
+      if (e.buttons) for (var h = 0; h < e.buttons.length; h++) {
+        o += a(e.buttons[h], h);
+      }
+
+      if (o += "</div>", r.innerHTML = o, e.content) {
+        var u = e.content;
+        "string" == typeof u && (u = document.getElementById(u)), "none" == u.style.display && (u.style.display = ""), r.childNodes[e.title ? 1 : 0].appendChild(u);
+      }
+
+      return r.onclick = function (i) {
+        i = i || event;
+
+        var a = i.target || i.srcElement,
+            n = scheduler._getClassName(a);
+
+        if (n || (a = a.parentNode), n = scheduler._getClassName(a), "dhtmlx_popup_button" == n.split(" ")[0]) {
+          var r = a.getAttribute("result");
+          r = "true" == r || "false" != r && r, t(e, r);
+        }
+      }, e.box = r, c = e, r;
+    }
+
+    function s(t, a, n) {
+      var s = t.tagName ? t : r(t, a, n);
+      t.hidden || i(!0), document.body.appendChild(s);
+      var o = Math.abs(Math.floor(((window.innerWidth || document.documentElement.offsetWidth) - s.offsetWidth) / 2)),
+          d = Math.abs(Math.floor(((window.innerHeight || document.documentElement.offsetHeight) - s.offsetHeight) / 2));
+      return "top" == t.position ? s.style.top = "-3px" : s.style.top = d + "px", s.style.left = o + "px", s.onkeydown = e, dhtmlx.modalbox.focus(s), t.hidden && dhtmlx.modalbox.hide(s), dhtmlx.callEvent("onMessagePopup", [s]), s;
+    }
+
+    function o(t) {
+      return s(t, !0, !1);
+    }
+
+    function d(t) {
+      return s(t, !0, !0);
+    }
+
+    function _(t) {
+      return s(t);
+    }
+
+    function l(t, e, i) {
+      return "object" != _typeof(t) && ("function" == typeof e && (i = e, e = ""), t = {
+        text: t,
+        type: e,
+        callback: i
+      }), t;
+    }
+
+    function h(t, e, i, a) {
+      return "object" != _typeof(t) && (t = {
+        text: t,
+        type: e,
+        expire: i,
+        id: a
+      }), t.id = t.id || u.uid(), t.expire = t.expire || u.expire, t;
+    }
+
+    var c = null;
+    document.attachEvent ? document.attachEvent("onkeydown", e) : document.addEventListener("keydown", e, !0), dhtmlx.alert = function () {
+      var t = l.apply(this, arguments);
+      return t.type = t.type || "confirm", o(t);
+    }, dhtmlx.confirm = function () {
+      var t = l.apply(this, arguments);
+      return t.type = t.type || "alert", d(t);
+    }, dhtmlx.modalbox = function () {
+      var t = l.apply(this, arguments);
+      return t.type = t.type || "alert", _(t);
+    }, dhtmlx.modalbox.hide = function (t) {
+      for (; t && t.getAttribute && !t.getAttribute("dhxbox");) {
+        t = t.parentNode;
+      }
+
+      t && (t.parentNode.removeChild(t), i(!1));
+    }, dhtmlx.modalbox.focus = function (t) {
+      setTimeout(function () {
+        var e = scheduler._getFocusableNodes(t);
+
+        e.length && e[0].focus && e[0].focus();
+      }, 1);
+    };
+
+    var u = dhtmlx.message = function (t, e, i, a) {
+      switch (t = h.apply(this, arguments), t.type = t.type || "info", t.type.split("-")[0]) {
+        case "alert":
+          return o(t);
+
+        case "confirm":
+          return d(t);
+
+        case "modalbox":
+          return _(t);
+
+        default:
+          return n(t);
+      }
+    };
+
+    u.seed = new Date().valueOf(), u.uid = function () {
+      return u.seed++;
+    }, u.expire = 4e3, u.keyboard = !0, u.position = "top", u.pull = {}, u.timers = {}, u.hideAll = function () {
+      for (var t in u.pull) {
+        u.hide(t);
+      }
+    }, u.hide = function (t) {
+      var e = u.pull[t];
+      e && e.parentNode && (window.setTimeout(function () {
+        e.parentNode.removeChild(e), e = null;
+      }, 2e3), e.className += " hidden", u.timers[t] && window.clearTimeout(u.timers[t]), delete u.pull[t]);
+    };
+  }(), dhtmlx.attachEvent || dhtmlxEventable(dhtmlx);
+
+  var dataProcessor = window.dataProcessor = function (t) {
+    return this.serverProcessor = t, this.action_param = "!nativeeditor_status", this.object = null, this.updatedRows = [], this.autoUpdate = !0, this.updateMode = "cell", this._tMode = "GET", this._headers = null, this._payload = null, this.post_delim = "_", this._waitMode = 0, this._in_progress = {}, this._invalid = {}, this.mandatoryFields = [], this.messages = [], this.styles = {
+      updated: "font-weight:bold;",
+      inserted: "font-weight:bold;",
+      deleted: "text-decoration : line-through;",
+      invalid: "background-color:FFE0E0;",
+      invalid_cell: "border-bottom:2px solid red;",
+      error: "color:red;",
+      clear: "font-weight:normal;text-decoration:none;"
+    }, this.enableUTFencoding(!0), dhtmlxEventable(this), this;
+  };
+
+  dataProcessor.prototype = {
+    setTransactionMode: function setTransactionMode(t, e) {
+      "object" == _typeof(t) ? (this._tMode = t.mode || this._tMode, void 0 !== t.headers && (this._headers = t.headers), void 0 !== t.payload && (this._payload = t.payload)) : (this._tMode = t, this._tSend = e), "REST" == this._tMode && (this._tSend = !1, this._endnm = !0), "JSON" == this._tMode && (this._tSend = !1, this._endnm = !0, this._headers = this._headers || {}, this._headers["Content-type"] = "application/json");
+    },
+    escape: function (_escape) {
+      function escape(_x) {
+        return _escape.apply(this, arguments);
+      }
+
+      escape.toString = function () {
+        return _escape.toString();
+      };
+
+      return escape;
+    }(function (t) {
+      return this._utf ? encodeURIComponent(t) : escape(t);
+    }),
+    enableUTFencoding: function enableUTFencoding(t) {
+      this._utf = !!t;
+    },
+    setDataColumns: function setDataColumns(t) {
+      this._columns = "string" == typeof t ? t.split(",") : t;
+    },
+    getSyncState: function getSyncState() {
+      return !this.updatedRows.length;
+    },
+    enableDataNames: function enableDataNames(t) {
+      this._endnm = !!t;
+    },
+    enablePartialDataSend: function enablePartialDataSend(t) {
+      this._changed = !!t;
+    },
+    setUpdateMode: function setUpdateMode(t, e) {
+      this.autoUpdate = "cell" == t, this.updateMode = t, this.dnd = e;
+    },
+    ignore: function ignore(t, e) {
+      this._silent_mode = !0, t.call(e || window), this._silent_mode = !1;
+    },
+    setUpdated: function setUpdated(t, e, i) {
+      if (!this._silent_mode) {
+        var a = this.findRow(t);
+        i = i || "updated";
+        var n = this.obj.getUserData(t, this.action_param);
+        n && "updated" == i && (i = n), e ? (this.set_invalid(t, !1), this.updatedRows[a] = t, this.obj.setUserData(t, this.action_param, i), this._in_progress[t] && (this._in_progress[t] = "wait")) : this.is_invalid(t) || (this.updatedRows.splice(a, 1), this.obj.setUserData(t, this.action_param, "")), e || this._clearUpdateFlag(t), this.markRow(t, e, i), e && this.autoUpdate && this.sendData(t);
+      }
+    },
+    _clearUpdateFlag: function _clearUpdateFlag(t) {},
+    markRow: function markRow(t, e, i) {
+      var a = "",
+          n = this.is_invalid(t);
+
+      if (n && (a = this.styles[n], e = !0), this.callEvent("onRowMark", [t, e, i, n]) && (a = this.styles[e ? i : "clear"] + a, this.obj[this._methods[0]](t, a), n && n.details)) {
+        a += this.styles[n + "_cell"];
+
+        for (var r = 0; r < n.details.length; r++) {
+          n.details[r] && this.obj[this._methods[1]](t, r, a);
+        }
+      }
+    },
+    getState: function getState(t) {
+      return this.obj.getUserData(t, this.action_param);
+    },
+    is_invalid: function is_invalid(t) {
+      return this._invalid[t];
+    },
+    set_invalid: function set_invalid(t, e, i) {
+      i && (e = {
+        value: e,
+        details: i,
+        toString: function toString() {
+          return this.value.toString();
+        }
+      }), this._invalid[t] = e;
+    },
+    checkBeforeUpdate: function checkBeforeUpdate(t) {
+      return !0;
+    },
+    sendData: function sendData(t) {
+      if (!this._waitMode || "tree" != this.obj.mytype && !this.obj._h2) {
+        if (this.obj.editStop && this.obj.editStop(), void 0 === t || this._tSend) return this.sendAllData();
+        if (this._in_progress[t]) return !1;
+        if (this.messages = [], !this.checkBeforeUpdate(t) && this.callEvent("onValidationError", [t, this.messages])) return !1;
+
+        this._beforeSendData(this._getRowData(t), t);
+      }
+    },
+    _beforeSendData: function _beforeSendData(t, e) {
+      if (!this.callEvent("onBeforeUpdate", [e, this.getState(e), t])) return !1;
+
+      this._sendData(t, e);
+    },
+    serialize: function serialize(t, e) {
+      if ("string" == typeof t) return t;
+      if (void 0 !== e) return this.serialize_one(t, "");
+      var i = [],
+          a = [];
+
+      for (var n in t) {
+        t.hasOwnProperty(n) && (i.push(this.serialize_one(t[n], n + this.post_delim)), a.push(n));
+      }
+
+      return i.push("ids=" + this.escape(a.join(","))), (scheduler.security_key || dhtmlx.security_key) && i.push("dhx_security=" + (scheduler.security_key || dhtmlx.security_key)), i.join("&");
+    },
+    serialize_one: function serialize_one(t, e) {
+      if ("string" == typeof t) return t;
+      var i = [];
+
+      for (var a in t) {
+        if (t.hasOwnProperty(a)) {
+          if (("id" == a || a == this.action_param) && "REST" == this._tMode) continue;
+          i.push(this.escape((e || "") + a) + "=" + this.escape(t[a]));
+        }
+      }
+
+      return i.join("&");
+    },
+    _applyPayload: function _applyPayload(t) {
+      var e = this.obj.$ajax;
+      if (this._payload) for (var i in this._payload) {
+        t = t + e.urlSeparator(t) + this.escape(i) + "=" + this.escape(this._payload[i]);
+      }
+      return t;
+    },
+    _sendData: function _sendData(t, e) {
+      if (t) {
+        if (!this.callEvent("onBeforeDataSending", e ? [e, this.getState(e), t] : [null, null, t])) return !1;
+        e && (this._in_progress[e] = new Date().valueOf());
+
+        var i = this,
+            a = function a(_a) {
+          var n = [];
+          if (e) n.push(e);else if (t) for (var r in t) {
+            n.push(r);
+          }
+          return i.afterUpdate(i, _a, n);
+        },
+            n = this.obj.$ajax,
+            r = this.serverProcessor + (this._user ? n.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + this.obj.getUserData(0, "version")].join("&") : ""),
+            s = this._applyPayload(r);
+
+        if ("GET" == this._tMode) n.query({
+          url: s + n.urlSeparator(s) + this.serialize(t, e),
+          method: "GET",
+          callback: a,
+          headers: this._headers
+        });else if ("POST" == this._tMode) n.query({
+          url: s,
+          method: "POST",
+          headers: this._headers,
+          data: this.serialize(t, e),
+          callback: a
+        });else if ("JSON" == this._tMode) {
+          var o = t[this.action_param],
+              d = {};
+
+          for (var _ in t) {
+            d[_] = t[_];
+          }
+
+          delete d[this.action_param], delete d.id, delete d.gr_id, n.query({
+            url: s,
+            method: "POST",
+            headers: this._headers,
+            callback: a,
+            data: JSON.stringify({
+              id: e,
+              action: o,
+              data: d
+            })
+          });
+        } else if ("REST" == this._tMode) {
+          var l = this.getState(e),
+              h = r.replace(/(\&|\?)editing\=true/, ""),
+              d = "",
+              c = "post";
+          "inserted" == l ? d = this.serialize(t, e) : "deleted" == l ? (c = "DELETE", h = h + ("/" == h.slice(-1) ? "" : "/") + e) : (c = "PUT", d = this.serialize(t, e), h = h + ("/" == h.slice(-1) ? "" : "/") + e), h = this._applyPayload(h), n.query({
+            url: h,
+            method: c,
+            headers: this._headers,
+            data: d,
+            callback: a
+          });
+        }
+        this._waitMode++;
+      }
+    },
+    sendAllData: function sendAllData() {
+      if (this.updatedRows.length) {
+        this.messages = [];
+
+        for (var t = !0, e = 0; e < this.updatedRows.length; e++) {
+          t &= this.checkBeforeUpdate(this.updatedRows[e]);
+        }
+
+        if (!t && !this.callEvent("onValidationError", ["", this.messages])) return !1;
+        if (this._tSend) this._sendData(this._getAllData());else for (var e = 0; e < this.updatedRows.length; e++) {
+          if (!this._in_progress[this.updatedRows[e]]) {
+            if (this.is_invalid(this.updatedRows[e])) continue;
+            if (this._beforeSendData(this._getRowData(this.updatedRows[e]), this.updatedRows[e]), this._waitMode && ("tree" == this.obj.mytype || this.obj._h2)) return;
+          }
+        }
+      }
+    },
+    _getAllData: function _getAllData(t) {
+      for (var e = {}, i = !1, a = 0; a < this.updatedRows.length; a++) {
+        var n = this.updatedRows[a];
+
+        if (!this._in_progress[n] && !this.is_invalid(n)) {
+          var r = this._getRowData(n);
+
+          this.callEvent("onBeforeUpdate", [n, this.getState(n), r]) && (e[n] = r, i = !0, this._in_progress[n] = new Date().valueOf());
+        }
+      }
+
+      return i ? e : null;
+    },
+    setVerificator: function setVerificator(t, e) {
+      this.mandatoryFields[t] = e || function (t) {
+        return "" !== t;
+      };
+    },
+    clearVerificator: function clearVerificator(t) {
+      this.mandatoryFields[t] = !1;
+    },
+    findRow: function findRow(t) {
+      var e = 0;
+
+      for (e = 0; e < this.updatedRows.length && t != this.updatedRows[e]; e++) {
+        ;
+      }
+
+      return e;
+    },
+    defineAction: function defineAction(t, e) {
+      this._uActions || (this._uActions = []), this._uActions[t] = e;
+    },
+    afterUpdateCallback: function afterUpdateCallback(t, e, i, a) {
+      var n = t,
+          r = "error" != i && "invalid" != i;
+      if (r || this.set_invalid(t, i), this._uActions && this._uActions[i] && !this._uActions[i](a)) return delete this._in_progress[n];
+      "wait" != this._in_progress[n] && this.setUpdated(t, !1);
+      var s = t;
+
+      switch (i) {
+        case "inserted":
+        case "insert":
+          e != t && (this.setUpdated(t, !1), this.obj[this._methods[2]](t, e), t = e);
+          break;
+
+        case "delete":
+        case "deleted":
+          return this.obj.setUserData(t, this.action_param, "true_deleted"), this.obj[this._methods[3]](t, e), delete this._in_progress[n], this.callEvent("onAfterUpdate", [t, i, e, a]);
+      }
+
+      "wait" != this._in_progress[n] ? (r && this.obj.setUserData(t, this.action_param, ""), delete this._in_progress[n]) : (delete this._in_progress[n], this.setUpdated(e, !0, this.obj.getUserData(t, this.action_param))), this.callEvent("onAfterUpdate", [s, i, e, a]);
+    },
+    _errorResponse: function _errorResponse(t, e) {
+      return this.obj && this.obj.callEvent && this.obj.callEvent("onSaveError", [e, t.xmlDoc]), this.cleanUpdate(e);
+    },
+    afterUpdate: function afterUpdate(t, e, i) {
+      var a = this.obj.$ajax;
+      if (200 !== e.xmlDoc.status) return void this._errorResponse(e, i);
+
+      if (window.JSON) {
+        var n;
+
+        try {
+          n = JSON.parse(e.xmlDoc.responseText);
+        } catch (t) {
+          e.xmlDoc.responseText.length || (n = {});
+        }
+
+        if (n) {
+          var r = n.action || this.getState(i) || "updated",
+              s = n.sid || i[0],
+              o = n.tid || i[0];
+          return t.afterUpdateCallback(s, o, r, n), void t.finalizeUpdate();
+        }
+      }
+
+      var d = a.xmltop("data", e.xmlDoc);
+      if (!d) return this._errorResponse(e, i);
+
+      var _ = a.xpath("//data/action", d);
+
+      _.length || this._errorResponse(e, i);
+
+      for (var l = 0; l < _.length; l++) {
+        var h = _[l],
+            r = h.getAttribute("type"),
+            s = h.getAttribute("sid"),
+            o = h.getAttribute("tid");
+        t.afterUpdateCallback(s, o, r, h);
+      }
+
+      t.finalizeUpdate();
+    },
+    cleanUpdate: function cleanUpdate(t) {
+      if (t) for (var e = 0; e < t.length; e++) {
+        delete this._in_progress[t[e]];
+      }
+    },
+    finalizeUpdate: function finalizeUpdate() {
+      this._waitMode && this._waitMode--, ("tree" == this.obj.mytype || this.obj._h2) && this.updatedRows.length && this.sendData(), this.callEvent("onAfterUpdateFinish", []), this.updatedRows.length || this.callEvent("onFullSync", []);
+    },
+    init: function init(t) {
+      this.obj = t, this.obj._dp_init && this.obj._dp_init(this);
+    },
+    setOnAfterUpdate: function setOnAfterUpdate(t) {
+      this.attachEvent("onAfterUpdate", t);
+    },
+    enableDebug: function enableDebug(t) {},
+    setOnBeforeUpdateHandler: function setOnBeforeUpdateHandler(t) {
+      this.attachEvent("onBeforeDataSending", t);
+    },
+    setAutoUpdate: function setAutoUpdate(t, e) {
+      t = t || 2e3, this._user = e || new Date().valueOf(), this._need_update = !1, this._update_busy = !1, this.attachEvent("onAfterUpdate", function (t, e, i, a) {
+        this.afterAutoUpdate(t, e, i, a);
+      }), this.attachEvent("onFullSync", function () {
+        this.fullSync();
+      });
+      var i = this;
+      window.setInterval(function () {
+        i.loadUpdate();
+      }, t);
+    },
+    afterAutoUpdate: function afterAutoUpdate(t, e, i, a) {
+      return "collision" != e || (this._need_update = !0, !1);
+    },
+    fullSync: function fullSync() {
+      return this._need_update && (this._need_update = !1, this.loadUpdate()), !0;
+    },
+    getUpdates: function getUpdates(t, e) {
+      var i = this.obj.$ajax;
+      if (this._update_busy) return !1;
+      this._update_busy = !0, i.get(t, e);
+    },
+    _v: function _v(t) {
+      return t.firstChild ? t.firstChild.nodeValue : "";
+    },
+    _a: function _a(t) {
+      for (var e = [], i = 0; i < t.length; i++) {
+        e[i] = this._v(t[i]);
+      }
+
+      return e;
+    },
+    loadUpdate: function loadUpdate() {
+      var t = this.obj.$ajax,
+          e = this,
+          i = this.obj.getUserData(0, "version"),
+          a = this.serverProcessor + t.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + i].join("&");
+      a = a.replace("editing=true&", ""), this.getUpdates(a, function (i) {
+        var a = t.xpath("//userdata", i);
+        e.obj.setUserData(0, "version", e._v(a[0]));
+        var n = t.xpath("//update", i);
+
+        if (n.length) {
+          e._silent_mode = !0;
+
+          for (var r = 0; r < n.length; r++) {
+            var s = n[r].getAttribute("status"),
+                o = n[r].getAttribute("id"),
+                d = n[r].getAttribute("parent");
+
+            switch (s) {
+              case "inserted":
+                e.callEvent("insertCallback", [n[r], o, d]);
+                break;
+
+              case "updated":
+                e.callEvent("updateCallback", [n[r], o, d]);
+                break;
+
+              case "deleted":
+                e.callEvent("deleteCallback", [n[r], o, d]);
+            }
+          }
+
+          e._silent_mode = !1;
+        }
+
+        e._update_busy = !1, e = null;
+      });
+    }
+  }, window.dataProcessor && !dataProcessor.prototype.init_original && (dataProcessor.prototype.init_original = dataProcessor.prototype.init, dataProcessor.prototype.init = function (t) {
+    this.init_original(t), t._dataprocessor = this, this.setTransactionMode("POST", !0), this.serverProcessor += (-1 != this.serverProcessor.indexOf("?") ? "&" : "?") + "editing=true";
+  }), dhtmlxError.catchError("LoadXML", function (t, e, i) {
+    var a = i[0].responseText;
+
+    switch (scheduler.config.ajax_error) {
+      case "alert":
+        window.alert(a);
+        break;
+
+      case "console":
+        window.console.log(a);
+    }
+  });
+  var Scheduler = {
+    _seed: 0
+  };
+  Scheduler.plugin = function (t) {
+    this._schedulerPlugins.push(t), t(window.scheduler);
+  }, Scheduler._schedulerPlugins = [], Scheduler.getSchedulerInstance = function () {
+    function t(t) {
+      var e = document.createElement("div");
+      return (t || "").split(" ").forEach(function (t) {
+        e.classList.add(t);
+      }), e;
+    }
+
+    function e(t) {
+      var e;
+      if (t.view) switch (t.view) {
+        case "today":
+        case "next":
+        case "prev":
+          e = u.builtInButton;
+          break;
+
+        case "date":
+          e = u.date;
+          break;
+
+        case "spacer":
+          e = u.spacer;
+          break;
+
+        case "button":
+          e = u.button;
+          break;
+
+        default:
+          e = u.view;
+      } else t.rows ? e = u.rows_container : t.cols && (e = u.row);
+      return e;
+    }
+
+    function i(t) {
+      var i = e(t);
+
+      if (i) {
+        var a = i(t);
+
+        if (t.css && a.classList.add(t.css), t.width) {
+          var n = t.width;
+          n === 1 * n && (n += "px"), a.style.width = n;
+        }
+
+        if (t.height) {
+          var n = t.height;
+          n === 1 * n && (n += "px"), a.style.height = n;
+        }
+
+        if (t.click && a.addEventListener("click", t.click), t.html && (a.innerHTML = t.html), t.align) {
+          var n = "";
+          "right" == t.align ? n = "flex-end" : "left" == t.align && (n = "flex-start"), a.style.justifyContent = n;
+        }
+
+        return a;
+      }
+    }
+
+    function a(t) {
+      return "string" == typeof t && (t = {
+        view: t
+      }), t.view || t.rows || t.cols || (t.view = "button"), t;
+    }
+
+    function n(t) {
+      var e,
+          r = document.createDocumentFragment();
+      e = Array.isArray(t) ? t : [t];
+
+      for (var s = 0; s < e.length; s++) {
+        var o = a(e[s]),
+            d = i(o);
+        r.appendChild(d), (o.cols || o.rows) && d.appendChild(n(o.cols || o.rows));
+      }
+
+      return r;
+    }
+
+    function r(t) {
+      return Array.isArray ? Array.isArray(t) : t && void 0 !== t.length && t.pop && t.push;
+    }
+
+    function s(t) {
+      return t && "object" == _typeof(t) && "function String() { [native code] }" === Function.prototype.toString.call(t.constructor);
+    }
+
+    function o(t) {
+      return t && "object" == _typeof(t) && "function Number() { [native code] }" === Function.prototype.toString.call(t.constructor);
+    }
+
+    function d(t) {
+      return t && "object" == _typeof(t) && "function Boolean() { [native code] }" === Function.prototype.toString.call(t.constructor);
+    }
+
+    function _(t) {
+      return !(!t || "object" != _typeof(t)) && !!(t.getFullYear && t.getMonth && t.getDate);
+    }
+
+    var l = {
+      version: "5.3.2"
+    },
+        h = {
+      agenda: "https://docs.dhtmlx.com/scheduler/agenda_view.html",
+      grid: "https://docs.dhtmlx.com/scheduler/grid_view.html",
+      map: "https://docs.dhtmlx.com/scheduler/map_view.html",
+      unit: "https://docs.dhtmlx.com/scheduler/units_view.html",
+      timeline: "https://docs.dhtmlx.com/scheduler/timeline_view.html",
+      week_agenda: "https://docs.dhtmlx.com/scheduler/weekagenda_view.html",
+      year: "https://docs.dhtmlx.com/scheduler/year_view.html",
+      anythingElse: "https://docs.dhtmlx.com/scheduler/views.html"
+    },
+        c = {
+      agenda: "ext/dhtmlxscheduler_agenda_view.js",
+      grid: "ext/dhtmlxscheduler_grid_view.js",
+      map: "ext/dhtmlxscheduler_map_view.js",
+      unit: "ext/dhtmlxscheduler_units.js",
+      timeline: "ext/dhtmlxscheduler_timeline.js, ext/dhtmlxscheduler_treetimeline.js, ext/dhtmlxscheduler_daytimeline.js",
+      week_agenda: "ext/dhtmlxscheduler_week_agenda.js",
+      year: "ext/dhtmlxscheduler_year_view.js",
+      limit: "ext/dhtmlxscheduler_limit.js"
+    };
+    l._commonErrorMessages = {
+      unknownView: function unknownView(t) {
+        var e = "Related docs: " + h[t] || false,
+            i = c[t] ? "You're probably missing " + c[t] + "." : "";
+        return "`" + t + "` view is not defined. \nPlease check parameters you pass to `scheduler.init` or `scheduler.setCurrentView` in your code and ensure you've imported appropriate extensions. \n" + e + "\n" + (i ? i + "\n" : "");
+      },
+      collapsedContainer: function collapsedContainer(t) {
+        return "Scheduler container height is set to *100%* but the rendered height is zero and the scheduler is not visible. \nMake sure that the container has some initial height or use different units. For example:\n<div id='scheduler_here' class='dhx_cal_container' style='width:100%; height:600px;'> \n";
+      }
+    }, l.createTimelineView = function () {
+      throw new Error("scheduler.createTimelineView is not implemented. Be sure to add the required extension: " + c.timeline + "\nRelated docs: " + h.timeline);
+    }, l.createUnitsView = function () {
+      throw new Error("scheduler.createUnitsView is not implemented. Be sure to add the required extension: " + c.unit + "\nRelated docs: " + h.unit);
+    }, l.createGridView = function () {
+      throw new Error("scheduler.createGridView is not implemented. Be sure to add the required extension: " + c.grid + "\nRelated docs: " + h.grid);
+    }, l.addMarkedTimespan = function () {
+      throw new Error("scheduler.addMarkedTimespan is not implemented. Be sure to add the required extension: ext/dhtmlxscheduler_limit.js\nRelated docs: https://docs.dhtmlx.com/scheduler/limits.html");
+    }, l.renderCalendar = function () {
+      throw new Error("scheduler.renderCalendar is not implemented. Be sure to add the required extension: ext/dhtmlxscheduler_minical.js\nhttps://docs.dhtmlx.com/scheduler/minicalendar.html");
+    }, dhtmlxEventable(l);
+    var u = {
+      rows_container: function rows_container() {
+        return t("dhx_cal_navbar_rows_container");
+      },
+      row: function row() {
+        return t("dhx_cal_navbar_row");
+      },
+      view: function view(e) {
+        var i = t("dhx_cal_tab");
+        return i.setAttribute("name", e.view + "_tab"), i.setAttribute("data-viewname", e.view), l.config.fix_tab_position && ("day" === e.view ? i.classList.add("dhx_cal_tab_first") : "month" === e.view ? i.classList.add("dhx_cal_tab_last") : "week" !== e.view && i.classList.add("dhx_cal_tab_standalone")), i;
+      },
+      date: function date() {
+        return t("dhx_cal_date");
+      },
+      button: function button(e) {
+        return t("dhx_cal_nav_button dhx_cal_nav_button_custom dhx_cal_tab");
+      },
+      builtInButton: function builtInButton(e) {
+        return t("dhx_cal_" + e.view + "_button dhx_cal_nav_button");
+      },
+      spacer: function spacer() {
+        return t("dhx_cal_line_spacer");
+      },
+      html_element: function html_element(e) {
+        return t("dhx_cal_nav_content");
+      }
+    };
+
+    l._init_nav_bar = function (t) {
+      var e = this.$container.querySelector(".dhx_cal_navline");
+      return e || (e = document.createElement("div"), e.className = "dhx_cal_navline dhx_cal_navline_flex", l._update_nav_bar(t, e), e);
+    };
+
+    var f = null,
+        g = null;
+    l._update_nav_bar = function (t, e) {
+      if (t) {
+        var i = !1,
+            a = !1,
+            r = t.height || l.xy.nav_height;
+        null !== g && g === r || (i = !0), f && JSON.stringify(t) === f || (a = !0), i && (l.xy.nav_height = r), a && (e.innerHTML = "", e.appendChild(n(t))), (i || a) && (l._els = [], l.get_elements(), l.set_actions()), e.style.display = 0 === r ? "none" : "", g = r;
+      }
+    }, l._detachDomEvent = function (t, e, i) {
+      t.removeEventListener ? t.removeEventListener(e, i, !1) : t.detachEvent && t.detachEvent("on" + e, i);
+    }, l._init_once = function () {
+      function t(t) {
+        for (var e = document.body; t && t != e;) {
+          t = t.parentNode;
+        }
+
+        return !(e != t);
+      }
+
+      function e() {
+        return {
+          w: window.innerWidth || document.documentElement.clientWidth,
+          h: window.innerHeight || document.documentElement.clientHeight
+        };
+      }
+
+      function i(t, e) {
+        return t.w == e.w && t.h == e.h;
+      }
+
+      var a = e();
+      l.event(window, "resize", function () {
+        t(l._obj) && (window.clearTimeout(l._resize_timer), l._resize_timer = window.setTimeout(function () {
+          var n = e();
+
+          if (!i(a, n)) {
+            if (!t(l._obj)) return;
+            l.callEvent("onSchedulerResize", []) && (l.updateView(), l.callEvent("onAfterSchedulerResize", []));
+          }
+
+          a = n;
+        }, 100));
+      }), l._init_once = function () {};
+    };
+    var v = {
+      navbar: {
+        render: function render(t) {
+          return l._init_nav_bar(t);
+        }
+      },
+      header: {
+        render: function render(t) {
+          var e = document.createElement("div");
+          return e.className = "dhx_cal_header", e;
+        }
+      },
+      dataArea: {
+        render: function render(t) {
+          var e = document.createElement("div");
+          return e.className = "dhx_cal_data", e;
+        }
+      },
+      html_element: {
+        render: function render(t) {
+          return t.html;
+        }
+      }
+    };
+    l.init = function (t, e, i) {
+      e = e || l._currentDate(), i = i || "week", this._obj && this.unset_actions(), this._obj = "string" == typeof t ? document.getElementById(t) : t, this.$container = this._obj, !this.$container.offsetHeight && this.$container.offsetWidth && "100%" === this.$container.style.height && window.console.error(l._commonErrorMessages.collapsedContainer(), this.$container), this.config.wai_aria_attributes && this.config.wai_aria_application_role && this.$container.setAttribute("role", "application"), this.config.header && (this.$container.innerHTML = "", this.$container.classList.add("dhx_cal_container"), this.config.header.height && (this.xy.nav_height = this.config.header.height), this.$container.appendChild(v.navbar.render(this.config.header)), this.$container.appendChild(v.header.render()), this.$container.appendChild(v.dataArea.render())), this.config.rtl && (this.$container.className += " dhx_cal_container_rtl"), this._skin_init && l._skin_init(), l.date.init(), this._scroll = !0, this._quirks = this.$env.isIE && "BackCompat" == document.compatMode, this._quirks7 = this.$env.isIE && -1 == navigator.appVersion.indexOf("MSIE 8"), this._els = [], this.get_elements(), this.init_templates(), this.set_actions(), this._init_once(), this._init_touch_events(), this.set_sizes(), l.callEvent("onSchedulerReady", []), this.setCurrentView(e, i);
+    }, l.xy = {
+      min_event_height: 40,
+      scale_width: 50,
+      scroll_width: 18,
+      scale_height: 20,
+      month_scale_height: 20,
+      menu_width: 25,
+      margin_top: 0,
+      margin_left: 0,
+      editor_width: 140,
+      month_head_height: 22,
+      event_header_height: 14
+    }, l.keys = {
+      edit_save: 13,
+      edit_cancel: 27
+    }, l.bind = function (t, e) {
+      return t.bind ? t.bind(e) : function () {
+        return t.apply(e, arguments);
+      };
+    }, l.set_sizes = function () {
+      var t = this._x = this._obj.clientWidth - this.xy.margin_left,
+          e = this._y = this._obj.clientHeight - this.xy.margin_top,
+          i = this._table_view ? 0 : this.xy.scale_width + this.xy.scroll_width,
+          a = this._table_view ? -1 : this.xy.scale_width,
+          n = this.$container.querySelector(".dhx_cal_scale_placeholder");
+      l._is_material_skin() ? (n || (n = document.createElement("div"), n.className = "dhx_cal_scale_placeholder", this.$container.insertBefore(n, this._els.dhx_cal_header[0])), n.style.display = "block", this.set_xy(n, t, this.xy.scale_height + 1, 0, this.xy.nav_height + (this._quirks ? -1 : 1))) : n && n.parentNode.removeChild(n), this._lightbox && (l.$container.offsetWidth < 1200 || this._setLbPosition(document.querySelector(".dhx_cal_light"))), this.set_xy(this._els.dhx_cal_navline[0], t, this.xy.nav_height, 0, 0), this.set_xy(this._els.dhx_cal_header[0], t - i, this.xy.scale_height, a, this.xy.nav_height + (this._quirks ? -1 : 1));
+      var r = this._els.dhx_cal_navline[0].offsetHeight;
+      r > 0 && (this.xy.nav_height = r);
+      var s = this.xy.scale_height + this.xy.nav_height + (this._quirks ? -2 : 0);
+      this.set_xy(this._els.dhx_cal_data[0], t, e - (s + 2), 0, s + 2);
+    }, l.set_xy = function (t, e, i, a, n) {
+      var r = "left";
+      t.style.width = Math.max(0, e) + "px", t.style.height = Math.max(0, i) + "px", arguments.length > 3 && (this.config.rtl && (r = "right"), t.style[r] = a + "px", t.style.top = n + "px");
+    }, l.get_elements = function () {
+      for (var t = this._obj.getElementsByTagName("DIV"), e = 0; e < t.length; e++) {
+        var i = l._getClassName(t[e]),
+            a = t[e].getAttribute("name") || "";
+
+        i && (i = i.split(" ")[0]), this._els[i] || (this._els[i] = []), this._els[i].push(t[e]);
+        var n = l.locale.labels[a || i];
+        "string" != typeof n && a && !t[e].innerHTML && (n = a.split("_")[0]), n && (this._waiAria.labelAttr(t[e], n), t[e].innerHTML = n);
+      }
+    }, l.unset_actions = function () {
+      for (var t in this._els) {
+        if (this._click[t]) for (var e = 0; e < this._els[t].length; e++) {
+          this._els[t][e].onclick = null;
+        }
+      }
+
+      this._obj.onselectstart = null, this._obj.onmousemove = null, this._obj.onmousedown = null, this._obj.onmouseup = null, this._obj.ondblclick = null, this._obj.oncontextmenu = null;
+    }, l.set_actions = function () {
+      for (var t in this._els) {
+        if (this._click[t]) for (var e = 0; e < this._els[t].length; e++) {
+          this._els[t][e].onclick = l._click[t];
+        }
+      }
+
+      this._obj.onselectstart = function (t) {
+        return !1;
+      }, this._obj.onmousemove = function (t) {
+        l._temp_touch_block || l._on_mouse_move(t || event);
+      }, this._obj.onmousedown = function (t) {
+        l._ignore_next_click || l._on_mouse_down(t || event);
+      }, this._obj.onmouseup = function (t) {
+        l._ignore_next_click || l._on_mouse_up(t || event);
+      }, this._obj.ondblclick = function (t) {
+        l._on_dbl_click(t || event);
+      }, this._obj.oncontextmenu = function (t) {
+        var e = t || event,
+            i = e.target || e.srcElement;
+        return l.callEvent("onContextMenu", [l._locate_event(i), e]);
+      };
+    }, l.select = function (t) {
+      this._select_id != t && (l._close_not_saved(), this.editStop(!1), this.unselect(), this._select_id = t, this.updateEvent(t));
+    }, l.unselect = function (t) {
+      if (!t || t == this._select_id) {
+        var e = this._select_id;
+        this._select_id = null, e && this.getEvent(e) && this.updateEvent(e);
+      }
+    }, l.getState = function () {
+      return {
+        mode: this._mode,
+        date: new Date(this._date),
+        min_date: new Date(this._min_date),
+        max_date: new Date(this._max_date),
+        editor_id: this._edit_id,
+        lightbox_id: this._lightbox_id,
+        new_event: this._new_event,
+        select_id: this._select_id,
+        expanded: this.expanded,
+        drag_id: this._drag_id,
+        drag_mode: this._drag_mode
+      };
+    }, l._click = {
+      dhx_cal_data: function dhx_cal_data(t) {
+        if (l._ignore_next_click) return t.preventDefault && t.preventDefault(), t.cancelBubble = !0, l._ignore_next_click = !1, !1;
+
+        var e = t ? t.target : event.srcElement,
+            i = l._locate_event(e);
+
+        if (t = t || event, i) {
+          if (!l.callEvent("onClick", [i, t]) || l.config.readonly) return;
+        } else l.callEvent("onEmptyClick", [l.getActionData(t).date, t]);
+
+        if (i && l.config.select) {
+          l.select(i);
+
+          var a = l._getClassName(e);
+
+          -1 != a.indexOf("_icon") && l._click.buttons[a.split(" ")[1].replace("icon_", "")](i);
+        } else l._close_not_saved(), new Date().valueOf() - (l._new_event || 0) > 500 && l.unselect();
+      },
+      dhx_cal_prev_button: function dhx_cal_prev_button() {
+        l._click.dhx_cal_next_button(0, -1);
+      },
+      dhx_cal_next_button: function dhx_cal_next_button(t, e) {
+        var i = 1;
+        l.config.rtl && (e = -e, i = -i), l.setCurrentView(l.date.add(l.date[l._mode + "_start"](new Date(l._date)), e || i, l._mode));
+      },
+      dhx_cal_today_button: function dhx_cal_today_button() {
+        l.callEvent("onBeforeTodayDisplayed", []) && l.setCurrentView(l._currentDate());
+      },
+      dhx_cal_tab: function dhx_cal_tab() {
+        var t = this.getAttribute("name"),
+            e = t.substring(0, t.search("_tab"));
+        l.setCurrentView(l._date, e);
+      },
+      buttons: {
+        "delete": function _delete(t) {
+          var e = l.locale.labels.confirm_deleting;
+
+          l._dhtmlx_confirm(e, l.locale.labels.title_confirm_deleting, function () {
+            l.deleteEvent(t);
+          });
+        },
+        edit: function edit(t) {
+          l.edit(t);
+        },
+        save: function save(t) {
+          l.editStop(!0);
+        },
+        details: function details(t) {
+          l.showLightbox(t);
+        },
+        cancel: function cancel(t) {
+          l.editStop(!1);
+        }
+      }
+    }, l._dhtmlx_confirm = function (t, e, i) {
+      if (!t) return i();
+      var a = {
+        text: t
+      };
+      e && (a.title = e), i && (a.callback = function (t) {
+        t && i();
+      }), dhtmlx.confirm(a);
+    }, l.addEventNow = function (t, e, i) {
+      var a = {};
+      l._isObject(t) && !l._isDate(t) && (a = t, t = null);
+      var n = 6e4 * (this.config.event_duration || this.config.time_step);
+      t || (t = a.start_date || Math.round(l._currentDate().valueOf() / n) * n);
+      var r = new Date(t);
+
+      if (!e) {
+        var s = this.config.first_hour;
+        s > r.getHours() && (r.setHours(s), t = r.valueOf()), e = t.valueOf() + n;
+      }
+
+      var o = new Date(e);
+      r.valueOf() == o.valueOf() && o.setTime(o.valueOf() + n), a.start_date = a.start_date || r, a.end_date = a.end_date || o, a.text = a.text || this.locale.labels.new_event, a.id = this._drag_id = a.id || this.uid(), this._drag_mode = "new-size", this._loading = !0;
+      var d = this.addEvent(a);
+      return this.callEvent("onEventCreated", [this._drag_id, i]), this._loading = !1, this._drag_event = {}, this._on_mouse_up(i), d;
+    }, l._on_dbl_click = function (t, e) {
+      if (e = e || t.target || t.srcElement, !this.config.readonly) {
+        var i = l._getClassName(e).split(" ")[0];
+
+        switch (i) {
+          case "dhx_scale_holder":
+          case "dhx_scale_holder_now":
+          case "dhx_month_body":
+          case "dhx_wa_day_data":
+            if (!l.config.dblclick_create) break;
+            this.addEventNow(this.getActionData(t).date, null, t);
+            break;
+
+          case "dhx_cal_event":
+          case "dhx_wa_ev_body":
+          case "dhx_agenda_line":
+          case "dhx_grid_event":
+          case "dhx_cal_event_line":
+          case "dhx_cal_event_clear":
+            var a = this._locate_event(e);
+
+            if (!this.callEvent("onDblClick", [a, t])) return;
+            this.config.details_on_dblclick || this._table_view || !this.getEvent(a)._timed || !this.config.select ? this.showLightbox(a) : this.edit(a);
+            break;
+
+          case "dhx_time_block":
+          case "dhx_cal_container":
+            return;
+
+          default:
+            var n = this["dblclick_" + i];
+            if (n) n.call(this, t);else if (e.parentNode && e != this) return l._on_dbl_click(t, e.parentNode);
+        }
+      }
+    }, l._get_column_index = function (t) {
+      var e = 0;
+
+      if (this._cols) {
+        for (var i = 0, a = 0; i + this._cols[a] < t && a < this._cols.length;) {
+          i += this._cols[a], a++;
+        }
+
+        if (e = a + (this._cols[a] ? (t - i) / this._cols[a] : 0), this._ignores && e >= this._cols.length) for (; e >= 1 && this._ignores[Math.floor(e)];) {
+          e--;
+        }
+      }
+
+      return e;
+    }, l._week_indexes_from_pos = function (t) {
+      if (this._cols) {
+        var e = this._get_column_index(t.x);
+
+        return t.x = Math.min(this._cols.length - 1, Math.max(0, Math.ceil(e) - 1)), t.y = Math.max(0, Math.ceil(60 * t.y / (this.config.time_step * this.config.hour_size_px)) - 1) + this.config.first_hour * (60 / this.config.time_step), t;
+      }
+
+      return t;
+    }, l._mouse_coords = function (t) {
+      var e,
+          i = document.body,
+          a = document.documentElement;
+      e = this.$env.isIE || !t.pageX && !t.pageY ? {
+        x: t.clientX + (i.scrollLeft || a.scrollLeft || 0) - i.clientLeft,
+        y: t.clientY + (i.scrollTop || a.scrollTop || 0) - i.clientTop
+      } : {
+        x: t.pageX,
+        y: t.pageY
+      }, this.config.rtl && this._colsS ? (e.x = this.$container.querySelector(".dhx_cal_data").offsetWidth - e.x, "month" !== this._mode && (e.x -= this.xy.scale_width)) : e.x -= this.$domHelpers.getAbsoluteLeft(this._obj) + (this._table_view ? 0 : this.xy.scale_width), e.y -= this.$domHelpers.getAbsoluteTop(this._obj) + this.xy.nav_height + (this._dy_shift || 0) + this.xy.scale_height - this._els.dhx_cal_data[0].scrollTop, e.ev = t;
+      var n = this["mouse_" + this._mode];
+      if (n) e = n.call(this, e);else if (this._table_view) {
+        var r = this._get_column_index(e.x);
+
+        if (!this._cols || !this._colsS) return e;
+        var s = 0;
+
+        for (s = 1; s < this._colsS.heights.length && !(this._colsS.heights[s] > e.y); s++) {
+          ;
+        }
+
+        e.y = Math.ceil(24 * (Math.max(0, r) + 7 * Math.max(0, s - 1)) * 60 / this.config.time_step), (l._drag_mode || "month" == this._mode) && (e.y = 24 * (Math.max(0, Math.ceil(r) - 1) + 7 * Math.max(0, s - 1)) * 60 / this.config.time_step), "move" == this._drag_mode && l._ignores_detected && l.config.preserve_length && (e._ignores = !0, this._drag_event._event_length || (this._drag_event._event_length = this._get_real_event_length(this._drag_event.start_date, this._drag_event.end_date, {
+          x_step: 1,
+          x_unit: "day"
+        }))), e.x = 0;
+      } else e = this._week_indexes_from_pos(e);
+      return e.timestamp = +new Date(), e;
+    }, l._close_not_saved = function () {
+      if (new Date().valueOf() - (l._new_event || 0) > 500 && l._edit_id) {
+        var t = l.locale.labels.confirm_closing;
+        l._dhtmlx_confirm(t, l.locale.labels.title_confirm_closing, function () {
+          l.editStop(l.config.positive_closing);
+        }), t && (this._drag_id = this._drag_pos = this._drag_mode = null);
+      }
+    }, l._correct_shift = function (t, e) {
+      return t -= 6e4 * (new Date(l._min_date).getTimezoneOffset() - new Date(t).getTimezoneOffset()) * (e ? -1 : 1);
+    }, l._is_pos_changed = function (t, e) {
+      function i(t, e, i) {
+        return !!(Math.abs(t - e) > i);
+      }
+
+      if (!t || !this._drag_pos) return !0;
+      var a = 5;
+      return !!(this._drag_pos.has_moved || !this._drag_pos.timestamp || e.timestamp - this._drag_pos.timestamp > 100 || i(t.ev.clientX, e.ev.clientX, a) || i(t.ev.clientY, e.ev.clientY, a));
+    }, l._correct_drag_start_date = function (t) {
+      var e;
+      l.matrix && (e = l.matrix[l._mode]), e = e || {
+        x_step: 1,
+        x_unit: "day"
+      }, t = new Date(t);
+      var i = 1;
+      return (e._start_correction || e._end_correction) && (i = 60 * (e.last_hour || 0) - (60 * t.getHours() + t.getMinutes()) || 1), 1 * t + (l._get_fictional_event_length(t, i, e) - i);
+    }, l._correct_drag_end_date = function (t, e) {
+      var i;
+      l.matrix && (i = l.matrix[l._mode]), i = i || {
+        x_step: 1,
+        x_unit: "day"
+      };
+
+      var a = 1 * t + l._get_fictional_event_length(t, e, i);
+
+      return new Date(1 * a - (l._get_fictional_event_length(a, -1, i, -1) + 1));
+    }, l._on_mouse_move = function (t) {
+      if (this._drag_mode) {
+        var e = this._mouse_coords(t);
+
+        if (this._is_pos_changed(this._drag_pos, e)) {
+          var i, a;
+          if (this._edit_id != this._drag_id && this._close_not_saved(), !this._drag_mode) return;
+          var n = null;
+
+          if (this._drag_pos && !this._drag_pos.has_moved && (n = this._drag_pos, n.has_moved = !0), this._drag_pos = e, this._drag_pos.has_moved = !0, "create" == this._drag_mode) {
+            /*if(n&&(e=n),this._close_not_saved(),this.unselect(this._select_id),this._loading=!0,i=this._get_date_from_pos(e).valueOf(),
+            !this._drag_start){return this.callEvent("onBeforeEventCreated",[t,this._drag_id])?(this._loading=!1,void(this._drag_start=i)):void(this._loading=!1)}a=i,this._drag_start;var r=new Date(this._drag_start),s=new Date(a);"day"!=this._mode&&"week"!=this._mode||r.getHours()!=s.getHours()||r.getMinutes()!=s.getMinutes()||(s=new Date(this._drag_start+1e3)),this._drag_id=this.uid(),this.addEvent(r,s,this.locale.labels.new_event,this._drag_id,e.fields),this.callEvent("onEventCreated",[this._drag_id,t]),
+            this._loading=!1,this._drag_mode="new-size"*/
+
+            /*DESACTIVADO FEDE*/
+          }
+
+          var o,
+              d = this.config.time_step,
+              _ = this.getEvent(this._drag_id);
+
+          if (l.matrix && (o = l.matrix[l._mode]), o = o || {
+            x_step: 1,
+            x_unit: "day"
+          }, "move" == this._drag_mode) i = this._min_date.valueOf() + 6e4 * (e.y * this.config.time_step + 24 * e.x * 60), !e.custom && this._table_view && (i += 1e3 * this.date.time_part(_.start_date)), !this._table_view && this._dragEventBody && void 0 === this._drag_event._move_event_shift && (this._drag_event._move_event_shift = i - _.start_date), this._drag_event._move_event_shift && (i -= this._drag_event._move_event_shift), i = this._correct_shift(i), e._ignores && this.config.preserve_length && this._table_view ? (i = l._correct_drag_start_date(i), a = l._correct_drag_end_date(i, this._drag_event._event_length)) : a = _.end_date.valueOf() - (_.start_date.valueOf() - i);else {
+            if (i = _.start_date.valueOf(), a = _.end_date.valueOf(), this._table_view) {
+              var h = this._min_date.valueOf() + e.y * this.config.time_step * 6e4 + (e.custom ? 0 : 864e5);
+              if ("month" == this._mode) {
+                if (h = this._correct_shift(h, !1), this._drag_from_start) {
+                  var c = 864e5;
+                  h <= l.date.date_part(new Date(a + c - 1)).valueOf() && (i = h - c);
+                } else a = h;
+              } else this.config.preserve_length ? e.resize_from_start ? i = l._correct_drag_start_date(h) : a = l._correct_drag_end_date(h, 0) : e.resize_from_start ? i = h : a = h;
+            } else {
+              var u = this.date.date_part(new Date(_.end_date.valueOf() - 1)).valueOf(),
+                  f = new Date(u),
+                  g = this.config.first_hour,
+                  v = this.config.last_hour,
+                  m = 60 / d * (v - g);
+              this.config.time_step = 1;
+
+              var p = this._mouse_coords(t);
+
+              this.config.time_step = d;
+              var x = e.y * d * 6e4,
+                  b = Math.min(e.y + 1, m) * d * 6e4,
+                  y = 6e4 * p.y;
+              a = Math.abs(x - y) > Math.abs(b - y) ? u + b : u + x, a += 6e4 * (new Date(a).getTimezoneOffset() - f.getTimezoneOffset()), this._els.dhx_cal_data[0].style.cursor = "s-resize", "week" != this._mode && "day" != this._mode || (a = this._correct_shift(a));
+            }
+
+            if ("new-size" == this._drag_mode) {
+              if (a <= this._drag_start) {
+                var w = e.shift || (this._table_view && !e.custom ? 864e5 : 0);
+                i = a - (e.shift ? 0 : w), a = this._drag_start + (w || 6e4 * d);
+              } else i = this._drag_start;
+            } else a <= i && (a = i + 6e4 * d);
+          }
+          var D = new Date(a - 1),
+              E = new Date(i);
+
+          if ("move" == this._drag_mode && l.config.limit_drag_out && (+E < +l._min_date || +a > +l._max_date)) {
+            if (+_.start_date < +l._min_date || +_.end_date > +l._max_date) E = new Date(_.start_date), a = new Date(_.end_date);else {
+              var A = a - E;
+              +E < +l._min_date ? (E = new Date(l._min_date), e._ignores && this.config.preserve_length && this._table_view ? (E = new Date(l._correct_drag_start_date(E)), o._start_correction && (E = new Date(E.valueOf() + o._start_correction)), a = new Date(1 * E + this._get_fictional_event_length(E, this._drag_event._event_length, o))) : a = new Date(+E + A)) : (a = new Date(l._max_date), e._ignores && this.config.preserve_length && this._table_view ? (o._end_correction && (a = new Date(a.valueOf() - o._end_correction)), a = new Date(1 * a - this._get_fictional_event_length(a, 0, o, !0)), E = new Date(1 * a - this._get_fictional_event_length(a, this._drag_event._event_length, o, !0)), this._ignores_detected && (E = l.date.add(E, o.x_step, o.x_unit), a = new Date(1 * a - this._get_fictional_event_length(a, 0, o, !0)), a = l.date.add(a, o.x_step, o.x_unit))) : E = new Date(+a - A));
+            }
+            var D = new Date(a - 1);
+          }
+
+          if (!this._table_view && this._dragEventBody && !l.config.all_timed && (!l._get_section_view() && e.x != this._get_event_sday({
+            start_date: new Date(i),
+            end_date: new Date(i)
+          }) || new Date(i).getHours() < this.config.first_hour)) {
+            var A = a - E;
+
+            if ("move" == this._drag_mode) {
+              var c = this._min_date.valueOf() + 24 * e.x * 60 * 6e4;
+              E = new Date(c), E.setHours(this.config.first_hour), a = new Date(E.valueOf() + A), D = new Date(a - 1);
+            }
+          }
+
+          if (!this._table_view && !l.config.all_timed && (!l.getView() && e.x != this._get_event_sday({
+            start_date: new Date(a),
+            end_date: new Date(a)
+          }) || new Date(a).getHours() >= this.config.last_hour)) {
+            var A = a - E,
+                c = this._min_date.valueOf() + 24 * e.x * 60 * 6e4;
+            a = l.date.date_part(new Date(c)), a.setHours(this.config.last_hour), D = new Date(a - 1), "move" == this._drag_mode && (E = new Date(+a - A));
+          }
+
+          if (this._table_view || D.getDate() == E.getDate() && D.getHours() < this.config.last_hour || l._allow_dnd) if (_.start_date = E, _.end_date = new Date(a), this.config.update_render) {
+            var S = l._els.dhx_cal_data[0].scrollTop;
+            this.update_view(), l._els.dhx_cal_data[0].scrollTop = S;
+          } else this.updateEvent(this._drag_id);
+          this._table_view && this.for_rendered(this._drag_id, function (t) {
+            t.className += " dhx_in_move dhx_cal_event_drag";
+          }), this.callEvent("onEventDrag", [this._drag_id, this._drag_mode, t]);
+        }
+      } else if (l.checkEvent("onMouseMove")) {
+        /*var k=this._locate_event(t.target||t.srcElement);this.callEvent("onMouseMove",[k,t])*/
+      }
+    }, l._on_mouse_down = function (t, e) {
+      if (2 != t.button && !this.config.readonly && !this._drag_mode) {
+        e = e || t.target || t.srcElement;
+
+        var i = l._getClassName(e).split(" ")[0];
+
+        switch (this.config.drag_event_body && "dhx_body" == i && e.parentNode && -1 === e.parentNode.className.indexOf("dhx_cal_select_menu") && (i = "dhx_event_move", this._dragEventBody = !0), i) {
+          case "dhx_cal_event_line":
+          case "dhx_cal_event_clear":
+            this._table_view && (this._drag_mode = "move");
+            break;
+
+          case "dhx_event_move":
+          case "dhx_wa_ev_body":
+            this._drag_mode = "move";
+            break;
+
+          case "dhx_event_resize":
+            this._drag_mode = "resize";
+            l._getClassName(e).indexOf("dhx_event_resize_end") < 0 ? l._drag_from_start = !0 : l._drag_from_start = !1;
+            break;
+
+          case "dhx_scale_holder":
+          case "dhx_scale_holder_now":
+          case "dhx_month_body":
+          case "dhx_matrix_cell":
+          case "dhx_marked_timespan":
+            this._drag_mode = "create";
+            break;
+
+          case "":
+            if (e.parentNode) return l._on_mouse_down(t, e.parentNode);
+            break;
+
+          default:
+            if ((!l.checkEvent("onMouseDown") || l.callEvent("onMouseDown", [i, t])) && e.parentNode && e != this && "dhx_body" != i) return l._on_mouse_down(t, e.parentNode);
+            this._drag_mode = null, this._drag_id = null;
+        }
+
+        if (this._drag_mode) {
+          var a = this._locate_event(e);
+
+          if (this.config["drag_" + this._drag_mode] && this.callEvent("onBeforeDrag", [a, this._drag_mode, t])) {
+            if (this._drag_id = a, (this._edit_id != this._drag_id || this._edit_id && "create" == this._drag_mode) && this._close_not_saved(), !this._drag_mode) return;
+            this._drag_event = l._lame_clone(this.getEvent(this._drag_id) || {}), this._drag_pos = this._mouse_coords(t);
+          } else this._drag_mode = this._drag_id = 0;
+        }
+
+        this._drag_start = null;
+      }
+    }, l._get_private_properties = function (t) {
+      var e = {};
+
+      for (var i in t) {
+        0 === i.indexOf("_") && (e[i] = !0);
+      }
+
+      return e;
+    }, l._clear_temporary_properties = function (t, e) {
+      var i = this._get_private_properties(t),
+          a = this._get_private_properties(e);
+
+      for (var n in a) {
+        i[n] || delete e[n];
+      }
+    }, l._on_mouse_up = function (t) {
+      if (!t || 2 != t.button || !this._mobile) {
+        if (this._drag_mode && this._drag_id) {
+          this._els.dhx_cal_data[0].style.cursor = "default";
+          var e = this._drag_id,
+              i = this._drag_mode,
+              a = !this._drag_pos || this._drag_pos.has_moved;
+          delete this._drag_event._move_event_shift;
+          var n = this.getEvent(this._drag_id);
+
+          if (a && (this._drag_event._dhx_changed || !this._drag_event.start_date || n.start_date.valueOf() != this._drag_event.start_date.valueOf() || n.end_date.valueOf() != this._drag_event.end_date.valueOf())) {
+            var r = "new-size" == this._drag_mode;
+            if (this.callEvent("onBeforeEventChanged", [n, t, r, this._drag_event])) {
+              if (this._drag_id = this._drag_mode = null, r && this.config.edit_on_create) {
+                if (this.unselect(), this._new_event = new Date(), this._table_view || this.config.details_on_create || !this.config.select || !this.isOneDayEvent(this.getEvent(e))) return l.callEvent("onDragEnd", [e, i, t]), this.showLightbox(e);
+                this._drag_pos = !0, this._select_id = this._edit_id = e;
+              } else this._new_event || this.callEvent(r ? "onEventAdded" : "onEventChanged", [e, this.getEvent(e)]);
+            } else r ? this.deleteEvent(n.id, !0) : (this._drag_event._dhx_changed = !1, this._clear_temporary_properties(n, this._drag_event), l._lame_copy(n, this._drag_event), this.updateEvent(n.id));
+          }
+
+          this._drag_pos && (this._drag_pos.has_moved || !0 === this._drag_pos) && (this._drag_id = this._drag_mode = null, this.render_view_data()), l.callEvent("onDragEnd", [e, i, t]);
+        }
+
+        this._drag_id = null, this._drag_mode = null, this._drag_pos = null;
+      }
+    }, l._trigger_dyn_loading = function () {
+      return !(!this._load_mode || !this._load()) && (this._render_wait = !0, !0);
+    }, l.update_view = function () {
+      this._reset_ignores(), this._update_nav_bar(this.config.header, this.$container.querySelector(".dhx_cal_navline"));
+      var t = this[this._mode + "_view"];
+      if (t ? t(!0) : this._reset_scale(), this._trigger_dyn_loading()) return !0;
+      this.render_view_data();
+    }, l.isViewExists = function (t) {
+      return !!(l[t + "_view"] || l.date[t + "_start"] && l.templates[t + "_date"] && l.templates[t + "_scale_date"]);
+    }, l._set_aria_buttons_attrs = function () {
+      for (var t = ["dhx_cal_next_button", "dhx_cal_prev_button", "dhx_cal_tab", "dhx_cal_today_button"], e = 0; e < t.length; e++) {
+        for (var i = this._els[t[e]], a = 0; i && a < i.length; a++) {
+          var n = i[a].getAttribute("name"),
+              r = this.locale.labels[t[e]];
+          n && (r = this.locale.labels[n] || r), "dhx_cal_next_button" == t[e] ? r = this.locale.labels.next : "dhx_cal_prev_button" == t[e] && (r = this.locale.labels.prev), this._waiAria.headerButtonsAttributes(i[a], r || "");
+        }
+      }
+    }, l.updateView = function (t, e) {
+      t = t || this._date, e = e || this._mode;
+      var i = "dhx_cal_data",
+          a = this._obj,
+          n = "dhx_scheduler_" + this._mode,
+          r = "dhx_scheduler_" + e;
+      this._mode && -1 != a.className.indexOf(n) ? a.className = a.className.replace(n, r) : a.className += " " + r;
+      var s,
+          o = "dhx_multi_day",
+          d = !(this._mode != e || !this.config.preserve_scroll) && this._els[i][0].scrollTop;
+      this._els[o] && this._els[o][0] && (s = this._els[o][0].scrollTop), this[this._mode + "_view"] && e && this._mode != e && this[this._mode + "_view"](!1), this._close_not_saved(), this._els[o] && (this._els[o][0].parentNode.removeChild(this._els[o][0]), this._els[o] = null), this._mode = e, this._date = t, this._table_view = "month" == this._mode, this._dy_shift = 0, this.update_view(), this._set_aria_buttons_attrs();
+      var _ = this._els.dhx_cal_tab;
+      if (_) for (var l = 0; l < _.length; l++) {
+        var h = _[l];
+        h.getAttribute("name") == this._mode + "_tab" ? (h.classList.add("active"), this._waiAria.headerToggleState(h, !0)) : (h.classList.remove("active"), this._waiAria.headerToggleState(h, !1));
+      }
+      "number" == typeof d && (this._els[i][0].scrollTop = d), "number" == typeof s && this._els[o] && this._els[o][0] && (this._els[o][0].scrollTop = s);
+    }, l.setCurrentView = function (t, e) {
+      this.callEvent("onBeforeViewChange", [this._mode, this._date, e || this._mode, t || this._date]) && (this.updateView(t, e), this.callEvent("onViewChange", [this._mode, this._date]));
+    }, l.render = function (t, e) {
+      l.setCurrentView(t, e);
+    }, l._render_x_header = function (t, e, i, a, n) {
+      n = n || 0;
+      var r = document.createElement("div");
+      r.className = "dhx_scale_bar", this.templates[this._mode + "_scalex_class"] && (r.className += " " + this.templates[this._mode + "_scalex_class"](i));
+      var s = this._cols[t] - 1;
+      "month" == this._mode && 0 === t && this.config.left_border && (r.className += " dhx_scale_bar_border", e += 1), this.set_xy(r, s, this.xy.scale_height - 2, e, n);
+      var o = this.templates[this._mode + "_scale_date"](i, this._mode);
+      r.innerHTML = o, this._waiAria.dayHeaderAttr(r, o), a.appendChild(r);
+    }, l._get_columns_num = function (t, e) {
+      var i = 7;
+
+      if (!l._table_view) {
+        var a = l.date["get_" + l._mode + "_end"];
+        a && (e = a(t)), i = Math.round((e.valueOf() - t.valueOf()) / 864e5);
+      }
+
+      return i;
+    }, l._get_timeunit_start = function () {
+      return this.date[this._mode + "_start"](new Date(this._date.valueOf()));
+    }, l._get_view_end = function () {
+      var t = this._get_timeunit_start(),
+          e = l.date.add(t, 1, this._mode);
+
+      if (!l._table_view) {
+        var i = l.date["get_" + l._mode + "_end"];
+        i && (e = i(t));
+      }
+
+      return e;
+    }, l._calc_scale_sizes = function (t, e, i) {
+      var a = this.config.rtl,
+          n = t,
+          r = this._get_columns_num(e, i);
+
+      this._process_ignores(e, r, "day", 1);
+
+      for (var s = r - this._ignores_detected, o = 0; o < r; o++) {
+        this._ignores[o] ? (this._cols[o] = 0, s++) : this._cols[o] = Math.floor(n / (s - o)), n -= this._cols[o], this._colsS[o] = (this._cols[o - 1] || 0) + (this._colsS[o - 1] || (this._table_view ? 0 : (a ? this.xy.scroll_width : this.xy.scale_width) + 2));
+      }
+
+      this._colsS.col_length = r, this._colsS[r] = this._cols[r - 1] + this._colsS[r - 1] || 0;
+    }, l._set_scale_col_size = function (t, e, i) {
+      var a = this.config;
+      this.set_xy(t, e - 1, a.hour_size_px * (a.last_hour - a.first_hour), i + this.xy.scale_width + 1, 0);
+    }, l._render_scales = function (t, e) {
+      var i = new Date(l._min_date),
+          a = new Date(l._max_date),
+          n = this.date.date_part(l._currentDate()),
+          r = parseInt(t.style.width, 10),
+          s = new Date(this._min_date),
+          o = this._get_columns_num(i, a);
+
+      this._calc_scale_sizes(r, i, a);
+
+      var d = 0;
+      t.innerHTML = "";
+
+      for (var _ = 0; _ < o; _++) {
+        if (this._ignores[_] || this._render_x_header(_, d, s, t), !this._table_view) {
+          var h = document.createElement("div"),
+              c = "dhx_scale_holder";
+          s.valueOf() == n.valueOf() && (c = "dhx_scale_holder_now"), h.setAttribute("data-column-index", _), this._ignores_detected && this._ignores[_] && (c += " dhx_scale_ignore"), h.className = c + " " + this.templates.week_date_class(s, n), this._waiAria.dayColumnAttr(h, s), this._set_scale_col_size(h, this._cols[_], d), e.appendChild(h), this.callEvent("onScaleAdd", [h, s]);
+        }
+
+        d += this._cols[_], s = this.date.add(s, 1, "day"), s = this.date.day_start(s);
+      }
+    }, l._reset_scale = function () {
+      if (this.templates[this._mode + "_date"]) {
+        var t = this._els.dhx_cal_header[0],
+            e = this._els.dhx_cal_data[0],
+            i = this.config;
+        t.innerHTML = "", e.innerHTML = "";
+        var a = (i.readonly || !i.drag_resize ? " dhx_resize_denied" : "") + (i.readonly || !i.drag_move ? " dhx_move_denied" : "");
+        e.className = "dhx_cal_data" + a, this._scales = {}, this._cols = [], this._colsS = {
+          height: 0
+        }, this._dy_shift = 0, this.set_sizes();
+
+        var n,
+            r,
+            s = this._get_timeunit_start(),
+            o = l._get_view_end();
+
+        n = r = this._table_view ? l.date.week_start(s) : s, this._min_date = n;
+        var d = this.templates[this._mode + "_date"](s, o, this._mode);
+        if (this._els.dhx_cal_date[0].innerHTML = d, this._waiAria.navBarDateAttr(this._els.dhx_cal_date[0], d), this._max_date = o, l._render_scales(t, e), this._table_view) this._reset_month_scale(e, s, r);else if (this._reset_hours_scale(e, s, r), i.multi_day) {
+          var _ = "dhx_multi_day";
+          this._els[_] && (this._els[_][0].parentNode.removeChild(this._els[_][0]), this._els[_] = null);
+          var h = this._els.dhx_cal_navline[0],
+              c = h.offsetHeight + this._els.dhx_cal_header[0].offsetHeight + 1,
+              u = document.createElement("div");
+          u.className = _, u.style.visibility = "hidden";
+          var f = this._colsS[this._colsS.col_length],
+              g = i.rtl ? this.xy.scale_width : this.xy.scroll_width,
+              v = Math.max(f + g - 2, 0);
+          this.set_xy(u, v, 0, 0, c), e.parentNode.insertBefore(u, e);
+          var m = u.cloneNode(!0);
+          m.className = _ + "_icon", m.style.visibility = "hidden", this.set_xy(m, this.xy.scale_width, 0, 0, c), u.appendChild(m), this._els[_] = [u, m], this._els[_][0].onclick = this._click.dhx_cal_data;
+        }
+      }
+    }, l._reset_hours_scale = function (t, e, i) {
+      var a = document.createElement("div");
+      a.className = "dhx_scale_holder";
+
+      for (var n = new Date(1980, 1, 1, this.config.first_hour, 0, 0), r = 1 * this.config.first_hour; r < this.config.last_hour; r++) {
+        var s = document.createElement("div");
+        s.className = "dhx_scale_hour", s.style.height = this.config.hour_size_px + "px";
+        var o = this.xy.scale_width;
+        this.config.left_border && (s.className += " dhx_scale_hour_border"), s.style.width = o + "px";
+        var d = l.templates.hour_scale(n);
+        s.innerHTML = d, this._waiAria.hourScaleAttr(s, d), a.appendChild(s), n = this.date.add(n, 1, "hour");
+      }
+
+      t.appendChild(a), this.config.scroll_hour && (t.scrollTop = this.config.hour_size_px * (this.config.scroll_hour - this.config.first_hour));
+    }, l._currentDate = function () {
+      return l.config.now_date ? new Date(l.config.now_date) : new Date();
+    }, l._reset_ignores = function () {
+      this._ignores = {}, this._ignores_detected = 0;
+    }, l._process_ignores = function (t, e, i, a, n) {
+      this._reset_ignores();
+
+      var r = l["ignore_" + this._mode];
+      if (r) for (var s = new Date(t), o = 0; o < e; o++) {
+        r(s) && (this._ignores_detected += 1, this._ignores[o] = !0, n && e++), s = l.date.add(s, a, i), l.date[i + "_start"] && (s = l.date[i + "_start"](s));
+      }
+    }, l._render_month_scale = function (t, e, i, a) {
+      function n(t) {
+        var e = l._colsS.height;
+        return void 0 !== l._colsS.heights[t + 1] && (e = l._colsS.heights[t + 1] - (l._colsS.heights[t] || 0)), e;
+      }
+
+      var r = l.date.add(e, 1, "month"),
+          s = new Date(i),
+          o = l._currentDate();
+
+      this.date.date_part(o), this.date.date_part(i), a = a || Math.ceil(Math.round((r.valueOf() - i.valueOf()) / 864e5) / 7);
+
+      for (var d = [], _ = 0; _ <= 7; _++) {
+        var h = (this._cols[_] || 0) - 1;
+        0 === _ && this.config.left_border && (h -= 1), d[_] = h + "px";
+      }
+
+      var c = 0,
+          u = document.createElement("table");
+      u.setAttribute("cellpadding", "0"), u.setAttribute("cellspacing", "0");
+      var f = document.createElement("tbody");
+      u.appendChild(f);
+
+      for (var g = [], _ = 0; _ < a; _++) {
+        var v = document.createElement("tr");
+        f.appendChild(v);
+
+        for (var m = Math.max(n(_) - l.xy.month_head_height, 0), p = 0; p < 7; p++) {
+          var x = document.createElement("td");
+          v.appendChild(x);
+          var b = "";
+          i < e ? b = "dhx_before" : i >= r ? b = "dhx_after" : i.valueOf() == o.valueOf() && (b = "dhx_now"), this._ignores_detected && this._ignores[p] && (b += " dhx_scale_ignore"), x.className = b + " " + this.templates.month_date_class(i, o), x.setAttribute("data-cell-date", l.templates.format_date(i));
+          var y = "dhx_month_body",
+              w = "dhx_month_head";
+          if (0 === p && this.config.left_border && (y += " dhx_month_body_border", w += " dhx_month_head_border"), this._ignores_detected && this._ignores[p]) x.appendChild(document.createElement("div")), x.appendChild(document.createElement("div"));else {
+            this._waiAria.monthCellAttr(x, i);
+
+            var D = document.createElement("div");
+            D.className = w, D.innerHTML = this.templates.month_day(i), x.appendChild(D);
+            var E = document.createElement("div");
+            E.className = y, E.style.height = m + "px", E.style.width = d[p], x.appendChild(E);
+          }
+          g.push(i);
+          var A = i.getDate();
+          i = this.date.add(i, 1, "day"), i.getDate() - A > 1 && (i = new Date(i.getFullYear(), i.getMonth(), A + 1, 12, 0));
+        }
+
+        l._colsS.heights[_] = c, c += n(_);
+      }
+
+      this._min_date = s, this._max_date = i, t.innerHTML = "", t.appendChild(u), this._scales = {};
+
+      for (var S = t.getElementsByTagName("div"), _ = 0; _ < g.length; _++) {
+        var t = S[2 * _ + 1],
+            k = g[_];
+        this._scales[+k] = t;
+      }
+
+      for (var _ = 0; _ < g.length; _++) {
+        var k = g[_];
+        this.callEvent("onScaleAdd", [this._scales[+k], k]);
+      }
+
+      return this._max_date;
+    }, l._reset_month_scale = function (t, e, i, a) {
+      var n = l.date.add(e, 1, "month"),
+          r = l._currentDate();
+
+      this.date.date_part(r), this.date.date_part(i), a = a || Math.ceil(Math.round((n.valueOf() - i.valueOf()) / 864e5) / 7);
+      var s = Math.floor(t.clientHeight / a) - this.xy.month_head_height;
+      return this._colsS.height = s + this.xy.month_head_height, this._colsS.heights = [], l._render_month_scale(t, e, i, a);
+    }, l.getView = function (t) {
+      return t || (t = l.getState().mode), l.matrix && l.matrix[t] ? l.matrix[t] : l._props && l._props[t] ? l._props[t] : null;
+    }, l.getLabel = function (t, e) {
+      for (var i = this.config.lightbox.sections, a = 0; a < i.length; a++) {
+        if (i[a].map_to == t) for (var n = i[a].options, r = 0; r < n.length; r++) {
+          if (n[r].key == e) return n[r].label;
+        }
+      }
+
+      return "";
+    }, l.updateCollection = function (t, e) {
+      var i = l.serverList(t);
+      return !!i && (i.splice(0, i.length), i.push.apply(i, e || []), l.callEvent("onOptionsLoad", []), l.resetLightbox(), !0);
+    }, l._lame_clone = function (t, e) {
+      var i, a, n;
+
+      for (e = e || [], i = 0; i < e.length; i += 2) {
+        if (t === e[i]) return e[i + 1];
+      }
+
+      if (t && "object" == _typeof(t)) {
+        for (n = {}, a = [Array, Date, Number, String, Boolean], i = 0; i < a.length; i++) {
+          t instanceof a[i] && (n = i ? new a[i](t) : new a[i]());
+        }
+
+        e.push(t, n);
+
+        for (i in t) {
+          Object.prototype.hasOwnProperty.apply(t, [i]) && (n[i] = l._lame_clone(t[i], e));
+        }
+      }
+
+      return n || t;
+    }, l._lame_copy = function (t, e) {
+      for (var i in e) {
+        e.hasOwnProperty(i) && (t[i] = e[i]);
+      }
+
+      return t;
+    }, l._get_date_from_pos = function (t) {
+      var e = this._min_date.valueOf() + 6e4 * (t.y * this.config.time_step + 24 * (this._table_view ? 0 : t.x) * 60);
+      return new Date(this._correct_shift(e));
+    }, l.getActionData = function (t) {
+      var e = this._mouse_coords(t);
+
+      return {
+        date: this._get_date_from_pos(e),
+        section: e.section
+      };
+    }, l._focus = function (t, e) {
+      if (t && t.focus) if (this._mobile) window.setTimeout(function () {
+        t.focus();
+      }, 10);else try {
+        e && t.select && t.offsetWidth && t.select(), t.focus();
+      } catch (t) {}
+    }, l._get_real_event_length = function (t, e, i) {
+      var a,
+          n = e - t,
+          r = i._start_correction + i._end_correction || 0,
+          s = this["ignore_" + this._mode],
+          o = 0;
+      i.render ? (o = this._get_date_index(i, t), a = this._get_date_index(i, e)) : a = Math.round(n / 60 / 60 / 1e3 / 24);
+
+      for (var d = !0; o < a;) {
+        var _ = l.date.add(e, -i.x_step, i.x_unit);
+
+        s && s(e) && (!d || d && s(_)) ? n -= e - _ : (d = !1, n -= r), e = _, a--;
+      }
+
+      return n;
+    }, l._get_fictional_event_length = function (t, e, i, a) {
+      var n = new Date(t),
+          r = a ? -1 : 1;
+
+      if (i._start_correction || i._end_correction) {
+        var s;
+        s = a ? 60 * n.getHours() + n.getMinutes() - 60 * (i.first_hour || 0) : 60 * (i.last_hour || 0) - (60 * n.getHours() + n.getMinutes());
+        var o = 60 * (i.last_hour - i.first_hour),
+            d = Math.ceil((e / 6e4 - s) / o);
+        d < 0 && (d = 0), e += d * (1440 - o) * 60 * 1e3;
+      }
+
+      var _,
+          h = new Date(1 * t + e * r),
+          c = this["ignore_" + this._mode],
+          u = 0;
+
+      for (i.render ? (u = this._get_date_index(i, n), _ = this._get_date_index(i, h)) : _ = Math.round(e / 60 / 60 / 1e3 / 24); u * r <= _ * r;) {
+        var f = l.date.add(n, i.x_step * r, i.x_unit);
+        c && c(n) && (e += (f - n) * r, _ += r), n = f, u += r;
+      }
+
+      return e;
+    }, l._get_section_view = function () {
+      return this.getView();
+    }, l._get_section_property = function () {
+      return this.matrix && this.matrix[this._mode] ? this.matrix[this._mode].y_property : this._props && this._props[this._mode] ? this._props[this._mode].map_to : null;
+    }, l._is_initialized = function () {
+      var t = this.getState();
+      return this._obj && t.date && t.mode;
+    }, l._is_lightbox_open = function () {
+      var t = this.getState();
+      return null !== t.lightbox_id && void 0 !== t.lightbox_id;
+    }, l._getClassName = function (t) {
+      if (!t) return "";
+      var e = t.className || "";
+      return e.baseVal && (e = e.baseVal), e.indexOf || (e = ""), e || "";
+    }, l.event = function (t, e, i) {
+      t.addEventListener ? t.addEventListener(e, i, !1) : t.attachEvent && t.attachEvent("on" + e, i);
+    }, l.eventRemove = function (t, e, i) {
+      t.removeEventListener ? t.removeEventListener(e, i, !1) : t.detachEvent && t.detachEvent("on" + e, i);
+    }, function () {
+      function t(t) {
+        var e = !1,
+            i = !1;
+
+        if (window.getComputedStyle) {
+          var a = window.getComputedStyle(t, null);
+          e = a.display, i = a.visibility;
+        } else t.currentStyle && (e = t.currentStyle.display, i = t.currentStyle.visibility);
+
+        var n = !1,
+            r = l._locate_css({
+          target: t
+        }, "dhx_form_repeat", !1);
+
+        return r && (n = !("0px" != r.style.height)), n = n || !t.offsetHeight, "none" != e && "hidden" != i && !n;
+      }
+
+      function e(t) {
+        return !isNaN(t.getAttribute("tabindex")) && 1 * t.getAttribute("tabindex") >= 0;
+      }
+
+      function i(t) {
+        return !{
+          a: !0,
+          area: !0
+        }[t.nodeName.loLowerCase()] || !!t.getAttribute("href");
+      }
+
+      function a(t) {
+        return !{
+          input: !0,
+          select: !0,
+          textarea: !0,
+          button: !0,
+          object: !0
+        }[t.nodeName.toLowerCase()] || !t.hasAttribute("disabled");
+      }
+
+      l._getFocusableNodes = function (n) {
+        for (var r = n.querySelectorAll(["a[href]", "area[href]", "input", "select", "textarea", "button", "iframe", "object", "embed", "[tabindex]", "[contenteditable]"].join(", ")), s = Array.prototype.slice.call(r, 0), o = 0; o < s.length; o++) {
+          var d = s[o];
+          (e(d) || a(d) || i(d)) && t(d) || (s.splice(o, 1), o--);
+        }
+
+        return s;
+      };
+    }(), l._trim = function (t) {
+      return (String.prototype.trim || function () {
+        return this.replace(/^\s+|\s+$/g, "");
+      }).apply(t);
+    }, l._isDate = function (t) {
+      return !(!t || "object" != _typeof(t)) && !!(t.getFullYear && t.getMonth && t.getDate);
+    }, l._isObject = function (t) {
+      return t && "object" == _typeof(t);
+    }, function () {
+      function t(t) {
+        return (t + "").replace(a, " ").replace(n, " ");
+      }
+
+      function e(t) {
+        return (t + "").replace(r, "&#39;");
+      }
+
+      function i() {
+        return !l.config.wai_aria_attributes;
+      }
+
+      var a = new RegExp("<(?:.|\n)*?>", "gm"),
+          n = new RegExp(" +", "gm"),
+          r = new RegExp("'", "gm");
+      l._waiAria = {
+        getAttributeString: function getAttributeString(i) {
+          var a = [" "];
+
+          for (var n in i) {
+            if ("function" != typeof i[n] && "object" != _typeof(i[n])) {
+              var r = e(t(i[n]));
+              a.push(n + "='" + r + "'");
+            }
+          }
+
+          return a.push(" "), a.join(" ");
+        },
+        setAttributes: function setAttributes(e, i) {
+          for (var a in i) {
+            e.setAttribute(a, t(i[a]));
+          }
+
+          return e;
+        },
+        labelAttr: function labelAttr(t, e) {
+          return this.setAttributes(t, {
+            "aria-label": e
+          });
+        },
+        label: function label(t) {
+          return l._waiAria.getAttributeString({
+            "aria-label": t
+          });
+        },
+        hourScaleAttr: function hourScaleAttr(t, e) {
+          this.labelAttr(t, e);
+        },
+        monthCellAttr: function monthCellAttr(t, e) {
+          this.labelAttr(t, l.templates.day_date(e));
+        },
+        navBarDateAttr: function navBarDateAttr(t, e) {
+          this.labelAttr(t, e);
+        },
+        dayHeaderAttr: function dayHeaderAttr(t, e) {
+          this.labelAttr(t, e);
+        },
+        dayColumnAttr: function dayColumnAttr(t, e) {
+          this.dayHeaderAttr(t, l.templates.day_date(e));
+        },
+        headerButtonsAttributes: function headerButtonsAttributes(t, e) {
+          return this.setAttributes(t, {
+            role: "button",
+            "aria-label": e
+          });
+        },
+        headerToggleState: function headerToggleState(t, e) {
+          return this.setAttributes(t, {
+            "aria-pressed": e ? "true" : "false"
+          });
+        },
+        getHeaderCellAttr: function getHeaderCellAttr(t) {
+          return l._waiAria.getAttributeString({
+            "aria-label": t
+          });
+        },
+        eventAttr: function eventAttr(t, e) {
+          this._eventCommonAttr(t, e);
+        },
+        _eventCommonAttr: function _eventCommonAttr(e, i) {
+          i.setAttribute("aria-label", t(l.templates.event_text(e.start_date, e.end_date, e))), l.config.readonly && i.setAttribute("aria-readonly", !0), e.$dataprocessor_class && i.setAttribute("aria-busy", !0), i.setAttribute("aria-selected", l.getState().select_id == e.id ? "true" : "false");
+        },
+        setEventBarAttr: function setEventBarAttr(t, e) {
+          this._eventCommonAttr(t, e);
+        },
+        _getAttributes: function _getAttributes(t, e) {
+          var i = {
+            setAttribute: function setAttribute(t, e) {
+              this[t] = e;
+            }
+          };
+          return t.apply(this, [e, i]), i;
+        },
+        eventBarAttrString: function eventBarAttrString(t) {
+          return this.getAttributeString(this._getAttributes(this.setEventBarAttr, t));
+        },
+        agendaHeadAttrString: function agendaHeadAttrString() {
+          return this.getAttributeString({
+            role: "row"
+          });
+        },
+        agendaHeadDateString: function agendaHeadDateString(t) {
+          return this.getAttributeString({
+            role: "columnheader",
+            "aria-label": t
+          });
+        },
+        agendaHeadDescriptionString: function agendaHeadDescriptionString(t) {
+          return this.agendaHeadDateString(t);
+        },
+        agendaDataAttrString: function agendaDataAttrString() {
+          return this.getAttributeString({
+            role: "grid"
+          });
+        },
+        agendaEventAttrString: function agendaEventAttrString(t) {
+          var e = this._getAttributes(this._eventCommonAttr, t);
+
+          return e.role = "row", this.getAttributeString(e);
+        },
+        agendaDetailsBtnString: function agendaDetailsBtnString() {
+          return this.getAttributeString({
+            role: "button",
+            "aria-label": l.locale.labels.icon_details
+          });
+        },
+        gridAttrString: function gridAttrString() {
+          return this.getAttributeString({
+            role: "grid"
+          });
+        },
+        gridRowAttrString: function gridRowAttrString(t) {
+          return this.agendaEventAttrString(t);
+        },
+        gridCellAttrString: function gridCellAttrString(t, e, i) {
+          return this.getAttributeString({
+            role: "gridcell",
+            "aria-label": [void 0 === e.label ? e.id : e.label, ": ", i]
+          });
+        },
+        mapAttrString: function mapAttrString() {
+          return this.gridAttrString();
+        },
+        mapRowAttrString: function mapRowAttrString(t) {
+          return this.gridRowAttrString(t);
+        },
+        mapDetailsBtnString: function mapDetailsBtnString() {
+          return this.agendaDetailsBtnString();
+        },
+        minicalHeader: function minicalHeader(t, e) {
+          this.setAttributes(t, {
+            id: e + "",
+            "aria-live": "assertice",
+            "aria-atomic": "true"
+          });
+        },
+        minicalGrid: function minicalGrid(t, e) {
+          this.setAttributes(t, {
+            "aria-labelledby": e + "",
+            role: "grid"
+          });
+        },
+        minicalRow: function minicalRow(t) {
+          this.setAttributes(t, {
+            role: "row"
+          });
+        },
+        minicalDayCell: function minicalDayCell(t, e) {
+          var i = e.valueOf() < l._max_date.valueOf() && e.valueOf() >= l._min_date.valueOf();
+
+          this.setAttributes(t, {
+            role: "gridcell",
+            "aria-label": l.templates.day_date(e),
+            "aria-selected": i ? "true" : "false"
+          });
+        },
+        minicalHeadCell: function minicalHeadCell(t) {
+          this.setAttributes(t, {
+            role: "columnheader"
+          });
+        },
+        weekAgendaDayCell: function weekAgendaDayCell(t, e) {
+          var i = t.querySelector(".dhx_wa_scale_bar"),
+              a = t.querySelector(".dhx_wa_day_data"),
+              n = l.uid() + "";
+          this.setAttributes(i, {
+            id: n
+          }), this.setAttributes(a, {
+            "aria-labelledby": n
+          });
+        },
+        weekAgendaEvent: function weekAgendaEvent(t, e) {
+          this.eventAttr(e, t);
+        },
+        lightboxHiddenAttr: function lightboxHiddenAttr(t) {
+          t.setAttribute("aria-hidden", "true");
+        },
+        lightboxVisibleAttr: function lightboxVisibleAttr(t) {
+          t.setAttribute("aria-hidden", "false");
+        },
+        lightboxSectionButtonAttrString: function lightboxSectionButtonAttrString(t) {
+          return this.getAttributeString({
+            role: "button",
+            "aria-label": t,
+            tabindex: "0"
+          });
+        },
+        yearHeader: function yearHeader(t, e) {
+          this.setAttributes(t, {
+            id: e + ""
+          });
+        },
+        yearGrid: function yearGrid(t, e) {
+          this.minicalGrid(t, e);
+        },
+        yearHeadCell: function yearHeadCell(t) {
+          return this.minicalHeadCell(t);
+        },
+        yearRow: function yearRow(t) {
+          return this.minicalRow(t);
+        },
+        yearDayCell: function yearDayCell(t) {
+          this.setAttributes(t, {
+            role: "gridcell"
+          });
+        },
+        lightboxAttr: function lightboxAttr(t) {
+          t.setAttribute("role", "dialog"), t.setAttribute("aria-hidden", "true"), t.firstChild.setAttribute("role", "heading");
+        },
+        lightboxButtonAttrString: function lightboxButtonAttrString(t) {
+          return this.getAttributeString({
+            role: "button",
+            "aria-label": l.locale.labels[t],
+            tabindex: "0"
+          });
+        },
+        eventMenuAttrString: function eventMenuAttrString(t) {
+          return this.getAttributeString({
+            role: "button",
+            "aria-label": l.locale.labels[t]
+          });
+        },
+        lightboxHeader: function lightboxHeader(t, e) {
+          t.setAttribute("aria-label", e);
+        },
+        lightboxSelectAttrString: function lightboxSelectAttrString(t) {
+          var e = "";
+
+          switch (t) {
+            case "%Y":
+              e = l.locale.labels.year;
+              break;
+
+            case "%m":
+              e = l.locale.labels.month;
+              break;
+
+            case "%d":
+              e = l.locale.labels.day;
+              break;
+
+            case "%H:%i":
+              e = l.locale.labels.hour + " " + l.locale.labels.minute;
+          }
+
+          return l._waiAria.getAttributeString({
+            "aria-label": e
+          });
+        },
+        messageButtonAttrString: function messageButtonAttrString(t) {
+          return "tabindex='0' role='button' aria-label='" + t + "'";
+        },
+        messageInfoAttr: function messageInfoAttr(t) {
+          t.setAttribute("role", "alert");
+        },
+        messageModalAttr: function messageModalAttr(t, e) {
+          t.setAttribute("role", "dialog"), e && t.setAttribute("aria-labelledby", e);
+        },
+        quickInfoAttr: function quickInfoAttr(t) {
+          t.setAttribute("role", "dialog");
+        },
+        quickInfoHeaderAttrString: function quickInfoHeaderAttrString() {
+          return " role='heading' ";
+        },
+        quickInfoHeader: function quickInfoHeader(t, e) {
+          t.setAttribute("aria-label", e);
+        },
+        quickInfoButtonAttrString: function quickInfoButtonAttrString(t) {
+          return l._waiAria.getAttributeString({
+            role: "button",
+            "aria-label": t,
+            tabindex: "0"
+          });
+        },
+        tooltipAttr: function tooltipAttr(t) {
+          t.setAttribute("role", "tooltip");
+        },
+        tooltipVisibleAttr: function tooltipVisibleAttr(t) {
+          t.setAttribute("aria-hidden", "false");
+        },
+        tooltipHiddenAttr: function tooltipHiddenAttr(t) {
+          t.setAttribute("aria-hidden", "true");
+        }
+      };
+
+      for (var s in l._waiAria) {
+        l._waiAria[s] = function (t) {
+          return function () {
+            return i() ? " " : t.apply(this, arguments);
+          };
+        }(l._waiAria[s]);
+      }
+    }(), l.utils = {
+      mixin: function mixin(t, e, i) {
+        for (var a in e) {
+          (void 0 === t[a] || i) && (t[a] = e[a]);
+        }
+
+        return t;
+      },
+      copy: function t(e) {
+        var i, a;
+        if (e && "object" == _typeof(e)) switch (!0) {
+          case _(e):
+            a = new Date(e);
+            break;
+
+          case r(e):
+            for (a = new Array(e.length), i = 0; i < e.length; i++) {
+              a[i] = t(e[i]);
+            }
+
+            break;
+
+          case s(e):
+            a = new String(e);
+            break;
+
+          case o(e):
+            a = new Number(e);
+            break;
+
+          case d(e):
+            a = new Boolean(e);
+            break;
+
+          default:
+            a = {};
+
+            for (i in e) {
+              Object.prototype.hasOwnProperty.apply(e, [i]) && (a[i] = t(e[i]));
+            }
+
+        }
+        return a || e;
+      }
+    }, l.$domHelpers = {
+      getAbsoluteLeft: function getAbsoluteLeft(t) {
+        return this.getOffset(t).left;
+      },
+      getAbsoluteTop: function getAbsoluteTop(t) {
+        return this.getOffset(t).top;
+      },
+      getOffsetSum: function getOffsetSum(t) {
+        for (var e = 0, i = 0; t;) {
+          e += parseInt(t.offsetTop), i += parseInt(t.offsetLeft), t = t.offsetParent;
+        }
+
+        return {
+          top: e,
+          left: i
+        };
+      },
+      getOffsetRect: function getOffsetRect(t) {
+        var e = t.getBoundingClientRect(),
+            i = 0,
+            a = 0;
+
+        if (/Mobi/.test(navigator.userAgent)) {
+          var n = document.createElement("div");
+          n.style.position = "absolute", n.style.left = "0px", n.style.top = "0px", n.style.width = "1px", n.style.height = "1px", document.body.appendChild(n);
+          var r = n.getBoundingClientRect();
+          i = e.top - r.top, a = e.left - r.left, n.parentNode.removeChild(n);
+        } else {
+          var s = document.body,
+              o = document.documentElement,
+              d = window.pageYOffset || o.scrollTop || s.scrollTop,
+              _ = window.pageXOffset || o.scrollLeft || s.scrollLeft,
+              l = o.clientTop || s.clientTop || 0,
+              h = o.clientLeft || s.clientLeft || 0;
+
+          i = e.top + d - l, a = e.left + _ - h;
+        }
+
+        return {
+          top: Math.round(i),
+          left: Math.round(a)
+        };
+      },
+      getOffset: function getOffset(t) {
+        return t.getBoundingClientRect ? this.getOffsetRect(t) : this.getOffsetSum(t);
+      },
+      closest: function closest(t, e) {
+        return t && e ? m(t, e) : null;
+      },
+      insertAfter: function insertAfter(t, e) {
+        e.nextSibling ? e.parentNode.insertBefore(t, e.nextSibling) : e.parentNode.appendChild(t);
+      }
+    };
+    var m;
+    if (Element.prototype.closest) m = function m(t, e) {
+      return t.closest(e);
+    };else {
+      var p = Element.prototype.matches || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+
+      m = function m(t, e) {
+        var i = t;
+
+        do {
+          if (p.call(i, e)) return i;
+          i = i.parentElement || i.parentNode;
+        } while (null !== i && 1 === i.nodeType);
+
+        return null;
+      };
+    }
+    l.$env = {
+      isIE: navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0,
+      isIE6: !window.XMLHttpRequest && navigator.userAgent.indexOf("MSIE") >= 0,
+      isIE7: navigator.userAgent.indexOf("MSIE 7.0") >= 0 && navigator.userAgent.indexOf("Trident") < 0,
+      isIE8: navigator.userAgent.indexOf("MSIE 8.0") >= 0 && navigator.userAgent.indexOf("Trident") >= 0,
+      isOpera: navigator.userAgent.indexOf("Opera") >= 0,
+      isChrome: navigator.userAgent.indexOf("Chrome") >= 0,
+      isKHTML: navigator.userAgent.indexOf("Safari") >= 0 || navigator.userAgent.indexOf("Konqueror") >= 0,
+      isFF: navigator.userAgent.indexOf("Firefox") >= 0,
+      isIPad: navigator.userAgent.search(/iPad/gi) >= 0,
+      isEdge: -1 != navigator.userAgent.indexOf("Edge")
+    }, l.$ajax = {
+      _obj: l,
+      cache: !0,
+      method: "get",
+      parse: function parse(t) {
+        if ("string" != typeof t) return t;
+        var e;
+        return t = t.replace(/^[\s]+/, ""), window.DOMParser && !l.$env.isIE ? e = new window.DOMParser().parseFromString(t, "text/xml") : window.ActiveXObject !== window.undefined && (e = new window.ActiveXObject("Microsoft.XMLDOM"), e.async = "false", e.loadXML(t)), e;
+      },
+      xmltop: function xmltop(t, e, i) {
+        if (void 0 === e.status || e.status < 400) {
+          var a = e.responseXML ? e.responseXML || e : this.parse(e.responseText || e);
+          if (a && null !== a.documentElement && !a.getElementsByTagName("parsererror").length) return a.getElementsByTagName(t)[0];
+        }
+
+        return -1 !== i && this._obj.callEvent("onLoadXMLError", ["Incorrect XML", arguments[1], i]), document.createElement("DIV");
+      },
+      xpath: function xpath(t, e) {
+        if (e.nodeName || (e = e.responseXML || e), l.$env.isIE) return e.selectNodes(t) || [];
+
+        for (var i, a = [], n = (e.ownerDocument || e).evaluate(t, e, null, XPathResult.ANY_TYPE, null);;) {
+          if (!(i = n.iterateNext())) break;
+          a.push(i);
+        }
+
+        return a;
+      },
+      query: function query(t) {
+        this._call(t.method || "GET", t.url, t.data || "", t.async || !0, t.callback, null, t.headers);
+      },
+      get: function get(t, e) {
+        this._call("GET", t, null, !0, e);
+      },
+      getSync: function getSync(t) {
+        return this._call("GET", t, null, !1);
+      },
+      put: function put(t, e, i) {
+        this._call("PUT", t, e, !0, i);
+      },
+      del: function del(t, e, i) {
+        this._call("DELETE", t, e, !0, i);
+      },
+      post: function post(t, e, i) {
+        1 == arguments.length ? e = "" : 2 != arguments.length || "function" != typeof e && "function" != typeof window[e] ? e = String(e) : (i = e, e = ""), this._call("POST", t, e, !0, i);
+      },
+      postSync: function postSync(t, e) {
+        return e = null === e ? "" : String(e), this._call("POST", t, e, !1);
+      },
+      getLong: function getLong(t, e) {
+        this._call("GET", t, null, !0, e, {
+          url: t
+        });
+      },
+      postLong: function postLong(t, e, i) {
+        2 != arguments.length || "function" != typeof e && (window[e], 0) || (i = e, e = ""), this._call("POST", t, e, !0, i, {
+          url: t,
+          postData: e
+        });
+      },
+      _call: function _call(t, e, i, a, n, r, s) {
+        var o = this._obj,
+            d = window.XMLHttpRequest && !o.$env.isIE ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"),
+            _ = null !== navigator.userAgent.match(/AppleWebKit/) && null !== navigator.userAgent.match(/Qt/) && null !== navigator.userAgent.match(/Safari/);
+
+        if (a && (d.onreadystatechange = function () {
+          if (4 == d.readyState || _ && 3 == d.readyState) {
+            if ((200 != d.status || "" === d.responseText) && !o.callEvent("onAjaxError", [d])) return;
+            window.setTimeout(function () {
+              "function" == typeof n && n.apply(window, [{
+                xmlDoc: d,
+                filePath: e
+              }]), r && (void 0 !== r.postData ? this.postLong(r.url, r.postData, n) : this.getLong(r.url, n)), n = null, d = null;
+            }, 1);
+          }
+        }), "GET" != t || this.cache || (e += (e.indexOf("?") >= 0 ? "&" : "?") + "dhxr" + new Date().getTime() + "=1"), d.open(t, e, a), s) for (var l in s) {
+          d.setRequestHeader(l, s[l]);
+        } else "POST" == t.toUpperCase() || "PUT" == t || "DELETE" == t ? d.setRequestHeader("Content-Type", "application/x-www-form-urlencoded") : "GET" == t && (i = null);
+        if (d.setRequestHeader("X-Requested-With", "XMLHttpRequest"), d.send(i), !a) return {
+          xmlDoc: d,
+          filePath: e
+        };
+      },
+      urlSeparator: function urlSeparator(t) {
+        return -1 != t.indexOf("?") ? "&" : "?";
+      }
+    };
+
+    var x = function x(t, e) {
+      for (var i = "var temp=date.match(/[a-zA-Z]+|[0-9]+/g);", a = t.match(/%[a-zA-Z]/g), n = 0; n < a.length; n++) {
+        switch (a[n]) {
+          case "%j":
+          case "%d":
+            i += "set[2]=temp[" + n + "]||1;";
+            break;
+
+          case "%n":
+          case "%m":
+            i += "set[1]=(temp[" + n + "]||1)-1;";
+            break;
+
+          case "%y":
+            i += "set[0]=temp[" + n + "]*1+(temp[" + n + "]>50?1900:2000);";
+            break;
+
+          case "%g":
+          case "%G":
+          case "%h":
+          case "%H":
+            i += "set[3]=temp[" + n + "]||0;";
+            break;
+
+          case "%i":
+            i += "set[4]=temp[" + n + "]||0;";
+            break;
+
+          case "%Y":
+            i += "set[0]=temp[" + n + "]||0;";
+            break;
+
+          case "%a":
+          case "%A":
+            i += "set[3]=set[3]%12+((temp[" + n + "]||'').toLowerCase()=='am'?0:12);";
+            break;
+
+          case "%s":
+            i += "set[5]=temp[" + n + "]||0;";
+            break;
+
+          case "%M":
+            i += "set[1]=this.locale.date.month_short_hash[temp[" + n + "]]||0;";
+            break;
+
+          case "%F":
+            i += "set[1]=this.locale.date.month_full_hash[temp[" + n + "]]||0;";
+        }
+      }
+
+      var r = "set[0],set[1],set[2],set[3],set[4],set[5]";
+      return e && (r = " Date.UTC(" + r + ")"), new Function("date", "var set=[0,0,1,0,0,0]; " + i + " return new Date(" + r + ");");
+    };
+
+    l.date = {
+      init: function init() {
+        for (var t = l.locale.date.month_short, e = l.locale.date.month_short_hash = {}, i = 0; i < t.length; i++) {
+          e[t[i]] = i;
+        }
+
+        for (var t = l.locale.date.month_full, e = l.locale.date.month_full_hash = {}, i = 0; i < t.length; i++) {
+          e[t[i]] = i;
+        }
+      },
+      _bind_host_object: function _bind_host_object(t) {
+        return t.bind ? t.bind(l) : function () {
+          return t.apply(l, arguments);
+        };
+      },
+      date_part: function date_part(t) {
+        var e = new Date(t);
+        return t.setHours(0), t.setMinutes(0), t.setSeconds(0), t.setMilliseconds(0), t.getHours() && (t.getDate() < e.getDate() || t.getMonth() < e.getMonth() || t.getFullYear() < e.getFullYear()) && t.setTime(t.getTime() + 36e5 * (24 - t.getHours())), t;
+      },
+      time_part: function time_part(t) {
+        return (t.valueOf() / 1e3 - 60 * t.getTimezoneOffset()) % 86400;
+      },
+      week_start: function week_start(t) {
+        var e = t.getDay();
+        return l.config.start_on_monday && (0 === e ? e = 6 : e--), this.date_part(this.add(t, -1 * e, "day"));
+      },
+      month_start: function month_start(t) {
+        return t.setDate(1), this.date_part(t);
+      },
+      year_start: function year_start(t) {
+        return t.setMonth(0), this.month_start(t);
+      },
+      day_start: function day_start(t) {
+        return this.date_part(t);
+      },
+      _add_days: function _add_days(t, e) {
+        var i = new Date(t.valueOf());
+
+        if (i.setDate(i.getDate() + e), e == Math.round(e) && e > 0) {
+          var a = +i - +t,
+              n = a % 864e5;
+
+          if (n && t.getTimezoneOffset() == i.getTimezoneOffset()) {
+            var r = n / 36e5;
+            i.setTime(i.getTime() + 60 * (24 - r) * 60 * 1e3);
+          }
+        }
+
+        return e >= 0 && !t.getHours() && i.getHours() && (i.getDate() < t.getDate() || i.getMonth() < t.getMonth() || i.getFullYear() < t.getFullYear()) && i.setTime(i.getTime() + 36e5 * (24 - i.getHours())), i;
+      },
+      add: function add(t, e, i) {
+        var a = new Date(t.valueOf());
+
+        switch (i) {
+          case "day":
+            a = l.date._add_days(a, e);
+            break;
+
+          case "week":
+            a = l.date._add_days(a, 7 * e);
+            break;
+
+          case "month":
+            a.setMonth(a.getMonth() + e);
+            break;
+
+          case "year":
+            a.setYear(a.getFullYear() + e);
+            break;
+
+          case "hour":
+            a.setTime(a.getTime() + 60 * e * 60 * 1e3);
+            break;
+
+          case "minute":
+            a.setTime(a.getTime() + 60 * e * 1e3);
+            break;
+
+          default:
+            return l.date["add_" + i](t, e, i);
+        }
+
+        return a;
+      },
+      to_fixed: function to_fixed(t) {
+        return t < 10 ? "0" + t : t;
+      },
+      copy: function copy(t) {
+        return new Date(t.valueOf());
+      },
+      date_to_str: function date_to_str(t, e) {
+        t = t.replace(/%[a-zA-Z]/g, function (t) {
+          switch (t) {
+            case "%d":
+              return '"+this.date.to_fixed(date.getDate())+"';
+
+            case "%m":
+              return '"+this.date.to_fixed((date.getMonth()+1))+"';
+
+            case "%j":
+              return '"+date.getDate()+"';
+
+            case "%n":
+              return '"+(date.getMonth()+1)+"';
+
+            case "%y":
+              return '"+this.date.to_fixed(date.getFullYear()%100)+"';
+
+            case "%Y":
+              return '"+date.getFullYear()+"';
+
+            case "%D":
+              return '"+this.locale.date.day_short[date.getDay()]+"';
+
+            case "%l":
+              return '"+this.locale.date.day_full[date.getDay()]+"';
+
+            case "%M":
+              return '"+this.locale.date.month_short[date.getMonth()]+"';
+
+            case "%F":
+              return '"+this.locale.date.month_full[date.getMonth()]+"';
+
+            case "%h":
+              return '"+this.date.to_fixed((date.getHours()+11)%12+1)+"';
+
+            case "%g":
+              return '"+((date.getHours()+11)%12+1)+"';
+
+            case "%G":
+              return '"+date.getHours()+"';
+
+            case "%H":
+              return '"+this.date.to_fixed(date.getHours())+"';
+
+            case "%i":
+              return '"+this.date.to_fixed(date.getMinutes())+"';
+
+            case "%a":
+              return '"+(date.getHours()>11?"pm":"am")+"';
+
+            case "%A":
+              return '"+(date.getHours()>11?"PM":"AM")+"';
+
+            case "%s":
+              return '"+this.date.to_fixed(date.getSeconds())+"';
+
+            case "%W":
+              return '"+this.date.to_fixed(this.date.getISOWeek(date))+"';
+
+            default:
+              return t;
+          }
+        }), e && (t = t.replace(/date\.get/g, "date.getUTC"));
+        var i = new Function("date", 'return "' + t + '";');
+        return l.date._bind_host_object(i);
+      },
+      str_to_date: function str_to_date(t, e, i) {
+        var a = x(t, e),
+            n = /^[0-9]{4}(\-|\/)[0-9]{2}(\-|\/)[0-9]{2} ?(([0-9]{1,2}:[0-9]{1,2})(:[0-9]{1,2})?)?$/,
+            r = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4} ?(([0-9]{1,2}:[0-9]{2})(:[0-9]{1,2})?)?$/,
+            s = /^[0-9]{2}\-[0-9]{2}\-[0-9]{4} ?(([0-9]{1,2}:[0-9]{1,2})(:[0-9]{1,2})?)?$/,
+            o = /^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/,
+            d = function d(t) {
+          return n.test(String(t));
+        },
+            _ = function _(t) {
+          return r.test(String(t));
+        },
+            h = function h(t) {
+          return s.test(String(t));
+        },
+            c = function c(t) {
+          return o.test(t);
+        },
+            u = x("%Y-%m-%d %H:%i:%s", e),
+            f = x("%m/%d/%Y %H:%i:%s", e),
+            g = x("%d-%m-%Y %H:%i:%s", e);
+
+        return function (t) {
+          if (!i && !l.config.parse_exact_format) {
+            if (t && t.getISOWeek) return new Date(t);
+            if ("number" == typeof t) return new Date(t);
+            if (d(t)) return u(t);
+            if (_(t)) return f(t);
+            if (h(t)) return g(t);
+            if (c(t)) return new Date(t);
+          }
+
+          return a.call(l, t);
+        };
+      },
+      getISOWeek: function getISOWeek(t) {
+        if (!t) return !1;
+        t = this.date_part(new Date(t));
+        var e = t.getDay();
+        0 === e && (e = 7);
+        var i = new Date(t.valueOf());
+        i.setDate(t.getDate() + (4 - e));
+        var a = i.getFullYear(),
+            n = Math.round((i.getTime() - new Date(a, 0, 1).getTime()) / 864e5);
+        return 1 + Math.floor(n / 7);
+      },
+      getUTCISOWeek: function getUTCISOWeek(t) {
+        return this.getISOWeek(this.convert_to_utc(t));
+      },
+      convert_to_utc: function convert_to_utc(t) {
+        return new Date(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate(), t.getUTCHours(), t.getUTCMinutes(), t.getUTCSeconds());
+      }
+    }, l.locale = {
+      date: {
+        month_full: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+        month_short: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+        day_full: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        day_short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+      },
+      labels: {
+        dhx_cal_today_button: "Today",
+        day_tab: "Day",
+        week_tab: "Week",
+        month_tab: "Month",
+        new_event: "New event",
+        icon_save: "Save",
+        icon_cancel: "Cancel",
+        icon_details: "Details",
+        icon_edit: "Edit",
+        icon_delete: "Delete",
+        confirm_closing: "",
+        confirm_deleting: "Event will be deleted permanently, are you sure?",
+        section_description: "Description",
+        section_time: "Time period",
+        full_day: "Full day",
+        confirm_recurring: "Do you want to edit the whole set of repeated events?",
+        section_recurring: "Repeat event",
+        button_recurring: "Disabled",
+        button_recurring_open: "Enabled",
+        button_edit_series: "Edit series",
+        button_edit_occurrence: "Edit occurrence",
+        agenda_tab: "Agenda",
+        date: "Date",
+        description: "Description",
+        year_tab: "Year",
+        week_agenda_tab: "Agenda",
+        grid_tab: "Grid",
+        drag_to_create: "Drag to create",
+        drag_to_move: "Drag to move",
+        message_ok: "OK",
+        message_cancel: "Cancel",
+        next: "Next",
+        prev: "Previous",
+        year: "Year",
+        month: "Month",
+        day: "Day",
+        hour: "Hour",
+        minute: "Minute",
+        repeat_radio_day: "Daily",
+        repeat_radio_week: "Weekly",
+        repeat_radio_month: "Monthly",
+        repeat_radio_year: "Yearly",
+        repeat_radio_day_type: "Every",
+        repeat_text_day_count: "day",
+        repeat_radio_day_type2: "Every workday",
+        repeat_week: " Repeat every",
+        repeat_text_week_count: "week next days:",
+        repeat_radio_month_type: "Repeat",
+        repeat_radio_month_start: "On",
+        repeat_text_month_day: "day every",
+        repeat_text_month_count: "month",
+        repeat_text_month_count2_before: "every",
+        repeat_text_month_count2_after: "month",
+        repeat_year_label: "On",
+        select_year_day2: "of",
+        repeat_text_year_day: "day",
+        select_year_month: "month",
+        repeat_radio_end: "No end date",
+        repeat_text_occurences_count: "occurrences",
+        repeat_radio_end2: "After",
+        repeat_radio_end3: "End by",
+        month_for_recurring: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+        day_for_recurring: ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"]
+      }
+    }, l.config = {
+      default_date: "%j %M %Y",
+      month_date: "%F %Y",
+      load_date: "%Y-%m-%d",
+      week_date: "%l",
+      day_date: "%D, %F %j",
+      hour_date: "%H:%i",
+      month_day: "%d",
+      date_format: "%Y-%m-%d %H:%i",
+      api_date: "%d-%m-%Y %H:%i",
+      parse_exact_format: !1,
+      preserve_length: !0,
+      time_step: 5,
+      start_on_monday: !0,
+      first_hour: 0,
+      last_hour: 24,
+      readonly: !1,
+      drag_resize: !0,
+      drag_move: !0,
+      drag_create: !0,
+      drag_event_body: !0,
+      dblclick_create: !0,
+      edit_on_create: !0,
+      details_on_create: !1,
+      header: null,
+      resize_month_events: !1,
+      resize_month_timed: !1,
+      responsive_lightbox: !1,
+      rtl: !1,
+      cascade_event_display: !1,
+      cascade_event_count: 4,
+      cascade_event_margin: 30,
+      multi_day: !0,
+      multi_day_height_limit: 0,
+      drag_lightbox: !0,
+      preserve_scroll: !0,
+      select: !0,
+      server_utc: !1,
+      touch: !0,
+      touch_tip: !0,
+      touch_drag: 500,
+      touch_swipe_dates: !1,
+      quick_info_detached: !0,
+      positive_closing: !1,
+      drag_highlight: !0,
+      limit_drag_out: !1,
+      icons_edit: ["icon_save", "icon_cancel"],
+      icons_select: ["icon_details", "icon_edit", "icon_delete"],
+      buttons_left: ["dhx_save_btn", "dhx_cancel_btn"],
+      buttons_right: ["dhx_delete_btn"],
+      lightbox: {
+        sections: [{
+          name: "description",
+          map_to: "text",
+          type: "textarea",
+          focus: !0
+        }, {
+          name: "time",
+          height: 72,
+          type: "time",
+          map_to: "auto"
+        }]
+      },
+      highlight_displayed_event: !0,
+      left_border: !1,
+      ajax_error: "alert",
+      delay_render: 0,
+      timeline_swap_resize: !0,
+      wai_aria_attributes: !0,
+      wai_aria_application_role: !0
+    }, l.config.buttons_left.$inital = l.config.buttons_left.join(), l.config.buttons_right.$inital = l.config.buttons_right.join(), l._helpers = {
+      parseDate: function parseDate(t) {
+        return (l.templates.xml_date || l.templates.parse_date)(t);
+      },
+      formatDate: function formatDate(t) {
+        return (l.templates.xml_format || l.templates.format_date)(t);
+      }
+    }, l.templates = {}, l.init_templates = function () {
+      var t = l.locale.labels;
+      t.dhx_save_btn = t.icon_save, t.dhx_cancel_btn = t.icon_cancel, t.dhx_delete_btn = t.icon_delete;
+      var e = l.date.date_to_str,
+          i = l.config;
+      (function (t, e) {
+        for (var i in e) {
+          t[i] || (t[i] = e[i]);
+        }
+      })(l.templates, {
+        day_date: e(i.default_date),
+        month_date: e(i.month_date),
+        week_date: function week_date(t, e) {
+          return i.rtl ? l.templates.day_date(l.date.add(e, -1, "day")) + " &ndash; " + l.templates.day_date(t) : l.templates.day_date(t) + " &ndash; " + l.templates.day_date(l.date.add(e, -1, "day"));
+        },
+        day_scale_date: e(i.default_date),
+        month_scale_date: e(i.week_date),
+        week_scale_date: e(i.day_date),
+        hour_scale: e(i.hour_date),
+        time_picker: e(i.hour_date),
+        event_date: e(i.hour_date),
+        month_day: e(i.month_day),
+        load_format: e(i.load_date),
+        format_date: e(i.date_format, i.server_utc),
+        parse_date: l.date.str_to_date(i.date_format, i.server_utc),
+        api_date: l.date.str_to_date(i.api_date, !1, !1),
+        event_header: function event_header(t, e, i) {
+          return l.templates.event_date(t) + " - " + l.templates.event_date(e);
+        },
+        event_text: function event_text(t, e, i) {
+          return i.text;
+        },
+        event_class: function event_class(t, e, i) {
+          return "";
+        },
+        month_date_class: function month_date_class(t) {
+          return "";
+        },
+        week_date_class: function week_date_class(t) {
+          return "";
+        },
+        event_bar_date: function event_bar_date(t, e, i) {
+          return l.templates.event_date(t) + " ";
+        },
+        event_bar_text: function event_bar_text(t, e, i) {
+          return i.text;
+        },
+        month_events_link: function month_events_link(t, e) {
+          return "<a>View more(" + e + " events)</a>";
+        },
+        drag_marker_class: function drag_marker_class(t, e, i) {
+          return "";
+        },
+        drag_marker_content: function drag_marker_content(t, e, i) {
+          return "";
+        },
+        tooltip_date_format: l.date.date_to_str("%Y-%m-%d %H:%i"),
+        tooltip_text: function tooltip_text(t, e, i) {
+          return "<b>Event:</b> " + i.text + "<br/><b>Start date:</b> " + l.templates.tooltip_date_format(t) + "<br/><b>End date:</b> " + l.templates.tooltip_date_format(e);
+        }
+      }), this.callEvent("onTemplatesReady", []);
+    }, l.uid = function () {
+      return this._seed || (this._seed = new Date().valueOf()), this._seed++;
+    }, l._events = {}, l.clearAll = function () {
+      this._events = {}, this._loaded = {}, this._edit_id = null, this._select_id = null, this._drag_id = null, this._drag_mode = null, this._drag_pos = null, this._new_event = null, this.clear_view(), this.callEvent("onClearAll", []);
+    }, l.addEvent = function (t, e, i, a, n) {
+      if (!arguments.length) return this.addEventNow();
+      var r = t;
+      1 != arguments.length && (r = n || {}, r.start_date = t, r.end_date = e, r.text = i, r.id = a), r.id = r.id || l.uid(), r.text = r.text || "", "string" == typeof r.start_date && (r.start_date = this.templates.api_date(r.start_date)), "string" == typeof r.end_date && (r.end_date = this.templates.api_date(r.end_date));
+      var s = 6e4 * (this.config.event_duration || this.config.time_step);
+      r.start_date.valueOf() == r.end_date.valueOf() && r.end_date.setTime(r.end_date.valueOf() + s), r._timed = this.isOneDayEvent(r);
+      var o = !this._events[r.id];
+      return this._events[r.id] = r, this.event_updated(r), this._loading || this.callEvent(o ? "onEventAdded" : "onEventChanged", [r.id, r]), r.id;
+    }, l.deleteEvent = function (t, e) {
+      var i = this._events[t];
+      (e || this.callEvent("onBeforeEventDelete", [t, i]) && this.callEvent("onConfirmedBeforeEventDelete", [t, i])) && (i && (this._select_id = null, delete this._events[t], this.event_updated(i), this._drag_id == i.id && (this._drag_id = null, this._drag_mode = null, this._drag_pos = null)), this.callEvent("onEventDeleted", [t, i]));
+    }, l.getEvent = function (t) {
+      return this._events[t];
+    }, l.setEvent = function (t, e) {
+      e.id || (e.id = t), this._events[t] = e;
+    }, l.for_rendered = function (t, e) {
+      for (var i = this._rendered.length - 1; i >= 0; i--) {
+        this._rendered[i].getAttribute("event_id") == t && e(this._rendered[i], i);
+      }
+    }, l.changeEventId = function (t, e) {
+      if (t != e) {
+        var i = this._events[t];
+        i && (i.id = e, this._events[e] = i, delete this._events[t]), this.for_rendered(t, function (t) {
+          t.setAttribute("event_id", e);
+        }), this._select_id == t && (this._select_id = e), this._edit_id == t && (this._edit_id = e), this.callEvent("onEventIdChange", [t, e]);
+      }
+    }, function () {
+      for (var t = ["text", "Text", "start_date", "StartDate", "end_date", "EndDate"], e = function e(t) {
+        return function (e) {
+          return l.getEvent(e)[t];
+        };
+      }, i = function i(t) {
+        return function (e, i) {
+          var a = l.getEvent(e);
+          a[t] = i, a._changed = !0, a._timed = this.isOneDayEvent(a), l.event_updated(a, !0);
+        };
+      }, a = 0; a < t.length; a += 2) {
+        l["getEvent" + t[a + 1]] = e(t[a]), l["setEvent" + t[a + 1]] = i(t[a]);
+      }
+    }(), l.event_updated = function (t, e) {
+      this.is_visible_events(t) ? this.render_view_data() : this.clear_event(t.id);
+    }, l.is_visible_events = function (t) {
+      if (t.start_date.valueOf() < this._max_date.valueOf() && this._min_date.valueOf() < t.end_date.valueOf()) {
+        var e = t.start_date.getHours(),
+            i = t.end_date.getHours() + t.end_date.getMinutes() / 60,
+            a = this.config.last_hour,
+            n = this.config.first_hour;
+        return !(!this._table_view && (i > a || i < n) && (e >= a || e < n)) || !!((t.end_date.valueOf() - t.start_date.valueOf()) / 36e5 > 24 - (this.config.last_hour - this.config.first_hour) || e < a && i >= n);
+      }
+
+      return !1;
+    }, l.isOneDayEvent = function (t) {
+      var e = new Date(t.end_date.valueOf() - 1);
+      return t.start_date.getFullYear() === e.getFullYear() && t.start_date.getMonth() === e.getMonth() && t.start_date.getDate() === e.getDate() && t.end_date.valueOf() - t.start_date.valueOf() < 864e5;
+    }, l.get_visible_events = function (t) {
+      var e = [];
+
+      for (var i in this._events) {
+        this.is_visible_events(this._events[i]) && (t && !this._events[i]._timed || this.filter_event(i, this._events[i]) && e.push(this._events[i]));
+      }
+
+      return e;
+    }, l.filter_event = function (t, e) {
+      var i = this["filter_" + this._mode];
+      return !i || i(t, e);
+    }, l._is_main_area_event = function (t) {
+      return !!t._timed;
+    }, l.render_view_data = function (t, e) {
+      var i = !1;
+
+      if (!t) {
+        if (i = !0, this._not_render) return void (this._render_wait = !0);
+        this._render_wait = !1, this.clear_view(), t = this.get_visible_events(!(this._table_view || this.config.multi_day));
+      }
+
+      for (var a = 0, n = t.length; a < n; a++) {
+        this._recalculate_timed(t[a]);
+      }
+
+      if (this.config.multi_day && !this._table_view) {
+        for (var r = [], s = [], a = 0; a < t.length; a++) {
+          this._is_main_area_event(t[a]) ? r.push(t[a]) : s.push(t[a]);
+        }
+
+        if (!this._els.dhx_multi_day) {
+          var o = l._commonErrorMessages.unknownView(this._mode);
+
+          throw new Error(o);
+        }
+
+        this._rendered_location = this._els.dhx_multi_day[0], this._table_view = !0, this.render_data(s, e), this._table_view = !1, this._rendered_location = this._els.dhx_cal_data[0], this._table_view = !1, this.render_data(r, e);
+      } else {
+        var d = document.createDocumentFragment(),
+            _ = this._els.dhx_cal_data[0];
+        this._rendered_location = d, this.render_data(t, e), _.appendChild(d), this._rendered_location = _;
+      }
+
+      i && this.callEvent("onDataRender", []);
+    }, l._view_month_day = function (t) {
+      var e = l.getActionData(t).date;
+      l.callEvent("onViewMoreClick", [e]) && l.setCurrentView(e, "day");
+    }, l._render_month_link = function (t) {
+      for (var e = this._rendered_location, i = this._lame_clone(t), a = t._sday; a < t._eday; a++) {
+        i._sday = a, i._eday = a + 1;
+        var n = l.date,
+            r = l._min_date;
+        r = n.add(r, i._sweek, "week"), r = n.add(r, i._sday, "day");
+
+        var s = l.getEvents(r, n.add(r, 1, "day")).length,
+            o = this._get_event_bar_pos(i),
+            d = o.x2 - o.x,
+            _ = document.createElement("div");
+
+        _.onclick = function (t) {
+          l._view_month_day(t || event);
+        }, _.className = "dhx_month_link", _.style.top = o.y + "px", _.style.left = o.x + "px", _.style.width = d + "px", _.innerHTML = l.templates.month_events_link(r, s), this._rendered.push(_), e.appendChild(_);
+      }
+    }, l._recalculate_timed = function (t) {
+      if (t) {
+        var e;
+        e = "object" != _typeof(t) ? this._events[t] : t, e && (e._timed = l.isOneDayEvent(e));
+      }
+    }, l.attachEvent("onEventChanged", l._recalculate_timed), l.attachEvent("onEventAdded", l._recalculate_timed), l.render_data = function (t, e) {
+      t = this._pre_render_events(t, e);
+
+      for (var i = {}, a = 0; a < t.length; a++) {
+        if (this._table_view) {
+          if ("month" != l._mode) this.render_event_bar(t[a]);else {
+            var n = l.config.max_month_events;
+            n !== 1 * n || t[a]._sorder < n ? this.render_event_bar(t[a]) : void 0 !== n && t[a]._sorder == n && l._render_month_link(t[a]);
+          }
+        } else {
+          var r = t[a],
+              s = l.locate_holder(r._sday);
+          if (!s) continue;
+          i[r._sday] || (i[r._sday] = {
+            real: s,
+            buffer: document.createDocumentFragment(),
+            width: s.clientWidth
+          });
+          var o = i[r._sday];
+          this.render_event(r, o.buffer, o.width);
+        }
+      }
+
+      for (var a in i) {
+        var o = i[a];
+        o.real && o.buffer && o.real.appendChild(o.buffer);
+      }
+    }, l._get_first_visible_cell = function (t) {
+      for (var e = 0; e < t.length; e++) {
+        if (-1 == (t[e].className || "").indexOf("dhx_scale_ignore")) return t[e];
+      }
+
+      return t[0];
+    }, l._pre_render_events = function (t, e) {
+      var i = this.xy.bar_height,
+          a = this._colsS.heights,
+          n = this._colsS.heights = [0, 0, 0, 0, 0, 0, 0],
+          r = this._els.dhx_cal_data[0];
+      if (t = this._table_view ? this._pre_render_events_table(t, e) : this._pre_render_events_line(t, e), this._table_view) if (e) this._colsS.heights = a;else {
+        var s = r.firstChild;
+
+        if (s.rows) {
+          for (var o = 0; o < s.rows.length; o++) {
+            n[o]++;
+
+            var d = s.rows[o].cells,
+                _ = this._colsS.height - this.xy.month_head_height;
+
+            if (n[o] * i > _) {
+              var h = _;
+              1 * this.config.max_month_events !== this.config.max_month_events || n[o] <= this.config.max_month_events ? h = n[o] * i : (this.config.max_month_events + 1) * i > _ && (h = (this.config.max_month_events + 1) * i);
+
+              for (var c = 0; c < d.length; c++) {
+                d[c].childNodes[1].style.height = h + "px";
+              }
+            }
+
+            n[o] = (n[o - 1] || 0) + l._get_first_visible_cell(d).offsetHeight;
+          }
+
+          if (n.unshift(0), s.parentNode.offsetHeight < s.parentNode.scrollHeight && !l._colsS.scroll_fix && l.xy.scroll_width) {
+            var u = l._colsS,
+                f = u[u.col_length],
+                g = u.heights.slice();
+            f -= l.xy.scroll_width || 0, this._calc_scale_sizes(f, this._min_date, this._max_date), l._colsS.heights = g, this.set_xy(this._els.dhx_cal_header[0], f, this.xy.scale_height), l._render_scales(this._els.dhx_cal_header[0]), l._render_month_scale(this._els.dhx_cal_data[0], this._get_timeunit_start(), this._min_date), u.scroll_fix = !0;
+          }
+        } else if (t.length || "visible" != this._els.dhx_multi_day[0].style.visibility || (n[0] = -1), t.length || -1 == n[0]) {
+          var v = (s.parentNode.childNodes, (n[0] + 1) * i + 1),
+              m = v,
+              p = v + "px";
+          this.config.multi_day_height_limit && (m = Math.min(v, this.config.multi_day_height_limit), p = m + "px"), r.style.top = this._els.dhx_cal_navline[0].offsetHeight + this._els.dhx_cal_header[0].offsetHeight + m + "px", r.style.height = this._obj.offsetHeight - parseInt(r.style.top, 10) - (this.xy.margin_top || 0) + "px";
+          var x = this._els.dhx_multi_day[0];
+          x.style.height = p, x.style.visibility = -1 == n[0] ? "hidden" : "visible";
+          var b = this._els.dhx_multi_day[1];
+          b.style.height = p, b.style.visibility = -1 == n[0] ? "hidden" : "visible", b.className = n[0] ? "dhx_multi_day_icon" : "dhx_multi_day_icon_small", this._dy_shift = (n[0] + 1) * i, this.config.multi_day_height_limit && (this._dy_shift = Math.min(this.config.multi_day_height_limit, this._dy_shift)), n[0] = 0, m != v && (r.style.top = parseInt(r.style.top) + 2 + "px", x.style.overflowY = "auto", b.style.position = "fixed", b.style.top = "", b.style.left = "");
+        }
+      }
+      return t;
+    }, l._get_event_sday = function (t) {
+      var e = this.date.day_start(new Date(t.start_date));
+      return Math.round((e.valueOf() - this._min_date.valueOf()) / 864e5);
+    }, l._get_event_mapped_end_date = function (t) {
+      var e = t.end_date;
+
+      if (this.config.separate_short_events) {
+        var i = (t.end_date - t.start_date) / 6e4;
+        i < this._min_mapped_duration && (e = this.date.add(e, this._min_mapped_duration - i, "minute"));
+      }
+
+      return e;
+    }, l._pre_render_events_line = function (t, e) {
+      t.sort(function (t, e) {
+        return t.start_date.valueOf() == e.start_date.valueOf() ? t.id > e.id ? 1 : -1 : t.start_date > e.start_date ? 1 : -1;
+      });
+      var i = [],
+          a = [];
+      this._min_mapped_duration = Math.ceil(60 * this.xy.min_event_height / this.config.hour_size_px);
+
+      for (var n = 0; n < t.length; n++) {
+        var r = t[n],
+            s = r.start_date,
+            o = r.end_date,
+            d = s.getHours(),
+            _ = o.getHours();
+
+        if (r._sday = this._get_event_sday(r), this._ignores[r._sday]) t.splice(n, 1), n--;else {
+          if (i[r._sday] || (i[r._sday] = []), !e) {
+            r._inner = !1;
+
+            for (var l = i[r._sday]; l.length;) {
+              var h = l[l.length - 1],
+                  c = this._get_event_mapped_end_date(h);
+
+              if (!(c.valueOf() <= r.start_date.valueOf())) break;
+              l.splice(l.length - 1, 1);
+            }
+
+            for (var u = l.length, f = !1, g = 0; g < l.length; g++) {
+              var h = l[g],
+                  c = this._get_event_mapped_end_date(h);
+
+              if (c.valueOf() <= r.start_date.valueOf()) {
+                f = !0, r._sorder = h._sorder, u = g, r._inner = !0;
+                break;
+              }
+            }
+
+            if (l.length && (l[l.length - 1]._inner = !0), !f) if (l.length) {
+              if (l.length <= l[l.length - 1]._sorder) {
+                if (l[l.length - 1]._sorder) for (g = 0; g < l.length; g++) {
+                  for (var v = !1, m = 0; m < l.length; m++) {
+                    if (l[m]._sorder == g) {
+                      v = !0;
+                      break;
+                    }
+                  }
+
+                  if (!v) {
+                    r._sorder = g;
+                    break;
+                  }
+                } else r._sorder = 0;
+                r._inner = !0;
+              } else {
+                var p = l[0]._sorder;
+
+                for (g = 1; g < l.length; g++) {
+                  l[g]._sorder > p && (p = l[g]._sorder);
+                }
+
+                r._sorder = p + 1, r._inner = !1;
+              }
+            } else r._sorder = 0;
+            l.splice(u, u == l.length ? 0 : 1, r), l.length > (l.max_count || 0) ? (l.max_count = l.length, r._count = l.length) : r._count = r._count ? r._count : 1;
+          }
+
+          (d < this.config.first_hour || _ >= this.config.last_hour) && (a.push(r), t[n] = r = this._copy_event(r), d < this.config.first_hour && (r.start_date.setHours(this.config.first_hour), r.start_date.setMinutes(0)), _ >= this.config.last_hour && (r.end_date.setMinutes(0), r.end_date.setHours(this.config.last_hour)), r.start_date > r.end_date || d == this.config.last_hour) && (t.splice(n, 1), n--);
+        }
+      }
+
+      if (!e) {
+        for (var n = 0; n < t.length; n++) {
+          t[n]._count = i[t[n]._sday].max_count;
+        }
+
+        for (var n = 0; n < a.length; n++) {
+          a[n]._count = i[a[n]._sday].max_count;
+        }
+      }
+
+      return t;
+    }, l._time_order = function (t) {
+      t.sort(function (t, e) {
+        return t.start_date.valueOf() == e.start_date.valueOf() ? t._timed && !e._timed ? 1 : !t._timed && e._timed ? -1 : t.id > e.id ? 1 : -1 : t.start_date > e.start_date ? 1 : -1;
+      });
+    }, l._is_any_multiday_cell_visible = function (t, e, i) {
+      var a = this._cols.length,
+          n = !1,
+          r = t,
+          s = !0,
+          o = new Date(e);
+
+      for (l.date.day_start(new Date(e)).valueOf() != e.valueOf() && (o = l.date.day_start(o), o = l.date.add(o, 1, "day")); r < o;) {
+        s = !1;
+
+        var d = this.locate_holder_day(r, !1, i),
+            _ = d % a;
+
+        if (!this._ignores[_]) {
+          n = !0;
+          break;
+        }
+
+        r = l.date.add(r, 1, "day");
+      }
+
+      return s || n;
+    }, l._pre_render_events_table = function (t, e) {
+      this._time_order(t);
+
+      for (var i, a = [], n = [[], [], [], [], [], [], []], r = this._colsS.heights, s = this._cols.length, o = {}, d = 0; d < t.length; d++) {
+        var _ = t[d],
+            h = _.id;
+        o[h] || (o[h] = {
+          first_chunk: !0,
+          last_chunk: !0
+        });
+        var c = o[h],
+            u = i || _.start_date,
+            f = _.end_date;
+        u < this._min_date && (c.first_chunk = !1, u = this._min_date), f > this._max_date && (c.last_chunk = !1, f = this._max_date);
+        var g = this.locate_holder_day(u, !1, _);
+
+        if (_._sday = g % s, !this._ignores[_._sday] || !_._timed) {
+          var v = this.locate_holder_day(f, !0, _) || s;
+          _._eday = v % s || s, _._length = v - g, _._sweek = Math.floor((this._correct_shift(u.valueOf(), 1) - this._min_date.valueOf()) / (864e5 * s));
+
+          if (l._is_any_multiday_cell_visible(u, f, _)) {
+            var m,
+                p = n[_._sweek];
+
+            for (m = 0; m < p.length && !(p[m]._eday <= _._sday); m++) {
+              ;
+            }
+
+            if (_._sorder && e || (_._sorder = m), _._sday + _._length <= s) i = null, a.push(_), p[m] = _, r[_._sweek] = p.length - 1, _._first_chunk = c.first_chunk, _._last_chunk = c.last_chunk;else {
+              var x = this._copy_event(_);
+
+              x.id = _.id, x._length = s - _._sday, x._eday = s, x._sday = _._sday, x._sweek = _._sweek, x._sorder = _._sorder, x.end_date = this.date.add(u, x._length, "day"), x._first_chunk = c.first_chunk, c.first_chunk && (c.first_chunk = !1), a.push(x), p[m] = x, i = x.end_date, r[_._sweek] = p.length - 1, d--;
+            }
+          }
+        }
+      }
+
+      return a;
+    }, l._copy_dummy = function () {
+      var t = new Date(this.start_date),
+          e = new Date(this.end_date);
+      this.start_date = t, this.end_date = e;
+    }, l._copy_event = function (t) {
+      return this._copy_dummy.prototype = t, new this._copy_dummy();
+    }, l._rendered = [], l.clear_view = function () {
+      for (var t = 0; t < this._rendered.length; t++) {
+        var e = this._rendered[t];
+        e.parentNode && e.parentNode.removeChild(e);
+      }
+
+      this._rendered = [];
+    }, l.updateEvent = function (t) {
+      var e = this.getEvent(t);
+      this.clear_event(t), e && this.is_visible_events(e) && this.filter_event(t, e) && (this._table_view || this.config.multi_day || e._timed) && (this.config.update_render ? this.render_view_data() : "month" != this.getState().mode || this.getState().drag_id || this.isOneDayEvent(e) ? this.render_view_data([e], !0) : this.render_view_data());
+    }, l.clear_event = function (t) {
+      this.for_rendered(t, function (t, e) {
+        t.parentNode && t.parentNode.removeChild(t), l._rendered.splice(e, 1);
+      });
+    }, l._y_from_date = function (t) {
+      var e = 60 * t.getHours() + t.getMinutes();
+      return Math.round((60 * e * 1e3 - 60 * this.config.first_hour * 60 * 1e3) * this.config.hour_size_px / 36e5) % (24 * this.config.hour_size_px);
+    }, l._calc_event_y = function (t, e) {
+      e = e || 0;
+      var i = 60 * t.start_date.getHours() + t.start_date.getMinutes(),
+          a = 60 * t.end_date.getHours() + t.end_date.getMinutes() || 60 * l.config.last_hour;
+      return {
+        top: this._y_from_date(t.start_date),
+        height: Math.max(e, (a - i) * this.config.hour_size_px / 60)
+      };
+    }, l.render_event = function (t, e, i) {
+      var a = l.xy.menu_width,
+          n = this.config.use_select_menu_space ? 0 : a;
+
+      if (!(t._sday < 0)) {
+        var r = l.locate_holder(t._sday);
+
+        if (r) {
+          e = e || r;
+
+          var s = this._calc_event_y(t, l.xy.min_event_height),
+              o = s.top,
+              d = s.height,
+              _ = t._count || 1,
+              h = t._sorder || 0;
+
+          i = i || r.clientWidth;
+          var c = Math.floor((i - n) / _),
+              u = h * c + 1;
+
+          if (t._inner || (c *= _ - h), this.config.cascade_event_display) {
+            var f = this.config.cascade_event_count,
+                g = this.config.cascade_event_margin;
+            u = h % f * g;
+            var v = t._inner ? (_ - h - 1) % f * g / 2 : 0;
+            c = Math.floor(i - n - u - v);
+          }
+
+          var m = this._render_v_bar(t, n + u, o, c, d, t._text_style, l.templates.event_header(t.start_date, t.end_date, t), l.templates.event_text(t.start_date, t.end_date, t));
+
+          this._waiAria.eventAttr(t, m), this._rendered.push(m), e.appendChild(m);
+
+          if (u = u + parseInt(this.config.rtl ? r.style.right : r.style.left, 10) + n, this._edit_id == t.id) {
+            m.style.zIndex = 1, c = Math.max(c - 4, l.xy.editor_width), m = document.createElement("div"), m.setAttribute("event_id", t.id), this._waiAria.eventAttr(t, m), m.className = "dhx_cal_event dhx_cal_editor", this.config.rtl && u++, this.set_xy(m, c, d - 20, u, o + (l.xy.event_header_height || 14)), t.color && (m.style.backgroundColor = t.color);
+            var p = l.templates.event_class(t.start_date, t.end_date, t);
+            p && (m.className += " " + p);
+            var x = document.createElement("div");
+            this.set_xy(x, c - 6, d - 26), x.style.cssText += ";margin:2px 2px 2px 2px;overflow:hidden;", m.appendChild(x), this._els.dhx_cal_data[0].appendChild(m), this._rendered.push(m), x.innerHTML = "<textarea class='dhx_cal_editor'>" + t.text + "</textarea>", this._editor = x.querySelector("textarea"), this._quirks7 && (this._editor.style.height = d - 12 + "px"), this._editor.onkeydown = function (t) {
+              if ((t || event).shiftKey) return !0;
+              var e = (t || event).keyCode;
+              e == l.keys.edit_save && l.editStop(!0), e == l.keys.edit_cancel && l.editStop(!1), e != l.keys.edit_save && e != l.keys.edit_cancel || t.preventDefault && t.preventDefault();
+            }, this._editor.onselectstart = function (t) {
+              return (t || event).cancelBubble = !0, !0;
+            }, l._focus(this._editor, !0), this._els.dhx_cal_data[0].scrollLeft = 0;
+          }
+
+          if (0 !== this.xy.menu_width && this._select_id == t.id) {
+            this.config.cascade_event_display && this._drag_mode && (m.style.zIndex = 1);
+
+            for (var b, y = this.config["icons_" + (this._edit_id == t.id ? "edit" : "select")], w = "", D = t.color ? "background-color: " + t.color + ";" : "", E = t.textColor ? "color: " + t.textColor + ";" : "", A = 0; A < y.length; A++) {
+              b = this._waiAria.eventMenuAttrString(y[A]), w += "<div class='dhx_menu_icon " + y[A] + "' style='" + D + E + "' title='" + this.locale.labels[y[A]] + "'" + b + "></div>";
+            }
+
+            var S = this._render_v_bar(t, u - a + 1, o, a, 20 * y.length + 26 - 2, "", "<div style='" + D + E + "' class='dhx_menu_head'></div>", w, !0);
+
+            S.style.left = u - a + 1, this._els.dhx_cal_data[0].appendChild(S), this._rendered.push(S);
+          }
+
+          this.config.drag_highlight && this._drag_id == t.id && this.highlightEventPosition(t);
+        }
+      }
+    }, l._render_v_bar = function (t, e, i, a, n, r, s, o, d) {
+      var _ = document.createElement("div"),
+          h = t.id,
+          c = d ? "dhx_cal_event dhx_cal_select_menu" : "dhx_cal_event",
+          u = l.getState();
+
+      u.drag_id == t.id && (c += " dhx_cal_event_drag"), u.select_id == t.id && (c += " dhx_cal_event_selected");
+      var f = l.templates.event_class(t.start_date, t.end_date, t);
+      f && (c = c + " " + f), this.config.cascade_event_display && (c += " dhx_cal_event_cascade");
+
+      var g = t.color ? "background-color:" + t.color + ";" : "",
+          v = t.textColor ? "color:" + t.textColor + ";" : "",
+          m = l._border_box_bvents(),
+          p = a - 2,
+          x = m ? p : a - 4,
+          b = m ? p : a - 6,
+          y = m ? p : a - (this._quirks ? 4 : 14),
+          w = m ? p - 2 : a - 8,
+          D = m ? n - this.xy.event_header_height - 1 : n - (this._quirks ? 20 : 30) + 1,
+          E = '<div event_id="' + h + '" class="' + c + '" style="position:absolute; top:' + i + "px; " + (this.config.rtl ? "right:" : "left:") + e + "px; width:" + x + "px; height:" + n + "px;" + (r || "") + '"></div>';
+
+      _.innerHTML = E;
+
+      var A = _.cloneNode(!0).firstChild;
+
+      if (!d && l.renderEvent(A, t, a, n, s, o)) return A;
+      A = _.firstChild;
+      var S = '<div class="dhx_event_move dhx_header" style=" width:' + b + "px;" + g + '" >&nbsp;</div>';
+      S += '<div class="dhx_event_move dhx_title" style="' + g + v + '">' + s + "</div>", S += '<div class="dhx_body" style=" width:' + y + "px; height:" + D + "px;" + g + v + '">' + o + "</div>";
+      var k = "dhx_event_resize dhx_footer";
+      return (d || !1 === t._drag_resize) && (k = "dhx_resize_denied " + k), S += '<div class="' + k + '" style=" width:' + w + "px;" + (d ? " margin-top:-1px;" : "") + g + v + '" ></div>', A.innerHTML = S, A;
+    }, l.renderEvent = function () {
+      return !1;
+    }, l.locate_holder = function (t) {
+      return "day" == this._mode ? this._els.dhx_cal_data[0].firstChild : this._els.dhx_cal_data[0].childNodes[t];
+    }, l.locate_holder_day = function (t, e) {
+      var i = Math.floor((this._correct_shift(t, 1) - this._min_date) / 864e5);
+      return e && this.date.time_part(t) && i++, i;
+    }, l._get_dnd_order = function (t, e, i) {
+      if (!this._drag_event) return t;
+      this._drag_event._orig_sorder ? t = this._drag_event._orig_sorder : this._drag_event._orig_sorder = t;
+
+      for (var a = e * t; a + e > i;) {
+        t--, a -= e;
+      }
+
+      return t = Math.max(t, 0);
+    }, l._get_event_bar_pos = function (t) {
+      var e = this.config.rtl,
+          i = this._colsS,
+          a = i[t._sday],
+          n = i[t._eday];
+      e && (a = i[i.col_length] - i[t._eday] + i[0], n = i[i.col_length] - i[t._sday] + i[0]), n == a && (n = i[t._eday + 1]);
+      var r = this.xy.bar_height,
+          s = t._sorder;
+
+      if (t.id == this._drag_id) {
+        var o = i.heights[t._sweek + 1] - i.heights[t._sweek] - this.xy.month_head_height;
+        s = l._get_dnd_order(s, r, o);
+      }
+
+      var d = s * r;
+      return {
+        x: a,
+        x2: n,
+        y: i.heights[t._sweek] + (i.height ? this.xy.month_scale_height + 2 : 2) + d
+      };
+    }, l.render_event_bar = function (t) {
+      var e = this._rendered_location,
+          i = this._get_event_bar_pos(t),
+          a = i.y,
+          n = i.x,
+          r = i.x2,
+          s = "";
+
+      if (r) {
+        var o = l.config.resize_month_events && "month" == this._mode && (!t._timed || l.config.resize_month_timed),
+            d = document.createElement("div"),
+            _ = t.hasOwnProperty("_first_chunk") && t._first_chunk,
+            h = t.hasOwnProperty("_last_chunk") && t._last_chunk,
+            c = o && (t._timed || _),
+            u = o && (t._timed || h),
+            f = !0,
+            g = "dhx_cal_event_clear";
+
+        t._timed && !o || (f = !1, g = "dhx_cal_event_line"), _ && (g += " dhx_cal_event_line_start"), h && (g += " dhx_cal_event_line_end"), c && (s += "<div class='dhx_event_resize dhx_event_resize_start'></div>"), u && (s += "<div class='dhx_event_resize dhx_event_resize_end'></div>");
+        var v = l.templates.event_class(t.start_date, t.end_date, t);
+        v && (g += " " + v);
+        var m = t.color ? "background:" + t.color + ";" : "",
+            p = t.textColor ? "color:" + t.textColor + ";" : "",
+            x = ["position:absolute", "top:" + a + "px", "left:" + n + "px", "width:" + (r - n - 3 - (f ? 1 : 0)) + "px", p, m, t._text_style || ""].join(";"),
+            b = "<div event_id='" + t.id + "' class='" + g + "' style='" + x + "'" + this._waiAria.eventBarAttrString(t) + ">";
+        o && (b += s), "month" == l.getState().mode && (t = l.getEvent(t.id)), t._timed && (b += l.templates.event_bar_date(t.start_date, t.end_date, t)), b += l.templates.event_bar_text(t.start_date, t.end_date, t) + "</div>", b += "</div>", d.innerHTML = b, this._rendered.push(d.firstChild), e.appendChild(d.firstChild);
+      }
+    }, l._locate_event = function (t) {
+      for (var e = null; t && !e && t.getAttribute;) {
+        e = t.getAttribute("event_id"), t = t.parentNode;
+      }
+
+      return e;
+    }, l._locate_css = function (t, e, i) {
+      void 0 === i && (i = !0);
+
+      for (var a = t.target || t.srcElement, n = ""; a;) {
+        if (n = l._getClassName(a)) {
+          var r = n.indexOf(e);
+
+          if (r >= 0) {
+            if (!i) return a;
+            var s = 0 === r || !l._trim(n.charAt(r - 1)),
+                o = r + e.length >= n.length || !l._trim(n.charAt(r + e.length));
+            if (s && o) return a;
+          }
+        }
+
+        a = a.parentNode;
+      }
+
+      return null;
+    }, l.edit = function (t) {
+      this._edit_id != t && (this.editStop(!1, t), this._edit_id = t, this.updateEvent(t));
+    }, l.editStop = function (t, e) {
+      if (!e || this._edit_id != e) {
+        var i = this.getEvent(this._edit_id);
+        i && (t && (i.text = this._editor.value), this._edit_id = null, this._editor = null, this.updateEvent(i.id), this._edit_stop_event(i, t));
+      }
+    }, l._edit_stop_event = function (t, e) {
+      this._new_event ? (e ? this.callEvent("onEventAdded", [t.id, t]) : t && this.deleteEvent(t.id, !0), this._new_event = null) : e && this.callEvent("onEventChanged", [t.id, t]);
+    }, l.getEvents = function (t, e) {
+      var i = [];
+
+      for (var a in this._events) {
+        var n = this._events[a];
+        n && (!t && !e || n.start_date < e && n.end_date > t) && i.push(n);
+      }
+
+      return i;
+    }, l.getRenderedEvent = function (t) {
+      if (t) {
+        for (var e = l._rendered, i = 0; i < e.length; i++) {
+          var a = e[i];
+          if (a.getAttribute("event_id") == t) return a;
+        }
+
+        return null;
+      }
+    }, l.showEvent = function (t, e) {
+      var i = "number" == typeof t || "string" == typeof t ? l.getEvent(t) : t;
+
+      if (e = e || l._mode, i && (!this.checkEvent("onBeforeEventDisplay") || this.callEvent("onBeforeEventDisplay", [i, e]))) {
+        var a = l.config.scroll_hour;
+        l.config.scroll_hour = i.start_date.getHours();
+        var n = l.config.preserve_scroll;
+        l.config.preserve_scroll = !1;
+        var r = i.color,
+            s = i.textColor;
+
+        if (l.config.highlight_displayed_event && (i.color = l.config.displayed_event_color, i.textColor = l.config.displayed_event_text_color), l.setCurrentView(new Date(i.start_date), e), i.color = r, i.textColor = s, l.config.scroll_hour = a, l.config.preserve_scroll = n, l.matrix && l.matrix[e]) {
+          var o = l.getView(),
+              d = o.y_property,
+              _ = l.getEvent(i.id);
+
+          if (_) {
+            var h = o.posFromSection(_[d]),
+                c = o.posFromDate(_.start_date),
+                u = l.$container.querySelector(".dhx_timeline_data_wrapper");
+            c -= (u.offsetWidth - o.dx) / 2, h = h - u.offsetHeight / 2 + o.dy / 2, o.scrollTo({
+              left: c,
+              top: h
+            });
+          }
+        }
+
+        l.callEvent("onAfterEventDisplay", [i, e]);
+      }
+    }, l._append_drag_marker = function (t) {
+      if (!t.parentNode) {
+        var e = l._els.dhx_cal_data[0],
+            i = e.lastChild,
+            a = l._getClassName(i);
+
+        a.indexOf("dhx_scale_holder") < 0 && i.previousSibling && (i = i.previousSibling), a = l._getClassName(i), i && 0 === a.indexOf("dhx_scale_holder") && i.appendChild(t);
+      }
+    }, l._update_marker_position = function (t, e) {
+      var i = l._calc_event_y(e, 0);
+
+      t.style.top = i.top + "px", t.style.height = i.height + "px";
+    }, l.highlightEventPosition = function (t) {
+      var e = document.createElement("div");
+      e.setAttribute("event_id", t.id), this._rendered.push(e), this._update_marker_position(e, t);
+      var i = this.templates.drag_marker_class(t.start_date, t.end_date, t),
+          a = this.templates.drag_marker_content(t.start_date, t.end_date, t);
+      e.className = "dhx_drag_marker", i && (e.className += " " + i), a && (e.innerHTML = a), this._append_drag_marker(e);
+    }, l._loaded = {}, l._load = function (t, e) {
+      function i(t) {
+        l.on_load(t), l.callEvent("onLoadEnd", []);
+      }
+
+      if (t = t || this._load_url) {
+        t += (-1 == t.indexOf("?") ? "?" : "&") + "timeshift=" + new Date().getTimezoneOffset(), this.config.prevent_cache && (t += "&uid=" + this.uid());
+        var a;
+
+        if (e = e || this._date, this._load_mode) {
+          var n = this.templates.load_format;
+
+          for (e = this.date[this._load_mode + "_start"](new Date(e.valueOf())); e > this._min_date;) {
+            e = this.date.add(e, -1, this._load_mode);
+          }
+
+          a = e;
+
+          for (var r = !0; a < this._max_date;) {
+            a = this.date.add(a, 1, this._load_mode), this._loaded[n(e)] && r ? e = this.date.add(e, 1, this._load_mode) : r = !1;
+          }
+
+          var s = a;
+
+          do {
+            a = s, s = this.date.add(a, -1, this._load_mode);
+          } while (s > e && this._loaded[n(s)]);
+
+          if (a <= e) return !1;
+
+          for (l.$ajax.get(t + "&from=" + n(e) + "&to=" + n(a), i); e < a;) {
+            this._loaded[n(e)] = !0, e = this.date.add(e, 1, this._load_mode);
+          }
+        } else l.$ajax.get(t, i);
+
+        return this.callEvent("onXLS", []), this.callEvent("onLoadStart", []), !0;
+      }
+    }, l._parsers = {}, l._parsers.xml = {
+      canParse: function canParse(t, e) {
+        if (e.responseXML && e.responseXML.firstChild) return !0;
+
+        try {
+          var i = l.$ajax.parse(e.responseText),
+              a = l.$ajax.xmltop("data", i);
+          if (a && "data" === a.tagName) return !0;
+        } catch (t) {}
+
+        return !1;
+      },
+      parse: function parse(t) {
+        var e;
+        if (t.xmlDoc.responseXML || (t.xmlDoc.responseXML = l.$ajax.parse(t.xmlDoc.responseText)), e = l.$ajax.xmltop("data", t.xmlDoc), "data" != e.tagName) return null;
+        var i = e.getAttribute("dhx_security");
+        i && (window.dhtmlx && (dhtmlx.security_key = i), l.security_key = i);
+
+        for (var a = l.$ajax.xpath("//coll_options", t.xmlDoc), n = 0; n < a.length; n++) {
+          var r = a[n].getAttribute("for"),
+              s = l.serverList[r];
+          s || (l.serverList[r] = s = []), s.splice(0, s.length);
+
+          for (var o = l.$ajax.xpath(".//item", a[n]), d = 0; d < o.length; d++) {
+            for (var _ = o[d], h = _.attributes, c = {
+              key: o[d].getAttribute("value"),
+              label: o[d].getAttribute("label")
+            }, u = 0; u < h.length; u++) {
+              var f = h[u];
+              "value" != f.nodeName && "label" != f.nodeName && (c[f.nodeName] = f.nodeValue);
+            }
+
+            s.push(c);
+          }
+        }
+
+        a.length && l.callEvent("onOptionsLoad", []);
+
+        for (var g = l.$ajax.xpath("//userdata", t.xmlDoc), n = 0; n < g.length; n++) {
+          var v = l._xmlNodeToJSON(g[n]);
+
+          l._userdata[v.name] = v.text;
+        }
+
+        var m = [];
+        e = l.$ajax.xpath("//event", t.xmlDoc);
+
+        for (var n = 0; n < e.length; n++) {
+          var p = m[n] = l._xmlNodeToJSON(e[n]);
+
+          l._init_event(p);
+        }
+
+        return m;
+      }
+    }, l.json = l._parsers.json = {
+      canParse: function canParse(t) {
+        if (t && "object" == _typeof(t)) return !0;
+        if ("string" == typeof t) try {
+          var e = JSON.parse(t);
+          return "[object Object]" === Object.prototype.toString.call(e) || "[object Array]" === Object.prototype.toString.call(e);
+        } catch (t) {
+          return !1;
+        }
+        return !1;
+      },
+      parse: function parse(t) {
+        var e = [];
+        "string" == typeof t && (t = JSON.parse(t)), e = "[object Array]" === Object.prototype.toString.call(t) ? t : t ? t.data : [], e = e || [], t.dhx_security && (window.dhtmlx && (dhtmlx.security_key = t.dhx_security), l.security_key = t.dhx_security);
+        var i = t && t.collections ? t.collections : {},
+            a = !1;
+
+        for (var n in i) {
+          if (i.hasOwnProperty(n)) {
+            a = !0;
+            var r = i[n],
+                s = l.serverList[n];
+            s || (l.serverList[n] = s = []), s.splice(0, s.length);
+
+            for (var o = 0; o < r.length; o++) {
+              var d = r[o],
+                  _ = {
+                key: d.value,
+                label: d.label
+              };
+
+              for (var h in d) {
+                if (d.hasOwnProperty(h)) {
+                  if ("value" == h || "label" == h) continue;
+                  _[h] = d[h];
+                }
+              }
+
+              s.push(_);
+            }
+          }
+        }
+
+        a && l.callEvent("onOptionsLoad", []);
+
+        for (var c = [], u = 0; u < e.length; u++) {
+          var f = e[u];
+          l._init_event(f), c.push(f);
+        }
+
+        return c;
+      }
+    }, l.ical = l._parsers.ical = {
+      canParse: function canParse(t) {
+        return "string" == typeof t && new RegExp("^BEGIN:VCALENDAR").test(t);
+      },
+      parse: function parse(t) {
+        var e = t.match(RegExp(this.c_start + "[^\f]*" + this.c_end, ""));
+
+        if (e.length) {
+          e[0] = e[0].replace(/[\r\n]+ /g, ""), e[0] = e[0].replace(/[\r\n]+(?=[a-z \t])/g, " "), e[0] = e[0].replace(/\;[^:\r\n]*:/g, ":");
+
+          for (var i, a = [], n = RegExp("(?:" + this.e_start + ")([^\f]*?)(?:" + this.e_end + ")", "g"); null !== (i = n.exec(e));) {
+            for (var r, s = {}, o = /[^\r\n]+[\r\n]+/g; null !== (r = o.exec(i[1]));) {
+              this.parse_param(r.toString(), s);
+            }
+
+            s.uid && !s.id && (s.id = s.uid), a.push(s);
+          }
+
+          return a;
+        }
+      },
+      parse_param: function parse_param(t, e) {
+        var i = t.indexOf(":");
+
+        if (-1 != i) {
+          var a = t.substr(0, i).toLowerCase(),
+              n = t.substr(i + 1).replace(/\\\,/g, ",").replace(/[\r\n]+$/, "");
+          "summary" == a ? a = "text" : "dtstart" == a ? (a = "start_date", n = this.parse_date(n, 0, 0)) : "dtend" == a && (a = "end_date", n = this.parse_date(n, 0, 0)), e[a] = n;
+        }
+      },
+      parse_date: function parse_date(t, e, i) {
+        var a = t.split("T"),
+            n = !1;
+        a[1] && (e = a[1].substr(0, 2), i = a[1].substr(2, 2), n = !("Z" != a[1][6]));
+        var r = a[0].substr(0, 4),
+            s = parseInt(a[0].substr(4, 2), 10) - 1,
+            o = a[0].substr(6, 2);
+        return l.config.server_utc || n ? new Date(Date.UTC(r, s, o, e, i)) : new Date(r, s, o, e, i);
+      },
+      c_start: "BEGIN:VCALENDAR",
+      e_start: "BEGIN:VEVENT",
+      e_end: "END:VEVENT",
+      c_end: "END:VCALENDAR"
+    }, l.on_load = function (t) {
+      this.callEvent("onBeforeParse", []);
+      var e,
+          i = !1,
+          a = !1;
+
+      for (var n in this._parsers) {
+        var r = this._parsers[n];
+
+        if (r.canParse(t.xmlDoc.responseText, t.xmlDoc)) {
+          try {
+            var s = t.xmlDoc.responseText;
+            "xml" === n && (s = t), e = r.parse(s), e || (i = !0);
+          } catch (t) {
+            i = !0;
+          }
+
+          a = !0;
+          break;
+        }
+      }
+
+      if (!a) if (this._process && this[this._process]) try {
+        e = this[this._process].parse(t.xmlDoc.responseText);
+      } catch (t) {
+        i = !0;
+      } else i = !0;
+      (i || t.xmlDoc.status && t.xmlDoc.status >= 400) && (this.callEvent("onLoadError", [t.xmlDoc]), e = []), this._process_loading(e), this.callEvent("onXLE", []), this.callEvent("onParse", []);
+    }, l._process_loading = function (t) {
+      this._loading = !0, this._not_render = !0;
+
+      for (var e = 0; e < t.length; e++) {
+        this.callEvent("onEventLoading", [t[e]]) && this.addEvent(t[e]);
+      }
+
+      this._not_render = !1, this._render_wait && this.render_view_data(), this._loading = !1, this._after_call && this._after_call(), this._after_call = null;
+    }, l._init_event = function (t) {
+      t.text = t.text || t._tagvalue || "", t.start_date = l._init_date(t.start_date), t.end_date = l._init_date(t.end_date);
+    }, l._init_date = function (t) {
+      return t ? "string" == typeof t ? l._helpers.parseDate(t) : new Date(t) : null;
+    }, l.json = {}, l.json.parse = function (t) {
+      var e = [];
+      "string" == typeof t && (t = JSON.parse(t)), e = "[object Array]" === Object.prototype.toString.call(t) ? t : t ? t.data : [], e = e || [], t.dhx_security && (window.dhtmlx && (dhtmlx.security_key = t.dhx_security), l.security_key = t.dhx_security);
+      var i = t && t.collections ? t.collections : {},
+          a = !1;
+
+      for (var n in i) {
+        if (i.hasOwnProperty(n)) {
+          a = !0;
+          var r = i[n],
+              s = l.serverList[n];
+          s || (l.serverList[n] = s = []), s.splice(0, s.length);
+
+          for (var o = 0; o < r.length; o++) {
+            var d = r[o],
+                _ = {
+              key: d.value,
+              label: d.label
+            };
+
+            for (var h in d) {
+              if (d.hasOwnProperty(h)) {
+                if ("value" == h || "label" == h) continue;
+                _[h] = d[h];
+              }
+            }
+
+            s.push(_);
+          }
+        }
+      }
+
+      a && l.callEvent("onOptionsLoad", []);
+
+      for (var c = [], u = 0; u < e.length; u++) {
+        var f = e[u];
+        l._init_event(f), c.push(f);
+      }
+
+      return c;
+    }, l.parse = function (t, e) {
+      this._process = e, this.on_load({
+        xmlDoc: {
+          responseText: t
+        }
+      });
+    }, l.load = function (t, e) {
+      "string" == typeof e && (this._process = e, e = arguments[2]), this._load_url = t, this._after_call = e, this._load(t, this._date);
+    }, l.setLoadMode = function (t) {
+      "all" == t && (t = ""), this._load_mode = t;
+    }, l.serverList = function (t, e) {
+      return e ? (this.serverList[t] = e.slice(0), this.serverList[t]) : (this.serverList[t] = this.serverList[t] || [], this.serverList[t]);
+    }, l._userdata = {}, l._xmlNodeToJSON = function (t) {
+      for (var e = {}, i = 0; i < t.attributes.length; i++) {
+        e[t.attributes[i].name] = t.attributes[i].value;
+      }
+
+      for (var i = 0; i < t.childNodes.length; i++) {
+        var a = t.childNodes[i];
+        1 == a.nodeType && (e[a.tagName] = a.firstChild ? a.firstChild.nodeValue : "");
+      }
+
+      return e.text || (e.text = t.firstChild ? t.firstChild.nodeValue : ""), e;
+    }, l.attachEvent("onXLS", function () {
+      if (!0 === this.config.show_loading) {
+        var t;
+        t = this.config.show_loading = document.createElement("div"), t.className = "dhx_loading", t.style.left = Math.round((this._x - 128) / 2) + "px", t.style.top = Math.round((this._y - 15) / 2) + "px", this._obj.appendChild(t);
+      }
+    }), l.attachEvent("onXLE", function () {
+      var t = this.config.show_loading;
+      t && "object" == _typeof(t) && (t.parentNode && t.parentNode.removeChild(t), this.config.show_loading = !0);
+    }), l._lightbox_controls = {}, l.formSection = function (t) {
+      var e = this.config.lightbox.sections,
+          i = 0;
+
+      for (i; i < e.length && e[i].name != t; i++) {
+        ;
+      }
+
+      var a = e[i];
+      l._lightbox || l.getLightbox();
+      var n = document.getElementById(a.id),
+          r = n.nextSibling,
+          s = {
+        section: a,
+        header: n,
+        node: r,
+        getValue: function getValue(t) {
+          return l.form_blocks[a.type].get_value(r, t || {}, a);
+        },
+        setValue: function setValue(t, e) {
+          return l.form_blocks[a.type].set_value(r, t, e || {}, a);
+        }
+      },
+          o = l._lightbox_controls["get_" + a.type + "_control"];
+      return o ? o(s) : s;
+    }, l._lightbox_controls.get_template_control = function (t) {
+      return t.control = t.node, t;
+    }, l._lightbox_controls.get_select_control = function (t) {
+      return t.control = t.node.getElementsByTagName("select")[0], t;
+    }, l._lightbox_controls.get_textarea_control = function (t) {
+      return t.control = t.node.getElementsByTagName("textarea")[0], t;
+    }, l._lightbox_controls.get_time_control = function (t) {
+      return t.control = t.node.getElementsByTagName("select"), t;
+    }, l._lightbox_controls.defaults = {
+      template: {
+        height: 30
+      },
+      textarea: {
+        height: 200
+      },
+      select: {
+        height: 23
+      },
+      time: {
+        height: 20
+      }
+    }, l.form_blocks = {
+      template: {
+        render: function render(t) {
+          var e = l._lightbox_controls.defaults.template,
+              i = e ? e.height : 30;
+          return "<div class='dhx_cal_ltext dhx_cal_template' style='height:" + (t.height || i || 30) + "px;'></div>";
+        },
+        set_value: function set_value(t, e, i, a) {
+          t.innerHTML = e || "";
+        },
+        get_value: function get_value(t, e, i) {
+          return t.innerHTML || "";
+        },
+        focus: function focus(t) {}
+      },
+      textarea: {
+        render: function render(t) {
+          var e = l._lightbox_controls.defaults.textarea,
+              i = e ? e.height : 200;
+          return "<div class='dhx_cal_ltext' style='height:" + (t.height || i || "130") + "px;'><textarea></textarea></div>";
+        },
+        set_value: function set_value(t, e, i) {
+          l.form_blocks.textarea._get_input(t).value = e || "";
+        },
+        get_value: function get_value(t, e) {
+          return l.form_blocks.textarea._get_input(t).value;
+        },
+        focus: function focus(t) {
+          var e = l.form_blocks.textarea._get_input(t);
+
+          l._focus(e, !0);
+        },
+        _get_input: function _get_input(t) {
+          return t.getElementsByTagName("textarea")[0];
+        }
+      },
+      select: {
+        render: function render(t) {
+          for (var e = l._lightbox_controls.defaults.select, i = e ? e.height : 23, a = (t.height || i || "23") + "px", n = "<div class='dhx_cal_ltext' style='height:" + a + ";'><select style='width:100%;'>", r = 0; r < t.options.length; r++) {
+            n += "<option value='" + t.options[r].key + "'>" + t.options[r].label + "</option>";
+          }
+
+          return n += "</select></div>";
+        },
+        set_value: function set_value(t, e, i, a) {
+          var n = t.firstChild;
+          !n._dhx_onchange && a.onchange && (n.onchange = a.onchange, n._dhx_onchange = !0), void 0 === e && (e = (n.options[0] || {}).value), n.value = e || "";
+        },
+        get_value: function get_value(t, e) {
+          return t.firstChild.value;
+        },
+        focus: function focus(t) {
+          var e = t.firstChild;
+
+          l._focus(e, !0);
+        }
+      },
+      time: {
+        render: function render(t) {
+          t.time_format || (t.time_format = ["%H:%i", "%d", "%m", "%Y"]), t._time_format_order = {};
+          var e = t.time_format,
+              i = l.config,
+              a = l.date.date_part(l._currentDate()),
+              n = 1440,
+              r = 0;
+          l.config.limit_time_select && (n = 60 * i.last_hour + 1, r = 60 * i.first_hour, a.setHours(i.first_hour));
+
+          for (var s = "", o = 0; o < e.length; o++) {
+            var d = e[o];
+            o > 0 && (s += " ");
+            var _ = "",
+                h = "";
+
+            switch (d) {
+              case "%Y":
+                _ = "dhx_lightbox_year_select", t._time_format_order[3] = o;
+                var c, u, f;
+                t.year_range && (isNaN(t.year_range) ? t.year_range.push && (u = t.year_range[0], f = t.year_range[1]) : c = t.year_range), c = c || 10;
+                var g = g || Math.floor(c / 2);
+                u = u || a.getFullYear() - g, f = f || u + c;
+
+                for (var v = u; v < f; v++) {
+                  h += "<option value='" + v + "'>" + v + "</option>";
+                }
+
+                break;
+
+              case "%m":
+                _ = "dhx_lightbox_month_select", t._time_format_order[2] = o;
+
+                for (var v = 0; v < 12; v++) {
+                  h += "<option value='" + v + "'>" + this.locale.date.month_full[v] + "</option>";
+                }
+
+                break;
+
+              case "%d":
+                _ = "dhx_lightbox_day_select", t._time_format_order[1] = o;
+
+                for (var v = 1; v < 32; v++) {
+                  h += "<option value='" + v + "'>" + v + "</option>";
+                }
+
+                break;
+
+              case "%H:%i":
+                _ = "dhx_lightbox_time_select", t._time_format_order[0] = o;
+                var v = r,
+                    m = a.getDate();
+
+                for (t._time_values = []; v < n;) {
+                  h += "<option value='" + v + "'>" + this.templates.time_picker(a) + "</option>", t._time_values.push(v), a.setTime(a.valueOf() + 60 * this.config.time_step * 1e3);
+                  v = 24 * (a.getDate() != m ? 1 : 0) * 60 + 60 * a.getHours() + a.getMinutes();
+                }
+
+            }
+
+            if (h) {
+              var p = l._waiAria.lightboxSelectAttrString(d);
+
+              s += "<select class='" + _ + "' " + (t.readonly ? "disabled='disabled'" : "") + p + ">" + h + "</select> ";
+            }
+          }
+
+          var x = l._lightbox_controls.defaults.select;
+          return "<div style='height:" + ((x ? x.height : 23) || 30) + "px;padding-top:0px;font-size:inherit;' class='dhx_section_time'>" + s + "<span style='font-weight:normal; font-size:10pt;'> &nbsp;&ndash;&nbsp; </span>" + s + "</div>";
+        },
+        set_value: function set_value(t, e, i, a) {
+          function n(t, e, i) {
+            for (var n = a._time_values, r = 60 * i.getHours() + i.getMinutes(), s = r, o = !1, d = 0; d < n.length; d++) {
+              var l = n[d];
+
+              if (l === r) {
+                o = !0;
+                break;
+              }
+
+              l < r && (s = l);
+            }
+
+            t[e + _[0]].value = o ? r : s, o || s || (t[e + _[0]].selectedIndex = -1), t[e + _[1]].value = i.getDate(), t[e + _[2]].value = i.getMonth(), t[e + _[3]].value = i.getFullYear();
+          }
+
+          var r,
+              s,
+              o = l.config,
+              d = t.getElementsByTagName("select"),
+              _ = a._time_format_order;
+
+          if (o.full_day) {
+            if (!t._full_day) {
+              var h = "<label class='dhx_fullday'><input type='checkbox' name='full_day' value='true'> " + l.locale.labels.full_day + "&nbsp;</label></input>";
+              l.config.wide_form || (h = t.previousSibling.innerHTML + h), t.previousSibling.innerHTML = h, t._full_day = !0;
+            }
+
+            var c = t.previousSibling.getElementsByTagName("input")[0];
+            c.checked = 0 === l.date.time_part(i.start_date) && 0 === l.date.time_part(i.end_date), d[_[0]].disabled = c.checked, d[_[0] + d.length / 2].disabled = c.checked, c.onclick = function () {
+              if (c.checked) {
+                var e = {};
+                l.form_blocks.time.get_value(t, e, a), r = l.date.date_part(e.start_date), s = l.date.date_part(e.end_date), (+s == +r || +s >= +r && (0 !== i.end_date.getHours() || 0 !== i.end_date.getMinutes())) && (s = l.date.add(s, 1, "day"));
+              } else r = null, s = null;
+
+              d[_[0]].disabled = c.checked, d[_[0] + d.length / 2].disabled = c.checked, n(d, 0, r || i.start_date), n(d, 4, s || i.end_date);
+            };
+          }
+
+          if (o.auto_end_date && o.event_duration) for (var u = function u() {
+            r = new Date(d[_[3]].value, d[_[2]].value, d[_[1]].value, 0, d[_[0]].value), s = new Date(r.getTime() + 60 * l.config.event_duration * 1e3), n(d, 4, s);
+          }, f = 0; f < 4; f++) {
+            d[f].onchange = u;
+          }
+          n(d, 0, i.start_date), n(d, 4, i.end_date);
+        },
+        get_value: function get_value(t, e, i) {
+          var a = t.getElementsByTagName("select"),
+              n = i._time_format_order;
+
+          if (e.start_date = new Date(a[n[3]].value, a[n[2]].value, a[n[1]].value, 0, a[n[0]].value), e.end_date = new Date(a[n[3] + 4].value, a[n[2] + 4].value, a[n[1] + 4].value, 0, a[n[0] + 4].value), !a[n[3]].value || !a[n[3] + 4].value) {
+            var r = l.getEvent(l._lightbox_id);
+            r && (e.start_date = r.start_date, e.end_date = r.end_date);
+          }
+
+          return e.end_date <= e.start_date && (e.end_date = l.date.add(e.start_date, l.config.time_step, "minute")), {
+            start_date: new Date(e.start_date),
+            end_date: new Date(e.end_date)
+          };
+        },
+        focus: function focus(t) {
+          l._focus(t.getElementsByTagName("select")[0]);
+        }
+      }
+    }, l._setLbPosition = function (t) {
+      var e = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop,
+          i = window.pageXOffset || document.body.scrollLeft || document.documentElement.scrollLeft,
+          a = window.innerHeight || document.documentElement.clientHeight;
+      t.style.top = e ? Math.round(e + Math.max((a - t.offsetHeight) / 2, 0)) + "px" : Math.round(Math.max((a - t.offsetHeight) / 2, 0) + 9) + "px", document.documentElement.scrollWidth > document.body.offsetWidth ? t.style.left = Math.round(i + (document.body.offsetWidth - t.offsetWidth) / 2) + "px" : t.style.left = Math.round((document.body.offsetWidth - t.offsetWidth) / 2) + "px";
+    }, l.showCover = function (t) {
+      t && (t.style.display = "block", this._setLbPosition(t)), l.config.responsive_lightbox && (document.documentElement.classList.add("dhx_cal_overflow_container"), document.body.classList.add("dhx_cal_overflow_container")), this.show_cover();
+    }, l.showLightbox = function (t) {
+      if (t) {
+        if (!this.callEvent("onBeforeLightbox", [t])) return void (this._new_event && (this._new_event = null));
+        var e = this.getLightbox();
+        this.showCover(e), this._fill_lightbox(t, e), this._waiAria.lightboxVisibleAttr(e), this.callEvent("onLightbox", [t]);
+      }
+    }, l._fill_lightbox = function (t, e) {
+      var i = this.getEvent(t),
+          a = e.getElementsByTagName("span"),
+          n = [];
+
+      if (l.templates.lightbox_header) {
+        n.push("");
+        var r = l.templates.lightbox_header(i.start_date, i.end_date, i);
+        n.push(r), a[1].innerHTML = "", a[2].innerHTML = r;
+      } else {
+        var s = this.templates.event_header(i.start_date, i.end_date, i),
+            o = (this.templates.event_bar_text(i.start_date, i.end_date, i) || "").substr(0, 70);
+        n.push(s), n.push(o), a[1].innerHTML = s, a[2].innerHTML = o;
+      }
+
+      this._waiAria.lightboxHeader(e, n.join(" "));
+
+      for (var d = this.config.lightbox.sections, _ = 0; _ < d.length; _++) {
+        var h = d[_],
+            c = l._get_lightbox_section_node(h),
+            u = this.form_blocks[h.type],
+            f = void 0 !== i[h.map_to] ? i[h.map_to] : h.default_value;
+
+        u.set_value.call(this, c, f, i, h), d[_].focus && u.focus.call(this, c);
+      }
+
+      l._lightbox_id = t;
+    }, l._get_lightbox_section_node = function (t) {
+      return document.getElementById(t.id).nextSibling;
+    }, l._lightbox_out = function (t) {
+      for (var e = this.config.lightbox.sections, i = 0; i < e.length; i++) {
+        var a = document.getElementById(e[i].id);
+        a = a ? a.nextSibling : a;
+        var n = this.form_blocks[e[i].type],
+            r = n.get_value.call(this, a, t, e[i]);
+        "auto" != e[i].map_to && (t[e[i].map_to] = r);
+      }
+
+      return t;
+    }, l._empty_lightbox = function (t) {
+      var e = l._lightbox_id,
+          i = this.getEvent(e);
+      this.getLightbox();
+      this._lame_copy(i, t), this.setEvent(i.id, i), this._edit_stop_event(i, !0), this.render_view_data();
+    }, l.hide_lightbox = function (t) {
+      l.endLightbox(!1, this.getLightbox());
+    }, l.hideLightbox = l.hide_lightbox, l.hideCover = function (t) {
+      t && (t.style.display = "none"), this.hide_cover(), l.config.responsive_lightbox && (document.documentElement.classList.remove("dhx_cal_overflow_container"), document.body.classList.remove("dhx_cal_overflow_container"));
+    }, l.hide_cover = function () {
+      this._cover && this._cover.parentNode.removeChild(this._cover), this._cover = null;
+    }, l.set_cover_height = function (t) {
+      var e = void 0 !== document.height ? document.height : document.body.offsetHeight,
+          i = document.documentElement ? document.documentElement.scrollHeight : 0;
+      Math.max(e, i);
+    }, l.show_cover = function () {
+      this._cover || (this._cover = document.createElement("div"), this._cover.className = "dhx_cal_cover", this.set_cover_height(this._cover.style.height), document.body.appendChild(this._cover));
+    }, l.save_lightbox = function () {
+      var t = this._lightbox_out({}, this._lame_copy(this.getEvent(this._lightbox_id)));
+
+      this.checkEvent("onEventSave") && !this.callEvent("onEventSave", [this._lightbox_id, t, this._new_event]) || (this._empty_lightbox(t), this.hide_lightbox());
+    }, l.startLightbox = function (t, e) {
+      this._lightbox_id = t, this._custom_lightbox = !0, this._temp_lightbox = this._lightbox, this._lightbox = e, this.showCover(e);
+    }, l.endLightbox = function (t, e) {
+      var e = e || l.getLightbox(),
+          i = l.getEvent(this._lightbox_id);
+      i && this._edit_stop_event(i, t), t && l.render_view_data(), this.hideCover(e), this._custom_lightbox && (this._lightbox = this._temp_lightbox, this._custom_lightbox = !1), this._temp_lightbox = this._lightbox_id = null, this._waiAria.lightboxHiddenAttr(e), this.callEvent("onAfterLightbox", []);
+    }, l.resetLightbox = function () {
+      l._lightbox && !l._custom_lightbox && l._lightbox.parentNode.removeChild(l._lightbox), l._lightbox = null;
+    }, l.cancel_lightbox = function () {
+      this.callEvent("onEventCancel", [this._lightbox_id, this._new_event]), this.hide_lightbox();
+    }, l._init_lightbox_events = function () {
+      this.getLightbox().onclick = function (t) {
+        var e = t ? t.target : event.srcElement;
+
+        if (e.className || (e = e.previousSibling), !(e && e.className && l._getClassName(e).indexOf("dhx_btn_set") > -1) || (e = e.querySelector("[dhx_button]"))) {
+          var i = l._getClassName(e);
+
+          if (e && i) switch (i) {
+            case "dhx_save_btn":
+              l.save_lightbox();
+              break;
+
+            case "dhx_delete_btn":
+              var a = l.locale.labels.confirm_deleting;
+
+              l._dhtmlx_confirm(a, l.locale.labels.title_confirm_deleting, function () {
+                l.deleteEvent(l._lightbox_id), l._new_event = null, l.hide_lightbox();
+              });
+
+              break;
+
+            case "dhx_cancel_btn":
+              l.cancel_lightbox();
+              break;
+
+            default:
+              if (e.getAttribute("dhx_button")) l.callEvent("onLightboxButton", [i, e, t]);else {
+                var n, r, s;
+                -1 != i.indexOf("dhx_custom_button") && (-1 != i.indexOf("dhx_custom_button_") ? (n = e.parentNode.getAttribute("index"), s = e.parentNode.parentNode) : (n = e.getAttribute("index"), s = e.parentNode, e = e.firstChild)), n && (r = l.form_blocks[l.config.lightbox.sections[n].type], r.button_click(n, e, s, s.nextSibling));
+              }
+          }
+        }
+      }, this.getLightbox().onkeydown = function (t) {
+        var e = t || window.event,
+            i = t.target || t.srcElement,
+            a = i.querySelector("[dhx_button]");
+
+        switch (a || (a = i.parentNode.querySelector(".dhx_custom_button, .dhx_readonly")), (t || e).keyCode) {
+          case 32:
+            if ((t || e).shiftKey) return;
+            a && a.click && a.click();
+            break;
+
+          case l.keys.edit_save:
+            if ((t || e).shiftKey) return;
+            a && a.click ? a.click() : l.save_lightbox();
+            break;
+
+          case l.keys.edit_cancel:
+            l.cancel_lightbox();
+        }
+      };
+    }, l.setLightboxSize = function () {
+      var t = this._lightbox;
+
+      if (t) {
+        var e = t.childNodes[1];
+        e.style.height = "0px", e.style.height = e.scrollHeight + "px", t.style.height = e.scrollHeight + l.xy.lightbox_additional_height + "px", e.style.height = e.scrollHeight + "px";
+      }
+    }, l._init_dnd_events = function () {
+      l.event(document.body, "mousemove", l._move_while_dnd), l.event(document.body, "mouseup", l._finish_dnd), l._init_dnd_events = function () {};
+    }, l._move_while_dnd = function (t) {
+      if (l._dnd_start_lb) {
+        document.dhx_unselectable || (document.body.className += " dhx_unselectable", document.dhx_unselectable = !0);
+        var e = l.getLightbox(),
+            i = t && t.target ? [t.pageX, t.pageY] : [event.clientX, event.clientY];
+        e.style.top = l._lb_start[1] + i[1] - l._dnd_start_lb[1] + "px", e.style.left = l._lb_start[0] + i[0] - l._dnd_start_lb[0] + "px";
+      }
+    }, l._ready_to_dnd = function (t) {
+      var e = l.getLightbox();
+      l._lb_start = [parseInt(e.style.left, 10), parseInt(e.style.top, 10)], l._dnd_start_lb = t && t.target ? [t.pageX, t.pageY] : [event.clientX, event.clientY];
+    }, l._finish_dnd = function () {
+      l._lb_start && (l._lb_start = l._dnd_start_lb = !1, document.body.className = document.body.className.replace(" dhx_unselectable", ""), document.dhx_unselectable = !1);
+    }, l.getLightbox = function () {
+      if (!this._lightbox) {
+        var t = document.createElement("div");
+        t.className = "dhx_cal_light", l.config.wide_form && (t.className += " dhx_cal_light_wide"), l.form_blocks.recurring && (t.className += " dhx_cal_light_rec"), l.config.rtl && (t.className += " dhx_cal_light_rtl"), l.config.responsive_lightbox && (t.className += " dhx_cal_light_responsive"), /msie|MSIE 6/.test(navigator.userAgent) && (t.className += " dhx_ie6"), t.style.visibility = "hidden";
+
+        for (var e = this._lightbox_template, i = this.config.buttons_left, a = "", n = 0; n < i.length; n++) {
+          a = this._waiAria.lightboxButtonAttrString(i[n]), e += "<div " + a + " class='dhx_btn_set dhx_" + (l.config.rtl ? "right" : "left") + "_btn_set " + i[n] + "_set'><div dhx_button='1' class='" + i[n] + "'></div><div>" + l.locale.labels[i[n]] + "</div></div>";
+        }
+
+        i = this.config.buttons_right;
+
+        for (var r = l.config.rtl, n = 0; n < i.length; n++) {
+          a = this._waiAria.lightboxButtonAttrString(i[n]), e += "<div " + a + " class='dhx_btn_set dhx_" + (r ? "left" : "right") + "_btn_set " + i[n] + "_set' style='float:" + (r ? "left" : "right") + ";'><div dhx_button='1' class='" + i[n] + "'></div><div>" + l.locale.labels[i[n]] + "</div></div>";
+        }
+
+        e += "</div>", t.innerHTML = e, l.config.drag_lightbox && (t.firstChild.onmousedown = l._ready_to_dnd, t.firstChild.onselectstart = function () {
+          return !1;
+        }, t.firstChild.style.cursor = "move", l._init_dnd_events()), this._waiAria.lightboxAttr(t), document.body.insertBefore(t, document.body.firstChild), this._lightbox = t;
+        var s = this.config.lightbox.sections;
+        e = "";
+
+        for (var n = 0; n < s.length; n++) {
+          var o = this.form_blocks[s[n].type];
+
+          if (o) {
+            s[n].id = "area_" + this.uid();
+            var d = "";
+
+            if (s[n].button) {
+              var a = l._waiAria.lightboxSectionButtonAttrString(this.locale.labels["button_" + s[n].button]);
+
+              d = "<div " + a + " class='dhx_custom_button' index='" + n + "'><div class='dhx_custom_button_" + s[n].button + "'></div><div>" + this.locale.labels["button_" + s[n].button] + "</div></div>";
+            }
+
+            this.config.wide_form && (e += "<div class='dhx_wrap_section'>");
+            var _ = this.locale.labels["section_" + s[n].name];
+            "string" != typeof _ && (_ = s[n].name), e += "<div id='" + s[n].id + "' class='dhx_cal_lsection'>" + d + "<label>" + _ + "</label></div>" + o.render.call(this, s[n]), e += "</div>";
+          }
+        }
+
+        for (var h = t.getElementsByTagName("div"), n = 0; n < h.length; n++) {
+          var c = h[n];
+
+          if ("dhx_cal_larea" == l._getClassName(c)) {
+            c.innerHTML = e;
+            break;
+          }
+        }
+
+        l._bindLightboxLabels(s), this.setLightboxSize(), this._init_lightbox_events(this), t.style.display = "none", t.style.visibility = "visible";
+      }
+
+      return this._lightbox;
+    }, l._bindLightboxLabels = function (t) {
+      for (var e = 0; e < t.length; e++) {
+        var i = t[e];
+
+        if (i.id && document.getElementById(i.id)) {
+          for (var a = document.getElementById(i.id), n = a.querySelector("label"), r = l._get_lightbox_section_node(i); r && !r.querySelector;) {
+            r = r.nextSibling;
+          }
+
+          var s = !0;
+
+          if (r) {
+            var o = r.querySelector("input, select, textarea");
+            o && (i.inputId = o.id || "input_" + l.uid(), o.id || (o.id = i.inputId), n.setAttribute("for", i.inputId), s = !1);
+          }
+
+          if (s) {
+            l.form_blocks[i.type].focus && (n.onclick = function (t) {
+              return function () {
+                var e = l.form_blocks[t.type],
+                    i = l._get_lightbox_section_node(t);
+
+                e && e.focus && e.focus.call(l, i);
+              };
+            }(i));
+          }
+        }
+      }
+    }, l.attachEvent("onEventIdChange", function (t, e) {
+      this._lightbox_id == t && (this._lightbox_id = e);
+    }), l._lightbox_template = "<div class='dhx_cal_ltitle'><span class='dhx_mark'>&nbsp;</span><span class='dhx_time'></span><span class='dhx_title'></span></div><div class='dhx_cal_larea'></div>", l._init_touch_events = function () {
+      if (this.config.touch && (-1 != navigator.userAgent.indexOf("Mobile") || -1 != navigator.userAgent.indexOf("iPad") || -1 != navigator.userAgent.indexOf("Android") || -1 != navigator.userAgent.indexOf("Touch")) && !window.MSStream && (this.xy.scroll_width = 0, this._mobile = !0), this.config.touch) {
+        var t = !0;
+
+        try {
+          document.createEvent("TouchEvent");
+        } catch (e) {
+          t = !1;
+        }
+
+        t ? this._touch_events(["touchmove", "touchstart", "touchend"], function (t) {
+          return t.touches && t.touches.length > 1 ? null : t.touches[0] ? {
+            target: t.target,
+            pageX: t.touches[0].pageX,
+            pageY: t.touches[0].pageY,
+            clientX: t.touches[0].clientX,
+            clientY: t.touches[0].clientY
+          } : t;
+        }, function () {
+          return !1;
+        }) : window.PointerEvent || window.navigator.pointerEnabled ? this._touch_events(["pointermove", "pointerdown", "pointerup"], function (t) {
+          return "mouse" == t.pointerType ? null : t;
+        }, function (t) {
+          return !t || "mouse" == t.pointerType;
+        }) : window.navigator.msPointerEnabled && this._touch_events(["MSPointerMove", "MSPointerDown", "MSPointerUp"], function (t) {
+          return t.pointerType == t.MSPOINTER_TYPE_MOUSE ? null : t;
+        }, function (t) {
+          return !t || t.pointerType == t.MSPOINTER_TYPE_MOUSE;
+        });
+      }
+    }, l._touch_events = function (t, e, i) {
+      function a(t, e, a) {
+        t.addEventListener(e, function (t) {
+          if (l._is_lightbox_open()) return !0;
+          if (!i(t)) return a(t);
+        }, {
+          passive: !1
+        });
+      }
+
+      function n(t, e, i, a) {
+        if (!t || !e) return !1;
+
+        for (var n = t.target; n && n != l._obj;) {
+          n = n.parentNode;
+        }
+
+        if (n != l._obj) return !1;
+
+        if (l.matrix && l.matrix[l.getState().mode]) {
+          if (l.matrix[l.getState().mode].scrollable) return !1;
+        }
+
+        var r = Math.abs(t.pageY - e.pageY),
+            s = Math.abs(t.pageX - e.pageX);
+        return r < a && s > i && (!r || s / r > 3) && (t.pageX > e.pageX ? l._click.dhx_cal_next_button() : l._click.dhx_cal_prev_button(), !0);
+      }
+
+      function r(t) {
+        if (!i(t)) {
+          var e = l.getState().drag_mode,
+              a = !!l.matrix && l.matrix[l._mode],
+              n = l.render_view_data;
+          return "create" == e && a && (l.render_view_data = function () {
+            for (var t = l.getState().drag_id, e = l.getEvent(t), i = a.y_property, n = l.getEvents(e.start_date, e.end_date), r = 0; r < n.length; r++) {
+              n[r][i] != e[i] && (n.splice(r, 1), r--);
+            }
+
+            e._sorder = n.length - 1, e._count = n.length, this.render_data([e], l.getState().mode);
+          }), l._on_mouse_move(t), "create" == e && a && (l.render_view_data = n), t.preventDefault && t.preventDefault(), t.cancelBubble = !0, !1;
+        }
+      }
+
+      function s(t) {
+        i(t) || (l._hide_global_tip(), h && (l._on_mouse_up(e(t || event)), l._temp_touch_block = !1), l._drag_id = null, l._drag_mode = null, l._drag_pos = null, l._pointerDragId = null, clearTimeout(_), h = u = !1, c = !0);
+      }
+
+      var o,
+          d,
+          _,
+          h,
+          c,
+          u,
+          f = (-1 != navigator.userAgent.indexOf("Android") && navigator.userAgent.indexOf("WebKit"), 0);
+
+      a(document.body, t[0], function (t) {
+        if (!i(t)) {
+          var a = e(t);
+
+          if (a) {
+            if (h) return r(a), t.preventDefault && t.preventDefault(), t.cancelBubble = !0, l._update_global_tip(), !1;
+            if (d = e(t), u) return d ? void ((o.target != d.target || Math.abs(o.pageX - d.pageX) > 5 || Math.abs(o.pageY - d.pageY) > 5) && (c = !0, clearTimeout(_))) : void (c = !0);
+          }
+        }
+      }), a(this._els.dhx_cal_data[0], "touchcancel", s), a(this._els.dhx_cal_data[0], "contextmenu", function (t) {
+        if (!i(t)) return u ? (t && t.preventDefault && t.preventDefault(), (t || event).cancelBubble = !0, !1) : void 0;
+      }), a(this._obj, t[1], function (t) {
+        if (!i(t)) {
+          l._pointerDragId = t.pointerId;
+          var a;
+          if (h = c = !1, u = !0, !(a = d = e(t))) return void (c = !0);
+          var n = new Date();
+          if (!c && !h && n - f < 250) return l._click.dhx_cal_data(a), window.setTimeout(function () {
+            a.type = "dblclick", l._on_dbl_click(a);
+          }, 50), t.preventDefault && t.preventDefault(), t.cancelBubble = !0, l._block_next_stop = !0, !1;
+
+          if (f = n, !c && !h && l.config.touch_drag) {
+            var r = l._locate_event(document.activeElement),
+                s = l._locate_event(a.target),
+                g = o ? l._locate_event(o.target) : null;
+
+            if (r && s && r == s && r != g) return t.preventDefault && t.preventDefault(), t.cancelBubble = !0, l._ignore_next_click = !1, l._click.dhx_cal_data(a), o = a, !1;
+            _ = setTimeout(function () {
+              h = !0;
+
+              var t = o.target,
+                  e = l._getClassName(t);
+
+              t && -1 != e.indexOf("dhx_body") && (t = t.previousSibling), l._on_mouse_down(o, t), l._drag_mode && "create" != l._drag_mode && l.for_rendered(l._drag_id, function (t, e) {
+                t.style.display = "none", l._rendered.splice(e, 1);
+              }), l.config.touch_tip && l._show_global_tip(), l.updateEvent(l._drag_id);
+            }, l.config.touch_drag), o = a;
+          }
+        }
+      }), a(this._els.dhx_cal_data[0], t[2], function (t) {
+        if (!i(t)) return l.config.touch_swipe_dates && !h && n(o, d, 200, 100) && (l._block_next_stop = !0), h && (l._ignore_next_click = !0, setTimeout(function () {
+          l._ignore_next_click = !1;
+        }, 100)), s(t), l._block_next_stop ? (l._block_next_stop = !1, t.preventDefault && t.preventDefault(), t.cancelBubble = !0, !1) : void 0;
+      }), l.event(document.body, t[2], s);
+    }, l._show_global_tip = function () {
+      l._hide_global_tip();
+
+      var t = l._global_tip = document.createElement("div");
+      t.className = "dhx_global_tip", l._update_global_tip(1), document.body.appendChild(t);
+    }, l._update_global_tip = function (t) {
+      var e = l._global_tip;
+
+      if (e) {
+        var i = "";
+
+        if (l._drag_id && !t) {
+          var a = l.getEvent(l._drag_id);
+          a && (i = "<div>" + (a._timed ? l.templates.event_header(a.start_date, a.end_date, a) : l.templates.day_date(a.start_date, a.end_date, a)) + "</div>");
+        }
+
+        "create" == l._drag_mode || "new-size" == l._drag_mode ? e.innerHTML = (l.locale.labels.drag_to_create || "Drag to create") + i : e.innerHTML = (l.locale.labels.drag_to_move || "Drag to move") + i;
+      }
+    }, l._hide_global_tip = function () {
+      var t = l._global_tip;
+      t && t.parentNode && (t.parentNode.removeChild(t), l._global_tip = 0);
+    }, l._dp_init = function (t) {
+      t._methods = ["_set_event_text_style", "", "_dp_change_event_id", "_dp_hook_delete"], this._dp_change_event_id = function (t, e) {
+        l.getEvent(t) && l.changeEventId(t, e);
+      }, this._dp_hook_delete = function (e, i) {
+        if (l.getEvent(e)) return i && e != i && ("true_deleted" == this.getUserData(e, t.action_param) && this.setUserData(e, t.action_param, "updated"), this.changeEventId(e, i)), this.deleteEvent(i, !0);
+      }, this.attachEvent("onEventAdded", function (e) {
+        !this._loading && this._validId(e) && t.setUpdated(e, !0, "inserted");
+      }), this.attachEvent("onConfirmedBeforeEventDelete", function (e) {
+        if (this._validId(e)) {
+          var i = t.getState(e);
+          return "inserted" == i || this._new_event ? (t.setUpdated(e, !1), !0) : "deleted" != i && ("true_deleted" == i || (t.setUpdated(e, !0, "deleted"), !1));
+        }
+      }), this.attachEvent("onEventChanged", function (e) {
+        !this._loading && this._validId(e) && t.setUpdated(e, !0, "updated");
+      }), l.attachEvent("onClearAll", function () {
+        t._in_progress = {}, t._invalid = {}, t.updatedRows = [], t._waitMode = 0;
+      }), t._objToJson = function (e, i, a) {
+        a = a || "", i = i || {};
+
+        for (var n in e) {
+          0 !== n.indexOf("_") && (e[n] && e[n].getUTCFullYear ? i[a + n] = this.obj._helpers.formatDate(e[n]) : e[n] && "object" == _typeof(e[n]) ? t._objToJson(e[n], i, a + n + ".") : i[a + n] = e[n]);
+        }
+
+        return i;
+      }, t._getRowData = function (t, e) {
+        var i = this.obj.getEvent(t);
+        return this._objToJson(i);
+      }, t._clearUpdateFlag = function () {}, t.attachEvent("insertCallback", l._update_callback), t.attachEvent("updateCallback", l._update_callback), t.attachEvent("deleteCallback", function (t, e) {
+        this.obj.getEvent(e) ? (this.obj.setUserData(e, this.action_param, "true_deleted"), this.obj.deleteEvent(e)) : this.obj._add_rec_marker && this.obj._update_callback(t, e);
+      });
+    }, l._validId = function (t) {
+      return !0;
+    }, l.setUserData = function (t, e, i) {
+      if (t) {
+        var a = this.getEvent(t);
+        a && (a[e] = i);
+      } else this._userdata[e] = i;
+    }, l.getUserData = function (t, e) {
+      if (t) {
+        var i = this.getEvent(t);
+        return i ? i[e] : null;
+      }
+
+      return this._userdata[e];
+    }, l._set_event_text_style = function (t, e) {
+      if (l.getEvent(t)) {
+        this.for_rendered(t, function (t) {
+          t.style.cssText += ";" + e;
+        });
+        var i = this.getEvent(t);
+        i._text_style = e, this.event_updated(i);
+      }
+    }, l._update_callback = function (t, e) {
+      var i = l._xmlNodeToJSON(t.firstChild);
+
+      "none" == i.rec_type && (i.rec_pattern = "none"), i.text = i.text || i._tagvalue, i.start_date = l._helpers.parseDate(i.start_date), i.end_date = l._helpers.parseDate(i.end_date), l.addEvent(i), l._add_rec_marker && l.setCurrentView();
+    }, l.getRootView = function () {
+      return {
+        view: {
+          render: function render() {
+            return {
+              tag: "div",
+              type: 1,
+              attrs: {
+                style: "width:100%;height:100%;"
+              },
+              hooks: {
+                didInsert: function didInsert() {
+                  l.setCurrentView();
+                }
+              },
+              body: [{
+                el: this.el,
+                type: 1
+              }]
+            };
+          },
+          init: function init() {
+            var t = document.createElement("DIV");
+            t.id = "scheduler_" + l.uid(), t.style.width = "100%", t.style.height = "100%", t.classList.add("dhx_cal_container"), t.cmp = "grid", t.innerHTML = '<div class="dhx_cal_navline"><div class="dhx_cal_prev_button">&nbsp;</div><div class="dhx_cal_next_button">&nbsp;</div><div class="dhx_cal_today_button"></div><div class="dhx_cal_date"></div><div class="dhx_cal_tab" name="day_tab"></div><div class="dhx_cal_tab" name="week_tab"></div><div class="dhx_cal_tab" name="month_tab"></div></div><div class="dhx_cal_header"></div><div class="dhx_cal_data"></div>', l.init(t), this.el = t;
+          }
+        },
+        type: 4
+      };
+    }, l._skin_settings = {
+      fix_tab_position: [1, 0],
+      use_select_menu_space: [1, 0],
+      wide_form: [1, 0],
+      hour_size_px: [44, 42],
+      displayed_event_color: ["#ff4a4a", "ffc5ab"],
+      displayed_event_text_color: ["#ffef80", "7e2727"]
+    }, l._skin_xy = {
+      lightbox_additional_height: [90, 50],
+      nav_height: [59, 22],
+      bar_height: [24, 20]
+    }, l._is_material_skin = function () {
+      return (l.skin + "").indexOf("material") > -1;
+    }, l._border_box_bvents = function () {
+      return l._is_material_skin();
+    }, l._configure = function (t, e, i) {
+      for (var a in e) {
+        void 0 === t[a] && (t[a] = e[a][i]);
+      }
+    }, l._skin_init = function () {
+      if (!l.skin) for (var t = document.getElementsByTagName("link"), e = 0; e < t.length; e++) {
+        var i = t[e].href.match("dhtmlxscheduler_([a-z]+).css");
+
+        if (i) {
+          l.skin = i[1];
+          break;
+        }
+      }
+      var a = 0;
+
+      if (!l.skin || "classic" !== l.skin && "glossy" !== l.skin || (a = 1), l._is_material_skin()) {
+        var n = l.config.buttons_left.$inital,
+            r = l.config.buttons_right.$inital;
+
+        if (n && l.config.buttons_left.slice().join() == n && r && l.config.buttons_right.slice().join() == r) {
+          var s = l.config.buttons_left.slice();
+          l.config.buttons_left = l.config.buttons_right.slice(), l.config.buttons_right = s;
+        }
+
+        l.xy.event_header_height = 18, l.xy.week_agenda_scale_height = 35, l.xy.map_icon_width = 38, l._lightbox_controls.defaults.textarea.height = 64, l._lightbox_controls.defaults.time.height = "auto";
+      }
+
+      if (this._configure(l.config, l._skin_settings, a), this._configure(l.xy, l._skin_xy, a), "flat" === l.skin && (l.xy.scale_height = 35, l.templates.hour_scale = function (t) {
+        var e = t.getMinutes();
+        return e = e < 10 ? "0" + e : e, "<span class='dhx_scale_h'>" + t.getHours() + "</span><span class='dhx_scale_m'>&nbsp;" + e + "</span>";
+      }), !a) {
+        var o = l.config.minicalendar;
+        o && (o.padding = 14), l.templates.event_bar_date = function (t, e, i) {
+          return "• <b>" + l.templates.event_date(t) + "</b> ";
+        }, l.attachEvent("onTemplatesReady", function () {
+          var t = l.date.date_to_str("%d");
+          l.templates._old_month_day || (l.templates._old_month_day = l.templates.month_day);
+          var e = l.templates._old_month_day;
+
+          if (l.templates.month_day = function (i) {
+            if ("month" == this._mode) {
+              var a = t(i);
+              return 1 == i.getDate() && (a = l.locale.date.month_full[i.getMonth()] + " " + a), +i == +l.date.date_part(this._currentDate()) && (a = l.locale.labels.dhx_cal_today_button + " " + a), a;
+            }
+
+            return e.call(this, i);
+          }, l.config.fix_tab_position) {
+            var i = l._els.dhx_cal_navline[0].getElementsByTagName("div"),
+                a = null,
+                n = 211,
+                r = [14, 75, 136],
+                s = 14;
+
+            l._is_material_skin() && (r = [16, 103, 192], n = 294, s = -1);
+
+            for (var o = 0; o < i.length; o++) {
+              var d = i[o],
+                  _ = d.getAttribute("name");
+
+              if (_) {
+                switch (d.style.right = "auto", _) {
+                  case "day_tab":
+                    d.style.left = r[0] + "px", d.className += " dhx_cal_tab_first";
+                    break;
+
+                  case "week_tab":
+                    d.style.left = r[1] + "px";
+                    break;
+
+                  case "month_tab":
+                    d.style.left = r[2] + "px", d.className += " dhx_cal_tab_last";
+                    break;
+
+                  default:
+                    d.style.left = n + "px", d.className += " dhx_cal_tab_standalone", n = n + s + d.offsetWidth;
+                }
+
+                d.className += " " + _;
+              } else 0 === (d.className || "").indexOf("dhx_minical_icon") && d.parentNode == l._els.dhx_cal_navline[0] && (a = d);
+            }
+
+            a && (a.style.left = n + "px");
+          }
+        }), l._skin_init = function () {};
+      }
+    }, window.jQuery && function (t) {
+      var e = 0,
+          i = [];
+
+      t.fn.dhx_scheduler = function (a) {
+        if ("string" != typeof a) {
+          var n = [];
+          return this.each(function () {
+            if (this && this.getAttribute) if (this.getAttribute("dhxscheduler")) n.push(window[this.getAttribute("dhxscheduler")]);else {
+              var t = "scheduler";
+              e && (t = "scheduler" + (e + 1), window[t] = Scheduler.getSchedulerInstance());
+              var i = window[t];
+              this.setAttribute("dhxscheduler", t);
+
+              for (var r in a) {
+                "data" != r && (i.config[r] = a[r]);
+              }
+
+              this.getElementsByTagName("div").length || (this.innerHTML = '<div class="dhx_cal_navline"><div class="dhx_cal_prev_button">&nbsp;</div><div class="dhx_cal_next_button">&nbsp;</div><div class="dhx_cal_today_button"></div><div class="dhx_cal_date"></div><div class="dhx_cal_tab" name="day_tab" style="right:204px;"></div><div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div><div class="dhx_cal_tab" name="month_tab" style="right:76px;"></div></div><div class="dhx_cal_header"></div><div class="dhx_cal_data"></div>', this.className += " dhx_cal_container"), i.init(this, i.config.date, i.config.mode), a.data && i.parse(a.data), n.push(i), e++;
+            }
+          }), 1 === n.length ? n[0] : n;
+        }
+
+        if (i[a]) return i[a].apply(this, []);
+        t.error("Method " + a + " does not exist on jQuery.dhx_scheduler");
+      };
+    }(jQuery), function () {
+      function t(t, e, i) {
+        e && (t._date = e), i && (t._mode = i);
+      }
+
+      var e = l.setCurrentView,
+          i = l.updateView,
+          a = null,
+          n = null,
+          r = function r(e, _r) {
+        var s = this;
+        window.clearTimeout(n), window.clearTimeout(a);
+        var o = s._date,
+            d = s._mode;
+        t(this, e, _r), n = setTimeout(function () {
+          if (!s.callEvent("onBeforeViewChange", [d, o, _r || s._mode, e || s._date])) return void t(s, o, d);
+          i.call(s, e, _r), s.callEvent("onViewChange", [s._mode, s._date]), window.clearTimeout(a), n = 0;
+        }, l.config.delay_render);
+      },
+          s = function s(e, r) {
+        var s = this,
+            o = arguments;
+        t(this, e, r), window.clearTimeout(a), a = setTimeout(function () {
+          n || i.apply(s, o);
+        }, l.config.delay_render);
+      };
+
+      l.attachEvent("onSchedulerReady", function () {
+        l.config.delay_render ? (l.setCurrentView = r, l.updateView = s) : (l.setCurrentView = e, l.updateView = i);
+      });
+    }();
+
+    for (var b = 0; b < Scheduler._schedulerPlugins.length; b++) {
+      Scheduler._schedulerPlugins[b](l);
+    }
+
+    return l._internal_id = Scheduler._seed++, Scheduler.$syncFactory && Scheduler.$syncFactory(l), l;
+  }, window.Scheduler = Scheduler, window.scheduler = Scheduler.getSchedulerInstance();
+  var _0xaedc = ["href", "location", "dhtmlx.com/", "indexOf", "error", "", "message", "random", "floor"];
+  dhtmlx && dhtmlx.attaches && (dhtmlx.attaches.attachScheduler = function (t, e, i, a) {
+    var i = i || '<div class="dhx_cal_tab" name="day_tab" style="right:204px;"></div><div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div><div class="dhx_cal_tab" name="month_tab" style="right:76px;"></div>',
+        n = document.createElement("DIV");
+    return n.id = "dhxSchedObj_" + this._genStr(12), n.innerHTML = '<div id="' + n.id + '" class="dhx_cal_container" style="width:100%; height:100%;"><div class="dhx_cal_navline"><div class="dhx_cal_prev_button">&nbsp;</div><div class="dhx_cal_next_button">&nbsp;</div><div class="dhx_cal_today_button"></div><div class="dhx_cal_date"></div>' + i + '</div><div class="dhx_cal_header"></div><div class="dhx_cal_data"></div></div>', document.body.appendChild(n.firstChild), this.attachObject(n.id, !1, !0), this.vs[this.av].sched = a, this.vs[this.av].schedId = n.id, a.setSizes = a.updateView, a.destructor = function () {}, a.init(n.id, t, e), this.vs[this._viewRestore()].sched;
+  });
+}();
+
+/***/ }),
+
+/***/ "./resources/js/calendar/dhtmlxscheduler_collision.js":
+/*!************************************************************!*\
+  !*** ./resources/js/calendar/dhtmlxscheduler_collision.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/*
+@license
+dhtmlxScheduler v.4.4.4 Professional Evaluation
+
+This software is covered by DHTMLX Evaluation License. Contact sales@dhtmlx.com to get Commercial or Enterprise license. Usage without proper license is prohibited.
+
+(c) Dinamenta, UAB.
+*/
+Scheduler.plugin(function (e) {
+  !function () {
+    function t(t) {
+      var i = e._get_section_view();
+
+      i && t && (a = e.getEvent(t)[e._get_section_property()]);
+    }
+
+    var a, i;
+    e.config.collision_limit = 1, e.attachEvent("onBeforeDrag", function (e) {
+      return t(e), !0;
+    }), e.attachEvent("onBeforeLightbox", function (a) {
+      var n = e.getEvent(a);
+      return i = [n.start_date, n.end_date], t(a), !0;
+    }), e.attachEvent("onEventChanged", function (t) {
+      if (!t || !e.getEvent(t)) return !0;
+      var a = e.getEvent(t);
+
+      if (!e.checkCollision(a)) {
+        if (!i) return !1;
+        a.start_date = i[0], a.end_date = i[1], a._timed = this.isOneDayEvent(a);
+      }
+
+      return !0;
+    }), e.attachEvent("onBeforeEventChanged", function (t, a, i) {
+      return e.checkCollision(t);
+    }), e.attachEvent("onEventAdded", function (t, a) {
+      var i = e.checkCollision(a);
+      i || e.deleteEvent(t);
+    }), e.attachEvent("onEventSave", function (t, a, i) {
+      if (a = e._lame_clone(a), a.id = t, !a.start_date || !a.end_date) {
+        var n = e.getEvent(t);
+        a.start_date = new Date(n.start_date), a.end_date = new Date(n.end_date);
+      }
+
+      return a.rec_type && e._roll_back_dates(a), e.checkCollision(a);
+    }), e._check_sections_collision = function (t, a) {
+      var i = e._get_section_property();
+
+      return t[i] == a[i] && t.id != a.id ? !0 : !1;
+    }, e.checkCollision = function (t) {
+      var i = [],
+          n = e.config.collision_limit;
+      if (t.rec_type) for (var r = e.getRecDates(t), l = 0; l < r.length; l++) {
+        for (var o = e.getEvents(r[l].start_date, r[l].end_date), d = 0; d < o.length; d++) {
+          (o[d].event_pid || o[d].id) != t.id && i.push(o[d]);
+        }
+      } else {
+        i = e.getEvents(t.start_date, t.end_date);
+
+        for (var s = 0; s < i.length; s++) {
+          if (i[s].id == t.id) {
+            i.splice(s, 1);
+            break;
+          }
+        }
+      }
+
+      var _ = e._get_section_view(),
+          c = e._get_section_property(),
+          u = !0;
+
+      if (_) {
+        for (var h = 0, s = 0; s < i.length; s++) {
+          i[s].id != t.id && this._check_sections_collision(i[s], t) && h++;
+        }
+
+        h >= n && (u = !1);
+      } else i.length >= n && (u = !1);
+
+      if (!u) {
+        var p = !e.callEvent("onEventCollision", [t, i]);
+        return p || (t[c] = a || t[c]), p;
+      }
+
+      return u;
+    };
+  }();
+});
+
+/***/ }),
+
+/***/ "./resources/js/calendar/dhtmlxscheduler_timeline.js":
+/*!***********************************************************!*\
+  !*** ./resources/js/calendar/dhtmlxscheduler_timeline.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/*
+
+@license
+dhtmlxScheduler v.5.3.2 Professional
+
+This software can be used only as part of dhtmlx.com site.
+You are not allowed to use it on any other site
+
+(c) XB Software Ltd.
+
+*/
+Scheduler.plugin(function (e) {
+  e._temp_matrix_scope = function () {
+    function t(e, a) {
+      if (a = a || [], e.children) for (var n = 0; n < e.children.length; n++) {
+        a.push(e.children[n].key), t(e.children[n], a);
+      }
+      return a;
+    }
+
+    function a(e, t) {
+      var a = t.order[e];
+      return void 0 === a && (a = "$_" + e), a;
+    }
+
+    function n(e, t) {
+      if (t[e.key] = e, e.children) for (var a = 0; a < e.children.length; a++) {
+        n(e.children[a], t);
+      }
+    }
+
+    function i(e) {
+      for (var t = {}, a = e.y_unit_original || e.y_unit, i = 0; i < a.length; i++) {
+        n(a[i], t);
+      }
+
+      return t;
+    }
+
+    function r(t, n) {
+      function r(e, t, a, n) {
+        e[t] || (e[t] = []);
+
+        for (var i = a; i <= n; i++) {
+          e[t][i] || (e[t][i] = []), e[t][i].push(h);
+        }
+      }
+
+      for (var o = [], _ = 0; _ < n.y_unit.length; _++) {
+        o[_] = [];
+      }
+
+      var d;
+      o[d] || (o[d] = []);
+      var s = i(n),
+          l = "tree" == n.render;
+      l && (o.$tree = {});
+
+      for (var c = n.y_property, _ = 0; _ < t.length; _++) {
+        var h = t[_],
+            u = h[c];
+        d = a(u, n);
+
+        var g = e._get_date_index(n, h.start_date),
+            f = e._get_date_index(n, h.end_date);
+
+        h.end_date.valueOf() == n._trace_x[f].valueOf() && (f -= 1), o[d] || (o[d] = []), r(o, d, g, f);
+        var v = s[u];
+        if (l && v && v.$parent) for (; v.$parent;) {
+          var m = s[v.$parent];
+          r(o.$tree, m.key, g, f), v = m;
+        }
+      }
+
+      return o;
+    }
+
+    function o() {
+      var e = document.createElement("p");
+      e.style.width = "100%", e.style.height = "200px";
+      var t = document.createElement("div");
+      t.style.position = "absolute", t.style.top = "0px", t.style.left = "0px", t.style.visibility = "hidden", t.style.width = "200px", t.style.height = "150px", t.style.overflow = "hidden", t.appendChild(e), document.body.appendChild(t);
+      var a = e.offsetWidth;
+      t.style.overflow = "scroll";
+      var n = e.offsetWidth;
+      return a == n && (n = t.clientWidth), document.body.removeChild(t), a - n;
+    }
+
+    function _(t) {
+      return e._helpers.formatDate(t);
+    }
+
+    function d(t, a) {
+      var n = t.querySelector(".dhx_timeline_data_wrapper");
+      return a.scrollable || (n = e.$container.querySelector(".dhx_cal_data")), n;
+    }
+
+    function s() {
+      return e.$container.querySelector(".dhx_cal_data .dhx_timeline_label_col");
+    }
+
+    function l(t, a, n, i) {
+      a._is_ev_creating = !1;
+
+      var r,
+          _ = d(t, a),
+          l = e._els.dhx_cal_header[0];
+
+      if (_.onscroll = function (c) {
+        var h = d(t, a),
+            u = h.scrollTop,
+            g = a.scrollHelper.getScrollValue(h),
+            f = e._timeline_smart_render.getViewPort(a.scrollHelper, 0, g, u),
+            v = s();
+
+        if (a.scrollable && (v.style.top = -u + "px"), !1 !== a.smart_rendering) {
+          if ((g !== a._x_scroll || a._is_ev_creating) && (a.second_scale ? e._timeline_smart_render.updateHeader(a, f, l.children[1]) : e._timeline_smart_render.updateHeader(a, f, l.children[0])), e.config.rtl) {
+            var m = +e.$container.querySelector(".dhx_timeline_label_wrapper").style.height.replace("px", ""),
+                p = a._section_height[a.y_unit.length] + a._label_rows[a._label_rows.length - 1].top;
+            a.scrollHelper.getMode() == a.scrollHelper.modes.minMax && (p > m || "tree" == a.render) ? l.style.right = -1 - g - o() + "px" : l.style.right = -1 - g + "px", l.style.left = "unset";
+          } else l.style.left = -1 - g + "px";
+
+          (a._options_changed || u !== a._y_scroll || a._is_ev_creating) && e._timeline_smart_render.updateLabels(a, f, v), a._is_ev_creating = !1, e._timeline_smart_render.updateGridCols(a, f), e._timeline_smart_render.updateGridRows(a, f);
+          var y = !1;
+          "cell" != a.render && (window.requestAnimationFrame ? (y = !0, r && cancelAnimationFrame(r), r = requestAnimationFrame(function () {
+            e._timeline_smart_render.updateEvents(a, f), r = 0, a.callEvent("onScroll", [a.scrollHelper.getScrollValue(_), _.scrollTop]);
+          })) : e._timeline_smart_render.updateEvents(a, f));
+          var b = 0;
+          a._scales = {};
+          var x;
+          x = "cell" === a.render ? h.querySelectorAll(".dhx_timeline_data_col .dhx_timeline_data_row") : h.querySelectorAll(".dhx_timeline_data_col .dhx_matrix_line");
+
+          for (var w = 0, k = x.length; w < k; w++) {
+            var D = x[w].getAttribute("data-section-id"),
+                E = a.order[D];
+            n[E] = i[E].height, a._scales[D] = x[w];
+          }
+
+          for (var w = 0, k = n.length; w < k; w++) {
+            b += n[w];
+          }
+
+          e.$container.querySelector(".dhx_timeline_data_col").style.height = b + "px";
+          var S = h.scrollTop,
+              N = a.scrollHelper.getScrollValue(h),
+              M = a._summ - e.$container.querySelector(".dhx_cal_data").offsetWidth + a.dx + a.custom_scroll_width;
+          e._timeline_save_scroll_pos(a, S, N, M), y || a.callEvent("onScroll", [N, S]), a._is_new_view = !1;
+        }
+      }, !_.$eventsAttached) {
+        _.$eventsAttached = !0;
+        var c = {
+          pageX: 0,
+          pageY: 0
+        };
+        _.addEventListener("touchstart", function (e) {
+          var t = e;
+          e.touches && (t = e.touches[0]), c = {
+            pageX: t.pageX,
+            pageY: t.pageY
+          };
+        }), _.addEventListener("touchmove", function (t) {
+          var n = t;
+          t.touches && (n = t.touches[0]);
+          var i = s(),
+              r = c.pageX - n.pageX,
+              o = c.pageY - n.pageY;
+
+          if (c = {
+            pageX: n.pageX,
+            pageY: n.pageY
+          }, (r || o) && !e.getState().drag_id) {
+            var d = Math.abs(r),
+                l = Math.abs(o),
+                h = Math.sqrt(r * r + o * o),
+                u = d / h,
+                g = l / h;
+            u < .42 ? r = 0 : g < .42 && (o = 0), a.scrollHelper.setScrollValue(a.scrollHelper.getScrollValue(_) + r), _.scrollTop += o, a.scrollable && o && (i.style.top = -_.scrollTop + "px");
+          }
+
+          return t && t.preventDefault && t.preventDefault(), !1;
+        });
+      }
+
+      a.scroll_position && a._is_new_view ? a.scrollTo(a.scroll_position) : e._timeline_set_scroll_pos(t, a), a._is_ev_creating = !0;
+    }
+
+    function c(e, t) {
+      if (e.closest) return e.closest(t);
+
+      if (e.matches || e.msMatchesSelector || e.webkitMatchesSelector) {
+        var a = e;
+        if (!document.documentElement.contains(a)) return null;
+
+        do {
+          if ((a.matches || a.msMatchesSelector || a.webkitMatchesSelector).call(a, t)) return a;
+          a = a.parentElement || a.parentNode;
+        } while (null !== a && 1 === a.nodeType);
+
+        return null;
+      }
+
+      return window.console.error("Your browser is not supported"), null;
+    }
+
+    function h(t, a) {
+      var n = e.matrix[e._mode],
+          i = {},
+          r = {},
+          o = a;
+
+      for (i.x = t.touches ? t.touches[0].pageX : t.pageX, i.y = t.touches ? t.touches[0].pageY : t.pageY, r.left = o.offsetLeft + n.dx, r.top = o.offsetTop; o;) {
+        r.left += o.offsetLeft, r.top += o.offsetTop, o = o.offsetParent;
+      }
+
+      return {
+        x: i.x - r.left,
+        y: i.y - r.top
+      };
+    }
+
+    function u(t) {
+      E && clearInterval(E), e._schedulerOuter = e.$container.querySelector(".dhx_timeline_data_wrapper");
+      var a = {
+        pageX: t.touches ? t.touches[0].pageX : t.pageX,
+        pageY: t.touches ? t.touches[0].pageY : t.pageY
+      };
+      E = setInterval(function () {
+        g(a);
+      }, D);
+    }
+
+    function g(t) {
+      if (!e.getState().drag_id) return clearInterval(E), void (S = null);
+      var a = e.matrix[e._mode];
+
+      if (a) {
+        var n = e._schedulerOuter,
+            i = h(t, n),
+            r = n.offsetWidth - a.dx,
+            o = n.offsetHeight,
+            _ = i.x,
+            d = i.y,
+            s = a.autoscroll || {};
+
+        e._merge(s, {
+          range_x: 200,
+          range_y: 100,
+          speed_x: 20,
+          speed_y: 10
+        });
+
+        var l = f(_, r, S ? S.x : 0, s.range_x);
+        a.scrollable || (l = 0);
+        var c = f(d, o, S ? S.y : 0, s.range_y);
+        !c && !l || S || (S = {
+          x: _,
+          y: d
+        }, l = 0, c = 0), l *= s.speed_x, c *= s.speed_y, l && c && (Math.abs(l / 5) > Math.abs(c) ? c = 0 : Math.abs(c / 5) > Math.abs(l) && (l = 0)), l || c ? (S.started = !0, v(l, c)) : clearInterval(E);
+      }
+    }
+
+    function f(e, t, a, n) {
+      return e < n && (!S || S.started || e < a) ? -1 : t - e < n && (!S || S.started || e > a) ? 1 : 0;
+    }
+
+    function v(t, a) {
+      var n = e._schedulerOuter;
+      a && (n.scrollTop += a), t && (n.scrollLeft += t);
+    }
+
+    var m = function () {
+      return function () {
+        function e() {
+          var e = document.createElement("div");
+          e.style.cssText = "direction: rtl;overflow: auto;width:100px;height: 100px;position:absolute;top: -100500px;left: -100500px;";
+          var t = document.createElement("div");
+          return t.style.cssText = "width: 100500px;height: 1px;", e.appendChild(t), e;
+        }
+
+        function t() {
+          var t = _.minMax,
+              a = e();
+          return document.body.appendChild(a), a.scrollLeft > 0 ? t = _.minMax : (a.scrollLeft = -50, t = -50 === a.scrollLeft ? _.nMaxMin : _.maxMin), document.body.removeChild(a), t;
+        }
+
+        function a(e, t) {
+          var a = r();
+          return a === _.nMaxMin ? e ? -e : 0 : a === _.minMax ? t - e : e;
+        }
+
+        function n(e) {
+          var t = getComputedStyle(e).direction;
+
+          if (t && "ltr" !== t) {
+            var n = e.scrollWidth - e.offsetWidth;
+            return a(e.scrollLeft, n);
+          }
+
+          return e.scrollLeft;
+        }
+
+        function i(e, t) {
+          var n = getComputedStyle(e).direction;
+
+          if (n && "ltr" !== n) {
+            var i = e.scrollWidth - e.offsetWidth,
+                r = a(t, i);
+            e.scrollLeft = r;
+          } else e.scrollLeft = t;
+        }
+
+        function r() {
+          return o || (o = t()), o;
+        }
+
+        var o,
+            _ = {
+          minMax: "[0;max]",
+          maxMin: "[max;0]",
+          nMaxMin: "[-max;0]"
+        };
+        return {
+          modes: _,
+          getMode: r,
+          normalizeValue: a,
+          getScrollValue: n,
+          setScrollValue: i
+        };
+      };
+    }();
+
+    e.matrix = {}, e._merge = function (e, t) {
+      for (var a in t) {
+        void 0 === e[a] && (e[a] = t[a]);
+      }
+    }, e.createTimelineView = function (a) {
+      function n(a, n, i) {
+        var r = e._timeline_smart_render.getPreparedEvents(i),
+            o = i.order[a],
+            _ = i.y_unit[o];
+
+        if (!_) return [];
+        var d = [a];
+        n && t(_, d);
+
+        for (var s = [], l = 0; l < d.length; l++) {
+          var o = i.order[d[l]];
+          if (void 0 !== o && r[o]) s = s.concat(r[o]);else if (r.undefined) for (var c = 0; c < r.undefined.length; c++) {
+            var h = r.undefined[c];
+            h[i.y_property] == d[l] && s.push(h);
+          }
+        }
+
+        return s;
+      }
+
+      function i(t, a, n, i) {
+        var r = e._timeline_smart_render.getPreparedEvents(i),
+            o = [],
+            _ = [],
+            d = i.order[t],
+            s = i.y_unit[d];
+
+        if (!s) return [];
+
+        var l = e._get_date_index(i, a);
+
+        return r.$matrix ? (o = r.$matrix[d][l] || [], n && r.$matrix.$tree && r.$matrix.$tree[s.key] && (_ = r.$matrix.$tree[s.key][l] || []), o.concat(_)) : r[d] || [];
+      }
+
+      function r(t, a, n) {
+        for (var i = e.date[n.name + "_start"](new Date(t)), r = 0, o = i, _ = n.x_step, d = n.x_unit; o < a;) {
+          r++, o = e.date.add(o, _, d);
+        }
+
+        return r;
+      }
+
+      e._skin_init(), e._merge(a, {
+        scrollHelper: m(),
+        column_width: 100,
+        autoscroll: {
+          range_x: 200,
+          range_y: 100,
+          speed_x: 20,
+          speed_y: 10
+        },
+        _is_new_view: !0,
+        _section_autowidth: !0,
+        _x_scroll: 0,
+        _y_scroll: 0,
+        _h_cols: {},
+        _label_rows: [],
+        section_autoheight: !0,
+        name: "matrix",
+        x: "time",
+        y: "time",
+        x_step: 1,
+        x_unit: "hour",
+        y_unit: "day",
+        y_step: 1,
+        x_start: 0,
+        x_size: 24,
+        y_start: 0,
+        y_size: 7,
+        render: "cell",
+        dx: 200,
+        dy: 50,
+        event_dy: e.xy.bar_height - 5,
+        event_min_dy: e.xy.bar_height - 5,
+        resize_events: !0,
+        fit_events: !0,
+        show_unassigned: !1,
+        second_scale: !1,
+        round_position: !1,
+        _logic: function _logic(t, a, n) {
+          var i = {};
+          return e.checkEvent("onBeforeSectionRender") && (i = e.callEvent("onBeforeSectionRender", [t, a, n])), i;
+        }
+      }), a._original_x_start = a.x_start, "day" != a.x_unit && (a.first_hour = a.last_hour = 0), a._start_correction = a.first_hour ? 60 * a.first_hour * 60 * 1e3 : 0, a._end_correction = a.last_hour ? 60 * (24 - a.last_hour) * 60 * 1e3 : 0, e.checkEvent("onTimelineCreated") && e.callEvent("onTimelineCreated", [a]), dhtmlxEventable(a);
+      var _ = e.render_data;
+      e.render_data = function (t, n) {
+        if (this._mode != a.name) return _.apply(this, arguments);
+        if (n && !a.show_unassigned && "cell" != a.render) for (var i = 0; i < t.length; i++) {
+          this.clear_event(t[i]), this.render_timeline_event.call(this.matrix[this._mode], t[i], !0);
+        } else e._renderMatrix.call(a, !0, !0);
+      }, e.matrix[a.name] = a, e.templates[a.name + "_cell_value"] = function (e) {
+        return e ? e.length : "";
+      }, e.templates[a.name + "_cell_class"] = function (e) {
+        return "";
+      }, e.templates[a.name + "_scalex_class"] = function (e) {
+        return "";
+      }, e.templates[a.name + "_second_scalex_class"] = function (e) {
+        return "";
+      }, e.templates[a.name + "_scaley_class"] = function (e, t, a) {
+        return "";
+      }, e.templates[a.name + "_scale_label"] = function (e, t, a) {
+        return t;
+      }, e.templates[a.name + "_tooltip"] = function (e, t, a) {
+        return a.text;
+      }, e.templates[a.name + "_date"] = function (t, a) {
+        return t.getDay() == a.getDay() && a - t < 864e5 || +t == +e.date.date_part(new Date(a)) || +e.date.add(t, 1, "day") == +a && 0 === a.getHours() && 0 === a.getMinutes() ? e.templates.day_date(t) : t.getDay() != a.getDay() && a - t < 864e5 ? e.templates.day_date(t) + " &ndash; " + e.templates.day_date(a) : e.templates.week_date(t, a);
+      }, e.templates[a.name + "_scale_date"] = e.date.date_to_str(a.x_date || e.config.hour_date), e.templates[a.name + "_second_scale_date"] = e.date.date_to_str(a.second_scale && a.second_scale.x_date ? a.second_scale.x_date : e.config.hour_date), e.date["add_" + a.name + "_private"] = function (t, n) {
+        var i = n,
+            r = a.x_unit;
+
+        if ("minute" == a.x_unit || "hour" == a.x_unit) {
+          var o = i;
+          "hour" == a.x_unit && (o *= 60), o % 1440 || (i = o / 1440, r = "day");
+        }
+
+        return e.date.add(t, i, r);
+      }, e.date["add_" + a.name] = function (t, n, i) {
+        var r = e.date["add_" + a.name + "_private"](t, (a.x_length || a.x_size) * a.x_step * n);
+
+        if ("minute" == a.x_unit || "hour" == a.x_unit) {
+          var o = a.x_length || a.x_size,
+              _ = "hour" == a.x_unit ? 60 * a.x_step : a.x_step;
+
+          if (_ * o % 1440) if (+e.date.date_part(new Date(t)) == +e.date.date_part(new Date(r))) a.x_start += n * o;else {
+            var d = 1440 / (o * _) - 1,
+                s = Math.round(d * o);
+            a.x_start = n > 0 ? a.x_start - s : s + a.x_start;
+          }
+        }
+
+        return r;
+      }, e.date[a.name + "_start"] = function (t) {
+        var n = e.date[a.x_unit + "_start"] || e.date.day_start,
+            i = n.call(e.date, t),
+            r = i.getTimezoneOffset();
+        i = e.date.add(i, a.x_step * a.x_start, a.x_unit);
+        var o = i.getTimezoneOffset();
+        return r != o && i.setTime(i.getTime() + 6e4 * (o - r)), i;
+      }, a.scrollTo = e.bind(function (t) {
+        if (t) {
+          var a;
+          a = t.date ? t.date : t.left ? t.left : t;
+          var n = -1;
+          t.section ? n = this.posFromSection(t.section) : t.top && (n = t.top);
+          var i;
+
+          if (i = "number" == typeof a ? a : this.posFromDate(a), e.config.rtl) {
+            var r = +e.$container.querySelector(".dhx_timeline_label_wrapper").style.height.replace("px", ""),
+                _ = this._section_height[this.y_unit.length] + this._label_rows[this._label_rows.length - 1].top;
+
+            this.scrollHelper.getMode() == this.scrollHelper.modes.minMax && (_ > r || "tree" == this.render) && (i -= o());
+          }
+
+          var d = e.$container.querySelector(".dhx_timeline_data_wrapper");
+          this.scrollable || (d = e.$container.querySelector(".dhx_cal_data")), this.scrollable && this.scrollHelper.setScrollValue(d, i), n > 0 && (d.scrollTop = n);
+        }
+      }, a), a.getScrollPosition = e.bind(function () {
+        return {
+          left: this._x_scroll || 0,
+          top: this._y_scroll || 0
+        };
+      }, a), a.posFromDate = e.bind(function (t) {
+        return e._timeline_getX({
+          start_date: t
+        }, !1, this) - 1;
+      }, a), a.posFromSection = e.bind(function (e) {
+        var t = this.order[e];
+        if (void 0 === t) return -1;
+        var a = 0;
+
+        for (var n in this.order) {
+          this.order[n] < t && (a += this._section_height[n]);
+        }
+
+        return a;
+      }, a), a.selectEvents = e.bind(function (e) {
+        var t = e.section,
+            a = e.date,
+            r = e.selectNested;
+        return a ? i(t, a, r, this) : t ? n(t, r, this) : void 0;
+      }, a), a.setRange = e.bind(function (t, a) {
+        var n = e.date[this.name + "_start"](new Date(t)),
+            i = r(t, a, this);
+        this.x_size = i, e.setCurrentView(n, this.name);
+      }, a), e.callEvent("onOptionsLoad", [a]), e[a.name + "_view"] = function (t) {
+        t ? e._set_timeline_dates(a) : e._renderMatrix.apply(a, arguments);
+      };
+      var d = new Date();
+      e.date.add(d, a.x_step, a.x_unit).valueOf(), d.valueOf();
+
+      e["mouse_" + a.name] = function (t) {
+        var n = this._drag_event;
+
+        if (this._drag_id && (n = this.getEvent(this._drag_id)), a.scrollable && !t.converted) {
+          if (t.converted = 1, t.x += -a.dx + a._x_scroll, e.config.rtl) {
+            var i = +e.$container.querySelector(".dhx_timeline_label_wrapper").style.height.replace("px", ""),
+                r = a._section_height[a.y_unit.length] + a._label_rows[a._label_rows.length - 1].top;
+            t.x += e.xy.scale_width, a.scrollHelper.getMode() == a.scrollHelper.modes.minMax && (r > i || "tree" == a.render) && (t.x += o());
+          }
+
+          t.y += a._y_scroll;
+        } else e.config.rtl ? t.x -= a.dx - e.xy.scale_width : t.x -= a.dx;
+
+        var _ = e._timeline_drag_date(a, t.x);
+
+        if (t.x = 0, t.force_redraw = !0, t.custom = !0, "move" == this._drag_mode && this._drag_id && this._drag_event) {
+          var n = this.getEvent(this._drag_id),
+              d = this._drag_event;
+
+          if (t._ignores = this._ignores_detected || a._start_correction || a._end_correction, void 0 === d._move_delta && (d._move_delta = (n.start_date - _) / 6e4, this.config.preserve_length && t._ignores && (d._move_delta = this._get_real_event_length(n.start_date, _, a), d._event_length = this._get_real_event_length(n.start_date, n.end_date, a))), this.config.preserve_length && t._ignores) {
+            var s = (d._event_length, this._get_fictional_event_length(_, d._move_delta, a, !0));
+            _ = new Date(_ - s);
+          } else _ = e.date.add(_, d._move_delta, "minute");
+        }
+
+        if ("resize" == this._drag_mode && n && (this.config.timeline_swap_resize && this._drag_id && (this._drag_from_start && +_ > +n.end_date ? this._drag_from_start = !1 : !this._drag_from_start && +_ < +n.start_date && (this._drag_from_start = !0)), t.resize_from_start = this._drag_from_start, !this.config.timeline_swap_resize && this._drag_id && this._drag_from_start && +_ >= +e.date.add(n.end_date, -e.config.time_step, "minute") && (_ = e.date.add(n.end_date, -e.config.time_step, "minute"))), a.round_position) switch (this._drag_mode) {
+          case "move":
+            this.config.preserve_length || (_ = e._timeline_get_rounded_date.call(a, _, !1), "day" == a.x_unit && (t.custom = !1));
+            break;
+
+          case "resize":
+            this._drag_event && (null !== this._drag_event._resize_from_start && void 0 !== this._drag_event._resize_from_start || (this._drag_event._resize_from_start = t.resize_from_start), t.resize_from_start = this._drag_event._resize_from_start, _ = e._timeline_get_rounded_date.call(a, _, !this._drag_event._resize_from_start));
+        }
+        this._resolve_timeline_section(a, t), t.section && this._update_timeline_section({
+          pos: t,
+          event: this.getEvent(this._drag_id),
+          view: a
+        }), t.y = Math.round((this._correct_shift(_, 1) - this._min_date) / (6e4 * this.config.time_step)), t.shift = this.config.time_step, a.round_position && "new-size" == this._drag_mode && _ <= this._drag_start && (t.shift = e.date.add(this._drag_start, a.x_step, a.x_unit) - this._drag_start);
+
+        var l = this._is_pos_changed(this._drag_pos, t);
+
+        return this._drag_pos && l && (this._drag_event._dhx_changed = !0), l || this._drag_pos.has_moved || (t.force_redraw = !1), t;
+      };
+    }, e._prepare_timeline_events = function (t) {
+      var a = [];
+      if ("cell" == t.render) a = e._timeline_trace_events.call(t);else {
+        for (var n = e.get_visible_events(), i = t.order, r = 0; r < n.length; r++) {
+          var o = n[r],
+              _ = o[t.y_property],
+              d = t.order[_];
+          t.y_unit[d];
+
+          if (t.show_unassigned && !_) {
+            for (var s in i) {
+              if (i.hasOwnProperty(s)) {
+                d = i[s], a[d] || (a[d] = []);
+
+                var l = e._lame_copy({}, o);
+
+                l[t.y_property] = s, a[d].push(l);
+              }
+            }
+          } else a[d] || (a[d] = []), a[d].push(o);
+        }
+
+        a.$matrix = e._timeline_trace_events.call(t);
+      }
+      return a;
+    }, e._populate_timeline_rendered = function (t) {
+      e._rendered = [];
+
+      for (var a = t.querySelectorAll("div[event_id]"), n = 0; n < a.length; n++) {
+        e._rendered.push(a[n]);
+      }
+    }, e._get_timeline_event_height = function (e, t) {
+      var a = e[t.y_property],
+          n = t.event_dy;
+      return "full" == t.event_dy && (n = t.section_autoheight ? t._section_height[a] - 6 : t.dy - 3), t.resize_events && (n = Math.max(Math.floor(n / (e._count || 1)), t.event_min_dy)), n;
+    }, e._get_timeline_event_y = function (t, a) {
+      var n = t || 0,
+          i = 2 + n * a + (n ? 2 * n : 0);
+      return e.config.cascade_event_display && (i = 2 + n * e.config.cascade_event_margin + (n ? 2 * n : 0)), i;
+    }, e.render_timeline_event = function (t, a) {
+      var n = t[this.y_property];
+      if (!n) return "";
+
+      var i = t._sorder,
+          r = e._timeline_getX(t, !1, this),
+          o = e._timeline_getX(t, !0, this),
+          _ = e._get_timeline_event_height(t, this),
+          d = _ - 2;
+
+      t._inner || "full" != this.event_dy || (d = (d + 2) * (t._count - i) - 2), d += 3;
+
+      var s = e._get_timeline_event_y(t._sorder, _),
+          l = _ + s + 2;
+
+      (!this._events_height[n] || this._events_height[n] < l) && (this._events_height[n] = l);
+      var c = e.templates.event_class(t.start_date, t.end_date, t);
+      c = "dhx_cal_event_line " + (c || ""), e.getState().select_id == t.id && (c += " dhx_cal_event_selected"), t._no_drag_move && (c += " no_drag_move");
+      var h = t.color ? "background:" + t.color + ";" : "",
+          u = t.textColor ? "color:" + t.textColor + ";" : "",
+          g = e.templates.event_bar_text(t.start_date, t.end_date, t),
+          f = "<div " + e._waiAria.eventBarAttrString(t) + " event_id='" + t.id + "' class='" + c + "' style='" + h + u + "position:absolute; top:" + s + "px; height: " + d + "px; " + (e.config.rtl ? "right:" : "left:") + r + "px; width:" + Math.max(0, o - r) + "px;" + (t._text_style || "") + "'>";
+
+      if (e.config.drag_resize && !e.config.readonly) {
+        var v = "dhx_event_resize",
+            m = d + 1,
+            p = "<div class='" + v + " " + v + "_start' style='height: " + m + "px;'></div>",
+            y = "<div class='" + v + " " + v + "_end' style='height: " + m + "px;'></div>";
+        f += (t._no_resize_start ? "" : p) + (t._no_resize_end ? "" : y);
+      }
+
+      if (f += g + "</div>", !a) return f;
+      var b = document.createElement("div");
+      b.innerHTML = f;
+      var x = this._scales[n];
+      x && (e._rendered.push(b.firstChild), x.appendChild(b.firstChild));
+    }, e._timeline_trace_events = function () {
+      return r(e.get_visible_events(), this);
+    }, e._timeline_getX = function (t, a, n) {
+      var i = 0,
+          r = n._step,
+          o = n.round_position,
+          _ = 0,
+          d = a ? t.end_date : t.start_date;
+      d.valueOf() > e._max_date.valueOf() && (d = e._max_date);
+      var s = d - e._min_date_timeline;
+
+      if (s > 0) {
+        var l = e._get_date_index(n, d);
+
+        e._ignores[l] && (o = !0);
+
+        for (var c = 0; c < l; c++) {
+          i += e._cols[c];
+        }
+
+        var h = e._timeline_get_rounded_date.apply(n, [d, !1]);
+
+        o ? +d > +h && a && (_ = e._cols[l]) : (s = d - h, n.first_hour || n.last_hour ? (s -= n._start_correction, s < 0 && (s = 0), (_ = Math.round(s / r)) > e._cols[l] && (_ = e._cols[l])) : _ = Math.round(s / r));
+      }
+
+      e._border_box_bvents();
+
+      return i += a ? 0 === s || o ? _ - 2 : _ : _ + 1;
+    }, e._timeline_get_rounded_date = function (t, a) {
+      var n = e._get_date_index(this, t),
+          i = this._trace_x[n];
+
+      return a && +t != +this._trace_x[n] && (i = this._trace_x[n + 1] ? this._trace_x[n + 1] : e.date.add(this._trace_x[n], this.x_step, this.x_unit)), new Date(i);
+    }, e._timeline_skip_ignored = function (t) {
+      if (e._ignores_detected) for (var a, n, i, r, o = 0; o < t.length; o++) {
+        for (r = t[o], i = !1, a = e._get_date_index(this, r.start_date), n = e._get_date_index(this, r.end_date); a < n;) {
+          if (!e._ignores[a]) {
+            i = !0;
+            break;
+          }
+
+          a++;
+        }
+
+        i || a != n || e._ignores[n] || +r.end_date > +this._trace_x[n] && (i = !0), i || (t.splice(o, 1), o--);
+      }
+    }, e._timeline_calculate_event_positions = function (t) {
+      if (t && "cell" != this.render) {
+        e._timeline_skip_ignored.call(this, t), t.sort(this.sort || function (e, t) {
+          return e.start_date.valueOf() == t.start_date.valueOf() ? e.id > t.id ? 1 : -1 : e.start_date > t.start_date ? 1 : -1;
+        });
+
+        for (var a = [], n = t.length, i = -1, r = null, o = 0; o < n; o++) {
+          var _ = t[o];
+          _._inner = !1;
+          var d = this.round_position ? e._timeline_get_rounded_date.apply(this, [_.start_date, !1]) : _.start_date;
+
+          for (this.round_position ? e._timeline_get_rounded_date.apply(this, [_.end_date, !0]) : _.end_date; a.length;) {
+            if (!(a[a.length - 1].end_date.valueOf() <= d.valueOf())) break;
+            a.splice(a.length - 1, 1);
+          }
+
+          for (var s = !1, l = 0; l < a.length; l++) {
+            var c = a[l];
+
+            if (c.end_date.valueOf() <= d.valueOf()) {
+              s = !0, _._sorder = c._sorder, a.splice(l, 1), _._inner = !0;
+              break;
+            }
+          }
+
+          if (a.length && (a[a.length - 1]._inner = !0), !s) if (a.length) {
+            if (a.length <= a[a.length - 1]._sorder) {
+              if (a[a.length - 1]._sorder) for (var h = 0; h < a.length; h++) {
+                for (var u = !1, g = 0; g < a.length; g++) {
+                  if (a[g]._sorder == h) {
+                    u = !0;
+                    break;
+                  }
+                }
+
+                if (!u) {
+                  _._sorder = h;
+                  break;
+                }
+              } else _._sorder = 0;
+              _._inner = !0;
+            } else {
+              for (var f = a[0]._sorder, v = 1; v < a.length; v++) {
+                a[v]._sorder > f && (f = a[v]._sorder);
+              }
+
+              _._sorder = f + 1, i < _._sorder && (i = _._sorder, r = _), _._inner = !1;
+            }
+          } else _._sorder = 0;
+          a.push(_), a.length > (a.max_count || 0) ? (a.max_count = a.length, _._count = a.length) : _._count = _._count ? _._count : 1;
+        }
+
+        for (var m = 0; m < t.length; m++) {
+          t[m]._count = a.max_count, e._register_copy && e._register_copy(t[m]);
+        }
+
+        (r || t[0]) && e.render_timeline_event.call(this, r || t[0], !1);
+      }
+    }, e._timeline_get_events_html = function (t) {
+      var a = "";
+      if (t && "cell" != this.render) for (var n = 0; n < t.length; n++) {
+        a += e.render_timeline_event.call(this, t[n], !1);
+      }
+      return a;
+    }, e._timeline_update_events_html = function (t) {
+      var a = "";
+
+      if (t && "cell" != this.render) {
+        var n = {};
+        t.forEach(function (e) {
+          n[e.id] = !0;
+        }), e._rendered.forEach(function (e) {
+          n[e.getAttribute("event_id")] && e.parentNode && e.parentNode.removeChild(e);
+        });
+
+        for (var i = 0; i < t.length; i++) {
+          a += e.render_timeline_event.call(this, t[i], !1);
+        }
+      }
+
+      return a;
+    }, e._timeline_get_block_stats = function (t, a) {
+      var n = {};
+      return a._sch_height = t.offsetHeight, n.style_data_wrapper = (e.config.rtl ? "padding-right:" : "padding-left:") + a.dx + "px;", n.style_label_wrapper = "width: " + a.dx + "px;", a.scrollable ? (n.style_data_wrapper += "height:" + (a._sch_height - 1) + "px;", void 0 === a.html_scroll_width && (a.html_scroll_width = o()), a._section_autowidth ? a.custom_scroll_width = 0 : a.custom_scroll_width = a.html_scroll_width, n.style_label_wrapper += "height:" + (a._sch_height - 1 - a.custom_scroll_width) + "px;") : (n.style_data_wrapper += "height:" + (a._sch_height - 1) + "px;", n.style_label_wrapper += "height:" + (a._sch_height - 1) + "px;overflow:visible;"), n;
+    }, e._timeline_get_cur_row_stats = function (t, a) {
+      var n = t._logic(t.render, t.y_unit[a], t);
+
+      if (e._merge(n, {
+        height: t.dy
+      }), t.section_autoheight) {
+        var i = t.scrollable ? t._sch_height - e.xy.scroll_width : t._sch_height;
+        t.y_unit.length * n.height < i && (n.height = Math.max(n.height, Math.floor((i - 1) / t.y_unit.length)));
+      }
+
+      return t._section_height[t.y_unit[a].key] = n.height, n.td_className || (n.td_className = "dhx_matrix_scell" + (e.templates[t.name + "_scaley_class"](t.y_unit[a].key, t.y_unit[a].label, t.y_unit[a]) ? " " + e.templates[t.name + "_scaley_class"](t.y_unit[a].key, t.y_unit[a].label, t.y_unit[a]) : "")), n.td_content || (n.td_content = e.templates[t.name + "_scale_label"](t.y_unit[a].key, t.y_unit[a].label, t.y_unit[a])), e._merge(n, {
+        tr_className: "",
+        style_height: "height:" + n.height + "px;",
+        style_width: "width:" + t.dx + "px;",
+        summ_width: "width:" + t._summ + "px;",
+        table_className: ""
+      }), n;
+    }, e._timeline_get_fit_events_stats = function (e, t, a) {
+      if (e.fit_events) {
+        var n = e._events_height[e.y_unit[t].key] || 0;
+        a.height = n > a.height ? n : a.height, a.style_height = "height:" + a.height + "px;", a.style_line_height = "line-height:" + (a.height - 1) + "px;", e._section_height[e.y_unit[t].key] = a.height;
+      }
+
+      return a.style_height = "height:" + a.height + "px;", a.style_line_height = "line-height:" + (a.height - 1) + "px;", e._section_height[e.y_unit[t].key] = a.height, a;
+    }, e._timeline_set_scroll_pos = function (e, t) {
+      var a = e.querySelector(".dhx_timeline_data_wrapper");
+      a.scrollTop = t._y_scroll || 0, t.scrollHelper.setScrollValue(a, t._x_scroll || 0), t.scrollHelper.getMode() != t.scrollHelper.modes.maxMin && a.scrollLeft == t._summ - a.offsetWidth + t.dx && (a.scrollLeft += o());
+    }, e._timeline_save_scroll_pos = function (e, t, a, n) {
+      e._y_scroll = t || 0, e._x_scroll = a || 0;
+    }, e._timeline_get_html_for_cell_data_row = function (e, t, a, n) {
+      return "<div class='dhx_timeline_data_row' data-section-id='" + n + "' data-section-index='" + e + "' style='" + t.summ_width + t.style_height + " position:absolute; top:" + a + "px;'>";
+    }, e._timeline_get_html_for_cell_ignores = function (e) {
+      return '<div class="dhx_matrix_cell dhx_timeline_data_cell" style="' + e.style_height + e.style_line_height + ';display:none"></div>';
+    }, e._timeline_get_html_for_cell = function (t, a, n, i, r, o) {
+      var d = n._trace_x[t],
+          s = n.y_unit[a],
+          l = e._cols[t],
+          c = _(d),
+          h = e.templates[n.name + "_cell_value"](i, d, s);
+
+      return "<div data-col-id='" + t + "' data-col-date='" + c + "' class='dhx_matrix_cell dhx_timeline_data_cell " + e.templates[n.name + "_cell_class"](i, d, s) + "' style='width:" + l + "px;" + r.style_height + r.style_line_height + (e.config.rtl ? " right:" : "  left:") + o + "px;'><div style='width:auto'>" + h + "</div></div>";
+    }, e._timeline_get_html_for_bar_matrix_line = function (e, t, a, n) {
+      return "<div style='" + t.summ_width + " " + t.style_height + " position:absolute; top:" + a + "px;' data-section-id='" + n + "' data-section-index='" + e + "' class='dhx_matrix_line'>";
+    }, e._timeline_get_html_for_bar_data_row = function (e) {
+      return "<div class='dhx_timeline_data_row " + e.table_className + "' style='" + e.summ_width + " " + e.style_height + "' >";
+    }, e._timeline_get_html_for_bar_ignores = function () {
+      return "";
+    }, e._timeline_get_html_for_bar = function (t, a, n, i, r, o) {
+      var d = _(n._trace_x[t]),
+          s = n.y_unit[a],
+          l = "";
+
+      n.cell_template && (l = e.templates[n.name + "_cell_value"](i, n._trace_x[t], s, o));
+      var c = "line-height:" + n._section_height[s.key] + "px;";
+      return "<div class='dhx_matrix_cell dhx_timeline_data_cell " + e.templates[n.name + "_cell_class"](i, n._trace_x[t], s, o) + "' style='width:" + e._cols[t] + "px; " + (e.config.rtl ? "right:" : "left:") + r + "px;'  data-col-id='" + t + "' data-col-date='" + d + "' ><div style='width:auto; height:100%;position:relative;" + c + "'>" + l + "</div></div>";
+    }, e._timeline_render_scale_header = function (t, a) {
+      var n = e.$container.querySelector(".dhx_timeline_scale_header");
+
+      if (n && n.parentNode.removeChild(n), a) {
+        n = document.createElement("div");
+        var i = "dhx_timeline_scale_header";
+        t.second_scale && (i += " dhx_timeline_second_scale");
+        var r = e.xy.scale_height;
+        n.className = i, n.style.cssText = ["width:" + (t.dx - 1) + "px", "height:" + r + "px", "line-height:" + r + "px", "top:" + (e.xy.nav_height + 2) + "px", e.config.rtl ? "right:0" : "left:0"].join(";"), n.innerHTML = e.locale.labels[t.name + "_scale_header"] || "", e.$container.appendChild(n);
+      }
+    }, e._timeline_y_scale = function (t) {
+      var a = e._timeline_get_block_stats(t, this),
+          n = this.scrollable ? " dhx_timeline_scrollable_data" : "",
+          i = "<div class='dhx_timeline_table_wrapper'>",
+          r = "<div class='dhx_timeline_label_wrapper' style='" + a.style_label_wrapper + "'><div class='dhx_timeline_label_col'>",
+          o = "<div class='dhx_timeline_data_wrapper" + n + "' style='" + a.style_data_wrapper + "'><div class='dhx_timeline_data_col'>";
+
+      e._load_mode && e._load(), e._timeline_smart_render.clearPreparedEventsCache(_);
+
+      var _ = e._timeline_smart_render.getPreparedEvents(this);
+
+      e._timeline_smart_render.cachePreparedEvents(_);
+
+      for (var d = 0, s = 0; s < e._cols.length; s++) {
+        d += e._cols[s];
+      }
+
+      var c = new Date(),
+          h = e._cols.length - e._ignores_detected;
+      c = (e.date.add(c, this.x_step * h, this.x_unit) - c - (this._start_correction + this._end_correction) * h) / d, this._step = c, this._summ = d;
+      var u = e._colsS.heights = [],
+          g = [];
+      this._events_height = {}, this._section_height = {}, this._label_rows = [];
+      var f = !1,
+          v = 0,
+          m = null;
+      (this.scrollable || this.smart_rendering) && (m = e._timeline_smart_render.getViewPort(this.scrollHelper, this._sch_height)), e._timeline_smart_render._rendered_labels_cache = [], e._timeline_smart_render._rendered_events_cache = [];
+      var p,
+          y = !!m;
+      p = this.scrollable ? !1 !== this.smart_rendering && !!y : !!this.smart_rendering && y;
+
+      for (var b = [], x = 0, w = 0; w < this.y_unit.length; w++) {
+        var k = e._timeline_get_cur_row_stats(this, w);
+
+        b.push(k), x += k.height;
+      }
+
+      m && x < m.scrollTop && (m.scrollTop = Math.max(0, x - m.height));
+
+      for (var w = 0; w < this.y_unit.length; w++) {
+        var k = b[w],
+            D = this.y_unit[w];
+        e._timeline_calculate_event_positions.call(this, _[w]), k = e._timeline_get_fit_events_stats(this, w, k);
+        var E = "<div class='dhx_timeline_label_row " + k.tr_className + "' style='top:" + v + "px;" + k.style_height + k.style_line_height + "'data-row-index='" + w + "' data-row-id='" + D.key + "'><div class='" + k.td_className + "' style='" + k.style_width + " height:" + k.height + "px;' " + e._waiAria.label(k.td_content) + ">" + k.td_content + "</div></div>";
+        if (p && this._label_rows.push({
+          div: E,
+          top: v,
+          section: D
+        }), p && (e._timeline_smart_render.isInYViewPort({
+          top: v,
+          bottom: v + k.height
+        }, m) || (f = !0)), v += k.height, f) f = !1;else {
+          r += E, p && e._timeline_smart_render._rendered_labels_cache.push(w);
+          var S = 0;
+
+          if ("cell" == this.render) {
+            o += e._timeline_get_html_for_cell_data_row(w, k, v - k.height, D.key);
+
+            for (var N = 0; N < e._cols.length; N++) {
+              e._ignores[N] && !p ? o += e._timeline_get_html_for_cell_ignores(k) : p && y ? e._timeline_smart_render.isInXViewPort({
+                left: S,
+                right: S + e._cols[N]
+              }, m) && (o += e._timeline_get_html_for_cell(N, w, this, _[w][N], k, S)) : o += e._timeline_get_html_for_cell(N, w, this, _[w][N], k, S), S += e._cols[N];
+            }
+
+            o += "</div>";
+          } else {
+            o += e._timeline_get_html_for_bar_matrix_line(w, k, v - k.height, D.key);
+            var M = _[w];
+            p && y && (M = e._timeline_smart_render.getVisibleEventsForRow(this, m, _, w));
+            o += e._timeline_get_events_html.call(this, M), o += e._timeline_get_html_for_bar_data_row(k);
+
+            for (var N = 0; N < e._cols.length; N++) {
+              e._ignores[N] ? o += e._timeline_get_html_for_bar_ignores() : p && y ? e._timeline_smart_render.isInXViewPort({
+                left: S,
+                right: S + e._cols[N]
+              }, m) && (o += e._timeline_get_html_for_bar(N, w, this, _[w], S)) : o += e._timeline_get_html_for_bar(N, w, this, _[w], S), S += e._cols[N];
+            }
+
+            o += "</div></div>";
+          }
+        }
+        k.sectionKey = D.key, g.push(k);
+      }
+
+      if (i += r + "</div></div>", i += o + "</div></div>", i += "</div>", this._matrix = _, t.innerHTML = i, p) {
+        e.$container.querySelector(".dhx_timeline_data_col").style.height = v + "px";
+      }
+
+      e._populate_timeline_rendered(t), this._scales = {};
+
+      for (var s = 0, A = g.length; s < A; s++) {
+        u.push(g[s].height);
+        var C = g[s].sectionKey;
+
+        e._timeline_finalize_section_add(this, C, t);
+      }
+
+      p && e._timeline_smart_render && (e._timeline_smart_render._rendered_events_cache = []), (p || this.scrollable) && l(t, this, u, g);
+    }, e._timeline_finalize_section_add = function (t, a, n) {
+      var i = t._scales[a] = n.querySelector(".dhx_timeline_data_col [data-section-id='" + a + "']");
+      i && e.callEvent("onScaleAdd", [i, a]);
+    }, e.attachEvent("onBeforeViewChange", function (t, a, n, i) {
+      if (e.matrix[n]) {
+        var r = e.matrix[n];
+
+        if (r.scrollable) {
+          if ("tree" == r.render && t === n && a === i) return !0;
+          r._x_scroll = r._y_scroll = 0, e.$container.querySelector(".dhx_timeline_scrollable_data") && e._timeline_set_scroll_pos(e._els.dhx_cal_data[0], r);
+        }
+      }
+
+      return !0;
+    }), e._timeline_x_dates = function (t) {
+      var a = e._min_date,
+          n = e._max_date;
+
+      e._process_ignores(a, this.x_size, this.x_unit, this.x_step, t);
+
+      for (var i = (this.x_size, t && e._ignores_detected, 0), r = 0; +a < +n;) {
+        if (this._trace_x[r] = new Date(a), "month" == this.x_unit && e.date[this.x_unit + "_start"] && (a = e.date[this.x_unit + "_start"](new Date(a))), a = e.date.add(a, this.x_step, this.x_unit), e.date[this.x_unit + "_start"] && (a = e.date[this.x_unit + "_start"](a)), e._ignores[r] || i++, r++, t) if (i < this.x_size && !(+a < +n)) n = e.date["add_" + this.name + "_private"](n, (this.x_length || this.x_size) * this.x_step);else if (i >= this.x_size) {
+          e._max_date = a;
+          break;
+        }
+      }
+
+      return {
+        total: r,
+        displayed: i
+      };
+    }, e._timeline_x_scale = function (t) {
+      var a = e.xy.scale_height,
+          n = this._header_resized || e.xy.scale_height;
+      e._cols = [], e._colsS = {
+        height: 0
+      }, this._trace_x = [];
+      var i = e._x - this.dx - e.xy.scroll_width;
+
+      if (this.scrollable && this.column_width > 0) {
+        var r = this.column_width * this.x_size;
+        r > i && (i = r, this._section_autowidth = !1);
+      }
+
+      var o = [this.dx];
+      e._els.dhx_cal_header[0].style.width = o[0] + i + "px";
+
+      for (var d = e._min_date_timeline = e._min_date, s = e.config.preserve_scale_length, l = e._timeline_x_dates.call(this, s), c = l.displayed, h = l.total, u = 0; u < h; u++) {
+        e._ignores[u] ? (e._cols[u] = 0, c++) : e._cols[u] = Math.floor(i / (c - u)), i -= e._cols[u], o[u + 1] = o[u] + e._cols[u];
+      }
+
+      if (t.innerHTML = "<div></div>", this.second_scale) {
+        for (var g = this.second_scale.x_unit, f = [this._trace_x[0]], v = [], m = [this.dx, this.dx], p = 0, y = 0; y < this._trace_x.length; y++) {
+          var b = this._trace_x[y];
+          e._timeline_is_new_interval(g, b, f[p]) && (++p, f[p] = b, m[p + 1] = m[p]);
+          var x = p + 1;
+          v[p] = e._cols[y] + (v[p] || 0), m[x] += e._cols[y];
+        }
+
+        t.innerHTML = "<div></div><div></div>";
+        var w = t.firstChild;
+        w.style.height = n + "px";
+        var k = t.lastChild;
+        k.style.position = "relative", k.className = "dhx_bottom_scale_container";
+
+        for (var D = 0; D < f.length; D++) {
+          var E = f[D],
+              S = e.templates[this.name + "_second_scalex_class"](E),
+              N = document.createElement("div");
+          N.className = "dhx_scale_bar dhx_second_scale_bar" + (S ? " " + S : ""), e.set_xy(N, v[D] - 1, n - 3, m[D], 0), N.innerHTML = e.templates[this.name + "_second_scale_date"](E), w.appendChild(N);
+        }
+      }
+
+      e.xy.scale_height = n, t = t.lastChild, this._h_cols = {};
+
+      for (var M = 0; M < this._trace_x.length; M++) {
+        if (!e._ignores[M]) {
+          d = this._trace_x[M], e._render_x_header(M, o[M], d, t);
+          var A = e.templates[this.name + "_scalex_class"](d);
+          A && (t.lastChild.className += " " + A), t.lastChild.setAttribute("data-col-id", M), t.lastChild.setAttribute("data-col-date", _(d));
+          var C = t.lastChild.cloneNode(!0);
+          this._h_cols[M] = {
+            div: C,
+            left: o[M]
+          };
+        }
+      }
+
+      e.xy.scale_height = a;
+      var O = this._trace_x;
+      t.onclick = function (t) {
+        var a = e._timeline_locate_hcell(t);
+
+        a && e.callEvent("onXScaleClick", [a.x, O[a.x], t || event]);
+      }, t.ondblclick = function (t) {
+        var a = e._timeline_locate_hcell(t);
+
+        a && e.callEvent("onXScaleDblClick", [a.x, O[a.x], t || event]);
+      };
+    }, e._timeline_is_new_interval = function (t, a, n) {
+      switch (t) {
+        case "hour":
+          return a.getHours() != n.getHours() || e._timeline_is_new_interval("day", a, n);
+
+        case "day":
+          return !(a.getDate() == n.getDate() && a.getMonth() == n.getMonth() && a.getFullYear() == n.getFullYear());
+
+        case "week":
+          return !(e.date.week_start(new Date(a)).valueOf() == e.date.week_start(new Date(n)).valueOf());
+
+        case "month":
+          return !(a.getMonth() == n.getMonth() && a.getFullYear() == n.getFullYear());
+
+        case "year":
+          return !(a.getFullYear() == n.getFullYear());
+
+        default:
+          return !1;
+      }
+    }, e._timeline_reset_scale_height = function (t) {
+      if (this._header_resized && (!t || !this.second_scale)) {
+        e.xy.scale_height /= 2, this._header_resized = !1;
+        var a = e._els.dhx_cal_header[0];
+        a.className = a.className.replace(/ dhx_second_cal_header/gi, "");
+      }
+    }, e._timeline_set_full_view = function (t) {
+      if (e._timeline_reset_scale_height.call(this, t), t) {
+        this.second_scale && !this._header_resized && (this._header_resized = e.xy.scale_height, e.xy.scale_height *= 2, e._els.dhx_cal_header[0].className += " dhx_second_cal_header"), e.set_sizes(), e._init_matrix_tooltip();
+        var a = e._min_date;
+
+        if (e._timeline_x_scale.call(this, e._els.dhx_cal_header[0]), e.$container.querySelector(".dhx_timeline_scrollable_data")) {
+          var n = e._timeline_smart_render.getViewPort(this.scrollHelper),
+              i = e._timeline_smart_render.getVisibleHeader(this, n);
+
+          i && (this.second_scale ? e._els.dhx_cal_header[0].children[1].innerHTML = i : e._els.dhx_cal_header[0].children[0].innerHTML = i);
+        }
+
+        e._timeline_y_scale.call(this, e._els.dhx_cal_data[0]), e._min_date = a, e._els.dhx_cal_date[0].innerHTML = e.templates[this.name + "_date"](e._min_date, e._max_date), e._mark_now && e._mark_now(), e._timeline_reset_scale_height.call(this, t);
+      }
+
+      e._timeline_render_scale_header(this, t), e._timeline_hideToolTip();
+    }, e._timeline_hideToolTip = function () {
+      e._tooltip && (e._tooltip.style.display = "none", e._tooltip.date = "");
+    }, e._timeline_showToolTip = function (t, a, n) {
+      if ("cell" == t.render) {
+        var i = a.x + "_" + a.y,
+            r = t._matrix[a.y][a.x];
+        if (!r) return e._timeline_hideToolTip();
+
+        if (r.sort(function (e, t) {
+          return e.start_date > t.start_date ? 1 : -1;
+        }), e._tooltip) {
+          if (e._tooltip.date == i) return;
+          e._tooltip.innerHTML = "";
+        } else {
+          var o = e._tooltip = document.createElement("div");
+          o.className = "dhx_year_tooltip", e.config.rtl && (o.className += " dhx_tooltip_rtl"), document.body.appendChild(o), o.onclick = e._click.dhx_cal_data;
+        }
+
+        for (var _ = "", d = 0; d < r.length; d++) {
+          var s = r[d].color ? "background-color:" + r[d].color + ";" : "",
+              l = r[d].textColor ? "color:" + r[d].textColor + ";" : "";
+          _ += "<div class='dhx_tooltip_line' event_id='" + r[d].id + "' style='" + s + l + "'>", _ += "<div class='dhx_tooltip_date'>" + (r[d]._timed ? e.templates.event_date(r[d].start_date) : "") + "</div>", _ += "<div class='dhx_event_icon icon_details'>&nbsp;</div>", _ += e.templates[t.name + "_tooltip"](r[d].start_date, r[d].end_date, r[d]) + "</div>";
+        }
+
+        e._tooltip.style.display = "", e._tooltip.style.top = "0px", e.config.rtl && n.left - e._tooltip.offsetWidth >= 0 || document.body.offsetWidth - a.src.offsetWidth - n.left - e._tooltip.offsetWidth < 0 ? e._tooltip.style.left = n.left - e._tooltip.offsetWidth + "px" : e._tooltip.style.left = n.left + a.src.offsetWidth + "px", e._tooltip.date = i, e._tooltip.innerHTML = _, document.body.offsetHeight - n.top - e._tooltip.offsetHeight < 0 ? e._tooltip.style.top = n.top - e._tooltip.offsetHeight + a.src.offsetHeight + "px" : e._tooltip.style.top = n.top + "px";
+      }
+    }, e._matrix_tooltip_handler = function (t) {
+      var a = e.matrix[e._mode];
+
+      if (a && "cell" == a.render) {
+        if (a) {
+          var n = e._locate_cell_timeline(t),
+              t = t || event;
+
+          t.target || t.srcElement;
+          if (n) return e._timeline_showToolTip(a, n, e.$domHelpers.getOffset(n.src));
+        }
+
+        e._timeline_hideToolTip();
+      }
+    }, e._init_matrix_tooltip = function () {
+      e._detachDomEvent(e._els.dhx_cal_data[0], "mouseover", e._matrix_tooltip_handler), e.event(e._els.dhx_cal_data[0], "mouseover", e._matrix_tooltip_handler);
+    }, e._set_timeline_dates = function (t) {
+      e._min_date = e.date[t.name + "_start"](new Date(e._date)), e._max_date = e.date["add_" + t.name + "_private"](e._min_date, t.x_size * t.x_step), e.date[t.x_unit + "_start"] && (e._max_date = e.date[t.x_unit + "_start"](e._max_date)), e._table_view = !0;
+    }, e._renderMatrix = function (t, a) {
+      a || (e._els.dhx_cal_data[0].scrollTop = 0), e._set_timeline_dates(this), e._timeline_set_full_view.call(this, t);
+    }, e._timeline_html_index = function (t) {
+      for (var a = t.parentNode.childNodes, n = -1, i = 0; i < a.length; i++) {
+        if (a[i] == t) {
+          n = i;
+          break;
+        }
+      }
+
+      var r = n;
+      if (e._ignores_detected) for (var o in e._ignores) {
+        e._ignores[o] && 1 * o <= r && r++;
+      }
+      return r;
+    }, e._timeline_locate_hcell = function (t) {
+      t = t || event;
+
+      for (var a = t.target ? t.target : t.srcElement; a && "DIV" != a.tagName;) {
+        a = a.parentNode;
+      }
+
+      if (a && "DIV" == a.tagName) {
+        if ("dhx_scale_bar" == e._getClassName(a).split(" ")[0]) return {
+          x: e._timeline_html_index(a),
+          y: -1,
+          src: a,
+          scale: !0
+        };
+      }
+    }, e._locate_cell_timeline = function (t) {
+      t = t || event;
+
+      for (var a = t.target ? t.target : t.srcElement, n = {}, i = e.matrix[e._mode], r = e.getActionData(t), o = e._ignores, _ = 0, d = 0; d < i._trace_x.length - 1 && !(+r.date < i._trace_x[d + 1]); d++) {
+        o[d] || _++;
+      }
+
+      n.x = 0 === _ ? 0 : d, n.y = i.order[r.section];
+      var s = (e._isRender("cell"), 0);
+
+      if (i.scrollable && "cell" === i.render) {
+        if (!i._scales[r.section] || !i._scales[r.section].querySelector(".dhx_matrix_cell")) return;
+
+        var l = i._scales[r.section].querySelector(".dhx_matrix_cell");
+
+        if (!l) return;
+        var h = l.offsetLeft;
+
+        if (h > 0) {
+          for (var u = e._timeline_drag_date(i, h), g = 0; g < i._trace_x.length - 1 && !(+u < i._trace_x[g + 1]); g++) {
+            ;
+          }
+
+          s = g;
+        }
+      }
+
+      n.src = i._scales[r.section] ? i._scales[r.section].querySelectorAll(".dhx_matrix_cell")[d - s] : null;
+      var f = !1,
+          v = c(a, ".dhx_matrix_scell");
+      return v && (a = v, f = !0), f ? (n.x = -1, n.src = a, n.scale = !0) : n.x = d, n;
+    };
+    var p = e._click.dhx_cal_data;
+    e._click.dhx_marked_timespan = e._click.dhx_cal_data = function (t) {
+      var a = p.apply(this, arguments),
+          n = e.matrix[e._mode];
+
+      if (n) {
+        var i = e._locate_cell_timeline(t);
+
+        i && (i.scale ? e.callEvent("onYScaleClick", [i.y, n.y_unit[i.y], t || event]) : (e.callEvent("onCellClick", [i.x, i.y, n._trace_x[i.x], (n._matrix[i.y] || {})[i.x] || [], t || event]), e._timeline_set_scroll_pos(e._els.dhx_cal_data[0], n)));
+      }
+
+      return a;
+    }, e.dblclick_dhx_matrix_cell = function (t) {
+      var a = e.matrix[e._mode];
+
+      if (a) {
+        var n = e._locate_cell_timeline(t);
+
+        n && (n.scale ? e.callEvent("onYScaleDblClick", [n.y, a.y_unit[n.y], t || event]) : e.callEvent("onCellDblClick", [n.x, n.y, a._trace_x[n.x], (a._matrix[n.y] || {})[n.x] || [], t || event]));
+      }
+    };
+
+    var y = e.dblclick_dhx_marked_timespan || function () {};
+
+    e.dblclick_dhx_marked_timespan = function (t) {
+      return e.matrix[e._mode] ? e.dblclick_dhx_matrix_cell(t) : y.apply(this, arguments);
+    }, e.dblclick_dhx_matrix_scell = function (t) {
+      return e.dblclick_dhx_matrix_cell(t);
+    }, e._isRender = function (t) {
+      return e.matrix[e._mode] && e.matrix[e._mode].render == t;
+    }, e.attachEvent("onCellDblClick", function (t, a, n, i, r) {
+      if (!this.config.readonly && ("dblclick" != r.type || this.config.dblclick_create)) {
+        var o = e.matrix[e._mode],
+            _ = {};
+        _.start_date = o._trace_x[t], _.end_date = o._trace_x[t + 1] ? o._trace_x[t + 1] : e.date.add(o._trace_x[t], o.x_step, o.x_unit), o._start_correction && (_.start_date = new Date(1 * _.start_date + o._start_correction)), o._end_correction && (_.end_date = new Date(_.end_date - o._end_correction)), _[o.y_property] = o.y_unit[a].key, e.addEventNow(_, null, r);
+      }
+    }), e.attachEvent("onBeforeDrag", function (t, a, n) {
+      return !e._isRender("cell");
+    }), e.attachEvent("onEventChanged", function (e, t) {
+      t._timed = this.isOneDayEvent(t);
+    }), e.attachEvent("onBeforeEventChanged", function (e, t, a, n) {
+      return e && (e._move_delta = void 0), n && (n._move_delta = void 0), !0;
+    }), e._is_column_visible = function (t) {
+      var a = e.matrix[e._mode],
+          n = e._get_date_index(a, t);
+
+      return !e._ignores[n];
+    };
+    var b = e._render_marked_timespan;
+
+    e._render_marked_timespan = function (t, a, n, i, r) {
+      if (!e.config.display_marked_timespans) return [];
+
+      if (e.matrix && e.matrix[e._mode]) {
+        if (e._isRender("cell")) return;
+
+        var o = e._lame_copy({}, e.matrix[e._mode]);
+
+        o.round_position = !1;
+        var _ = [],
+            d = [],
+            s = [],
+            l = t.sections ? t.sections.units || t.sections.timeline : null;
+        if (n) s = [a], d = [n];else {
+          var c = o.order;
+          if (l) c.hasOwnProperty(l) && (d.push(l), s.push(o._scales[l]));else if (o._scales) for (var h in c) {
+            c.hasOwnProperty(h) && o._scales[h] && (d.push(h), s.push(o._scales[h]));
+          }
+        }
+        var i = i ? new Date(i) : e._min_date,
+            r = r ? new Date(r) : e._max_date;
+        if (i.valueOf() < e._min_date.valueOf() && (i = new Date(e._min_date)), r.valueOf() > e._max_date.valueOf() && (r = new Date(e._max_date)), !o._trace_x) return;
+
+        for (var u = 0; u < o._trace_x.length && !e._is_column_visible(o._trace_x[u]); u++) {
+          ;
+        }
+
+        if (u == o._trace_x.length) return;
+        var g = [];
+
+        if (t.days > 6) {
+          var f = new Date(t.days);
+          e.date.date_part(new Date(i)) <= +f && +r >= +f && g.push(f);
+        } else g.push.apply(g, e._get_dates_by_index(t.days));
+
+        for (var v = t.zones, m = e._get_css_classes_by_config(t), p = 0; p < d.length; p++) {
+          a = s[p], n = d[p];
+
+          for (var u = 0; u < g.length; u++) {
+            for (var y = g[u], x = 0; x < v.length; x += 2) {
+              var w = v[x],
+                  k = v[x + 1],
+                  D = new Date(+y + 60 * w * 1e3),
+                  E = new Date(+y + 60 * k * 1e3);
+
+              if (D = new Date(D.valueOf() + 1e3 * (D.getTimezoneOffset() - y.getTimezoneOffset()) * 60), E = new Date(E.valueOf() + 1e3 * (E.getTimezoneOffset() - y.getTimezoneOffset()) * 60), i < E && r > D) {
+                var S = e._get_block_by_config(t);
+
+                S.className = m;
+                var N = e._timeline_getX({
+                  start_date: D
+                }, !1, o) - 1,
+                    M = e._timeline_getX({
+                  start_date: E
+                }, !1, o) - 1,
+                    A = Math.max(1, M - N - 1),
+                    C = o._section_height[n] - 1 || o.dy - 1;
+                S.style.cssText = "height: " + C + "px; " + (e.config.rtl ? "right: " : "left: ") + N + "px; width: " + A + "px; top: 0;", a.insertBefore(S, a.firstChild), _.push(S);
+              }
+            }
+          }
+        }
+
+        return _;
+      }
+
+      return b.apply(e, [t, a, n]);
+    };
+
+    var x = e._append_mark_now;
+
+    e._append_mark_now = function (t, a) {
+      if (e.matrix && e.matrix[e._mode]) {
+        var n = e._currentDate(),
+            i = e._get_zone_minutes(n),
+            r = {
+          days: +e.date.date_part(n),
+          zones: [i, i + 1],
+          css: "dhx_matrix_now_time",
+          type: "dhx_now_time"
+        };
+
+        return e._render_marked_timespan(r);
+      }
+
+      return x.apply(e, [t, a]);
+    };
+
+    var w = e._mark_timespans;
+
+    e._mark_timespans = function () {
+      if (e.matrix && e.matrix[e.getState().mode]) {
+        for (var t = [], a = e.matrix[e.getState().mode], n = a.y_unit, i = 0; i < n.length; i++) {
+          var r = n[i].key,
+              o = a._scales[r],
+              _ = e._on_scale_add_marker(o, r);
+
+          t.push.apply(t, _);
+        }
+
+        return t;
+      }
+
+      return w.apply(this, arguments);
+    };
+
+    var k = e._on_scale_add_marker;
+    e._on_scale_add_marker = function (t, a) {
+      if (e.matrix && e.matrix[e._mode]) {
+        var n = [],
+            i = e._marked_timespans;
+        if (i && e.matrix && e.matrix[e._mode]) for (var r = e._mode, o = e._min_date, _ = e._max_date, d = i.global, s = e.date.date_part(new Date(o)); s < _; s = e.date.add(s, 1, "day")) {
+          var l = +s,
+              c = s.getDay(),
+              h = [],
+              u = d[l] || d[c];
+
+          if (h.push.apply(h, e._get_configs_to_render(u)), i[r] && i[r][a]) {
+            var g = [],
+                f = e._get_types_to_render(i[r][a][c], i[r][a][l]);
+
+            g.push.apply(g, e._get_configs_to_render(f)), g.length && (h = g);
+          }
+
+          for (var v = 0; v < h.length; v++) {
+            var m = h[v],
+                p = m.days;
+            p < 7 ? (p = l, n.push.apply(n, e._render_marked_timespan(m, t, a, s, e.date.add(s, 1, "day"))), p = c) : n.push.apply(n, e._render_marked_timespan(m, t, a, s, e.date.add(s, 1, "day")));
+          }
+        }
+        return n;
+      }
+
+      return k.apply(this, arguments);
+    }, e._resolve_timeline_section = function (e, t) {
+      var a = 0,
+          n = 0;
+
+      for (a; a < this._colsS.heights.length && !((n += this._colsS.heights[a]) > t.y); a++) {
+        ;
+      }
+
+      e.y_unit[a] || (a = e.y_unit.length - 1), this._drag_event && !this._drag_event._orig_section && (this._drag_event._orig_section = e.y_unit[a].key), t.fields = {}, a >= 0 && e.y_unit[a] && (t.section = t.fields[e.y_property] = e.y_unit[a].key);
+    }, e._update_timeline_section = function (e) {
+      var t = e.view,
+          a = e.event,
+          n = e.pos;
+
+      if (a) {
+        if (a[t.y_property] != n.section) {
+          var i = this._get_timeline_event_height(a, t);
+
+          a._sorder = this._get_dnd_order(a._sorder, i, t._section_height[n.section]);
+        }
+
+        a[t.y_property] = n.section;
+      }
+    }, e._get_date_index = function (e, t) {
+      for (var a = e._trace_x, n = 0, i = a.length - 1, r = t.valueOf(); i - n > 3;) {
+        var o = n + Math.floor((i - n) / 2);
+        a[o].valueOf() > r ? i = o : n = o;
+      }
+
+      for (var _ = n; _ <= i && +t >= +a[_ + 1];) {
+        _++;
+      }
+
+      return _;
+    }, e._timeline_drag_date = function (t, a) {
+      var n = t,
+          i = {
+        x: a
+      };
+      if (!n._trace_x.length) return new Date(e.getState().date);
+      var r,
+          o,
+          _ = 0,
+          d = 0;
+
+      for (d; d <= this._cols.length - 1; d++) {
+        if (o = this._cols[d], (_ += o) > i.x) {
+          r = (i.x - (_ - o)) / o, r = r < 0 ? 0 : r;
+          break;
+        }
+      }
+
+      if (n.round_position) {
+        var s = 1,
+            l = e.getState().drag_mode;
+        l && "move" != l && "create" != l && (s = .5), r >= s && d++, r = 0;
+      }
+
+      if (0 === d && this._ignores[0]) for (d = 1, r = 0; this._ignores[d];) {
+        d++;
+      } else if (d == this._cols.length && this._ignores[d - 1]) {
+        for (d = this._cols.length - 1, r = 0; this._ignores[d];) {
+          d--;
+        }
+
+        d++;
+      }
+      var c;
+      if (d >= n._trace_x.length) c = e.date.add(n._trace_x[n._trace_x.length - 1], n.x_step, n.x_unit), n._end_correction && (c = new Date(c - n._end_correction));else {
+        var h = r * o * n._step + n._start_correction;
+        c = new Date(+n._trace_x[d] + h);
+      }
+      return c;
+    }, e.attachEvent("onBeforeTodayDisplayed", function () {
+      for (var t in e.matrix) {
+        var a = e.matrix[t];
+        a.x_start = a._original_x_start;
+      }
+
+      return !0;
+    }), e.attachEvent("onOptionsLoad", function () {
+      for (var t in e.matrix) {
+        var a = e.matrix[t];
+        a.order = {}, e.callEvent("onOptionsLoadStart", []);
+
+        for (var t = 0; t < a.y_unit.length; t++) {
+          a.order[a.y_unit[t].key] = t;
+        }
+
+        e.callEvent("onOptionsLoadFinal", []), e._date && a.name == e._mode && (a._options_changed = !0, e.setCurrentView(e._date, e._mode), setTimeout(function () {
+          a._options_changed = !1;
+        }));
+      }
+    }), e.attachEvent("onBeforeDrag", function (t, a, n) {
+      if ("resize" == a) {
+        var i = n.target || n.srcElement;
+        e._getClassName(i).indexOf("dhx_event_resize_end") < 0 ? e._drag_from_start = !0 : e._drag_from_start = !1;
+      }
+
+      return !0;
+    });
+    var D = 10,
+        E = null,
+        S = null,
+        N = e.attachEvent("onSchedulerReady", function () {
+      e.matrix && (e.event(document.body, "mousemove", u), e.detachEvent(N));
+    });
+    e._timeline_smart_render = {
+      _prepared_events_cache: null,
+      _rendered_events_cache: [],
+      _rendered_header_cache: [],
+      _rendered_labels_cache: [],
+      _rows_to_delete: [],
+      _rows_to_add: [],
+      _cols_to_delete: [],
+      _cols_to_add: [],
+      getViewPort: function getViewPort(t, a, n, i) {
+        var r = e.$container.querySelector(".dhx_cal_data"),
+            o = r.getBoundingClientRect(),
+            _ = e.$container.querySelector(".dhx_timeline_scrollable_data");
+
+        _ && void 0 === n && (n = t.getScrollValue(_)), void 0 === i && (i = _ ? _.scrollTop : r.scrollTop);
+        var d = {};
+
+        for (var s in o) {
+          d[s] = o[s];
+        }
+
+        return d.scrollLeft = n || 0, d.scrollTop = i || 0, a && (o.height = a), d;
+      },
+      isInXViewPort: function isInXViewPort(e, t) {
+        var a = t.scrollLeft,
+            n = t.width + t.scrollLeft;
+        return e.left < n + 100 && e.right > a - 100;
+      },
+      isInYViewPort: function isInYViewPort(e, t) {
+        var a = t.scrollTop,
+            n = t.height + t.scrollTop;
+        return e.top < n + 100 && e.bottom > a - 100;
+      },
+      getVisibleHeader: function getVisibleHeader(t, a) {
+        var n = "";
+        this._rendered_header_cache = [];
+
+        for (var i in t._h_cols) {
+          var r = t._h_cols[i];
+
+          if (this.isInXViewPort({
+            left: r.left,
+            right: r.left + e._cols[i]
+          }, a)) {
+            n += r.div.outerHTML, this._rendered_header_cache.push(r.div.getAttribute("data-col-id"));
+          }
+        }
+
+        return n;
+      },
+      updateHeader: function updateHeader(t, a, n) {
+        this._cols_to_delete = [], this._cols_to_add = [];
+
+        for (var i = e.$container.querySelectorAll(".dhx_cal_header > div"), r = i[i.length - 1].querySelectorAll(".dhx_scale_bar"), o = [], _ = 0; _ < r.length; _++) {
+          o.push(r[_].getAttribute("data-col-id"));
+        }
+
+        if (this.getVisibleHeader(t, a)) {
+          for (var d = this._rendered_header_cache.slice(), s = [], _ = 0, l = o.length; _ < l; _++) {
+            var c = d.indexOf(o[_]);
+            c > -1 ? d.splice(c, 1) : s.push(o[_]);
+          }
+
+          s.length && (this._cols_to_delete = s.slice(), this._deleteHeaderCells(s, t, n)), d.length && (this._cols_to_add = d.slice(), this._addHeaderCells(d, t, n));
+        }
+      },
+      _deleteHeaderCells: function _deleteHeaderCells(e, t, a) {
+        for (var n = 0; n < e.length; n++) {
+          var i = a.querySelector('[data-col-id="' + e[n] + '"]');
+          i && a.removeChild(i);
+        }
+      },
+      _addHeaderCells: function _addHeaderCells(e, t, a) {
+        for (var n = "", i = 0; i < e.length; i++) {
+          n += t._h_cols[e[i]].div.outerHTML;
+        }
+
+        a.insertAdjacentHTML("beforeEnd", n);
+      },
+      getVisibleLabels: function getVisibleLabels(e, t) {
+        if (e._label_rows.length) {
+          var a = "";
+          this._rendered_labels_cache = [];
+
+          for (var n = 0; n < e._label_rows.length; n++) {
+            if (this.isInYViewPort({
+              top: e._label_rows[n].top,
+              bottom: e._label_rows[n].top + e._section_height[e.y_unit[n].key]
+            }, t)) {
+              var i = e._label_rows[n].div;
+              a += i, this._rendered_labels_cache.push(n);
+            }
+          }
+
+          return a;
+        }
+      },
+      updateLabels: function updateLabels(e, t, a) {
+        this._rows_to_delete = [], this._rows_to_add = [];
+
+        var n = this._rendered_labels_cache.slice();
+
+        if (n.length || (this.getVisibleLabels(e, t), n = this._rendered_labels_cache.slice()), this.getVisibleLabels(e, t)) {
+          for (var i = this._rendered_labels_cache.slice(), r = [], o = 0, _ = n.length; o < _; o++) {
+            var d = i.indexOf(n[o]);
+            d > -1 ? i.splice(d, 1) : r.push(n[o]);
+          }
+
+          r.length && (this._rows_to_delete = r.slice(), this._deleteLabelCells(r, e, a)), i.length && (this._rows_to_add = i.slice(), this._addLabelCells(i, e, a));
+        }
+      },
+      _deleteLabelCells: function _deleteLabelCells(e, t, a) {
+        for (var n = 0; n < e.length; n++) {
+          var i = a.querySelector('[data-row-index="' + e[n] + '"]');
+          i && a.removeChild(i);
+        }
+      },
+      _addLabelCells: function _addLabelCells(e, t, a) {
+        for (var n = "", i = 0; i < e.length; i++) {
+          n += t._label_rows[e[i]].div;
+        }
+
+        a.insertAdjacentHTML("beforeEnd", n);
+      },
+      clearPreparedEventsCache: function clearPreparedEventsCache() {
+        this.cachePreparedEvents(null);
+      },
+      cachePreparedEvents: function cachePreparedEvents(e) {
+        this._prepared_events_cache = e, this._prepared_events_coordinate_cache = e;
+      },
+      getPreparedEvents: function getPreparedEvents(t) {
+        var a;
+        return this._prepared_events_cache ? a = this._prepared_events_cache : (a = e._prepare_timeline_events(t), a.$coordinates = {}, this.cachePreparedEvents(a)), a;
+      },
+      updateEvents: function updateEvents(t, a) {
+        var n = this.getPreparedEvents(t),
+            i = this._rendered_events_cache.slice();
+
+        this._rendered_events_cache = [];
+        var r = e.$container.querySelector(".dhx_cal_data .dhx_timeline_data_col");
+
+        if (r) {
+          for (var o = 0; o < this._rendered_labels_cache.length; o++) {
+            for (var _ = this._rendered_labels_cache[o], d = [], s = i[_] ? i[_].slice() : [], l = e._timeline_smart_render.getVisibleEventsForRow(t, a, n, _), c = 0, h = l.length; c < h; c++) {
+              var u = s.indexOf(l[c].id);
+              u > -1 ? s.splice(u, 1) : d.push(l[c]);
+            }
+
+            var g = r.querySelector('[data-section-index="' + _ + '"]');
+            s.length && this._deleteEvents(s, t, g), d.length && this._addEvents(d, t, g, _);
+          }
+
+          e._populate_timeline_rendered(e.$container), t._matrix = n;
+        }
+      },
+      _deleteEvents: function _deleteEvents(e, t, a) {
+        for (var n = 0; n < e.length; n++) {
+          var i = a.querySelector('[event_id="' + e[n] + '"]');
+          i && (i.classList.contains("dhx_in_move") || a.removeChild(i));
+        }
+      },
+      _addEvents: function _addEvents(t, a, n, i) {
+        var r = e._timeline_update_events_html.call(a, t);
+
+        n.insertAdjacentHTML("beforeEnd", r);
+      },
+      getVisibleEventsForRow: function getVisibleEventsForRow(t, a, n, i) {
+        var r = [];
+        if ("cell" == t.render) r = n;else {
+          var o = n[i];
+          if (o) for (var _ = 0, d = o.length; _ < d; _++) {
+            var s,
+                l,
+                c = o[_],
+                h = i + "_" + c.id;
+            n.$coordinates && n.$coordinates[h] ? (s = n.$coordinates[h].xStart, l = n.$coordinates[h].xEnd) : (s = e._timeline_getX(c, !1, t), l = e._timeline_getX(c, !0, t), n.$coordinates && (n.$coordinates[h] = {
+              xStart: s,
+              xEnd: l
+            })), e._timeline_smart_render.isInXViewPort({
+              left: s,
+              right: l
+            }, a) && (r.push(c), this._rendered_events_cache[i] || (this._rendered_events_cache[i] = []), this._rendered_events_cache[i].push(c.id));
+          }
+        }
+        return r;
+      },
+      getVisibleRowCellsHTML: function getVisibleRowCellsHTML(t, a, n, i, r) {
+        for (var o, _ = "", d = this._rendered_header_cache, s = 0; s < d.length; s++) {
+          var l = d[s];
+          o = t._h_cols[l].left - t.dx, e._ignores[l] ? "cell" == t.render ? _ += e._timeline_get_html_for_cell_ignores(n) : _ += e._timeline_get_html_for_bar_ignores() : "cell" == t.render ? _ += e._timeline_get_html_for_cell(l, r, t, i[r][l], n, o) : _ += e._timeline_get_html_for_bar(l, r, t, i[r], o);
+        }
+
+        return _;
+      },
+      getVisibleTimelineRowsHTML: function getVisibleTimelineRowsHTML(t, a, n, i) {
+        var r = "",
+            o = e._timeline_get_cur_row_stats(t, i);
+
+        o = e._timeline_get_fit_events_stats(t, i, o);
+        var _ = t._label_rows[i];
+        return "cell" == t.render ? (r += e._timeline_get_html_for_cell_data_row(i, o, _.top, _.section.key), r += this.getVisibleRowCellsHTML(t, a, o, n, i), r += "</div>") : (r += e._timeline_get_html_for_bar_matrix_line(i, o, _.top, _.section.key), r += e._timeline_get_html_for_bar_data_row(o), r += this.getVisibleRowCellsHTML(t, a, o, n, i), r += "</div></div>"), r;
+      },
+      updateGridRows: function updateGridRows(e, t) {
+        this._rows_to_delete.length && this._deleteGridRows(this._rows_to_delete), this._rows_to_add.length && this._addGridRows(this._rows_to_add, e, t);
+      },
+      _deleteGridRows: function _deleteGridRows(t) {
+        var a = e.$container.querySelector(".dhx_cal_data .dhx_timeline_data_col");
+
+        if (a) {
+          for (var n = 0; n < t.length; n++) {
+            var i = a.querySelector('[data-section-index="' + t[n] + '"]');
+            a.removeChild(i);
+          }
+
+          this._rows_to_delete = [];
+        }
+      },
+      _addGridRows: function _addGridRows(t, a, n) {
+        var i = e.$container.querySelector(".dhx_cal_data .dhx_timeline_data_col");
+
+        if (i) {
+          for (var r = this.getPreparedEvents(a), o = "", _ = 0; _ < t.length; _++) {
+            o += this.getVisibleTimelineRowsHTML(a, n, r, t[_]);
+          }
+
+          i.insertAdjacentHTML("beforeEnd", o);
+
+          for (var _ = 0; _ < t.length; _++) {
+            e._timeline_finalize_section_add(a, a.y_unit[t[_]].key, i);
+          }
+
+          e._mark_now && e._mark_now(), this._rows_to_add = [];
+        }
+      },
+      updateGridCols: function updateGridCols(t, a) {
+        for (var n = this._rendered_header_cache, i = {}, r = {}, o = 0; o < n.length; o++) {
+          r[n[o]] = !0;
+        }
+
+        var _ = e.$container.querySelector(".dhx_timeline_data_row");
+
+        if (_) for (var d = _.querySelectorAll("[data-col-id]"), o = 0; o < d.length; o++) {
+          i[d[o].getAttribute("data-col-id")] = !0;
+        }
+        var s = [],
+            l = [];
+
+        for (var o in i) {
+          r[o] || s.push(o);
+        }
+
+        for (var o in r) {
+          i[o] || l.push(o);
+        }
+
+        s.length && this._deleteGridCols(s, t), l.length && this._addGridCols(l, t, a);
+      },
+      _deleteGridCols: function _deleteGridCols(t, a) {
+        var n = e.$container.querySelector(".dhx_cal_data .dhx_timeline_data_col");
+
+        if (n) {
+          for (var i = 0; i < this._rendered_labels_cache.length; i++) {
+            var r;
+            if (r = "cell" == a.render ? n.querySelector('[data-section-index="' + this._rendered_labels_cache[i] + '"]') : n.querySelector('[data-section-index="' + this._rendered_labels_cache[i] + '"] .dhx_timeline_data_row ')) for (var o = 0; o < t.length; o++) {
+              var _ = r.querySelector('[data-col-id="' + t[o] + '"]');
+
+              _ && r.removeChild(_);
+            }
+          }
+
+          this._cols_to_delete = [];
+        }
+      },
+      _addGridCols: function _addGridCols(t, a, n) {
+        var i = e.$container.querySelector(".dhx_cal_data .dhx_timeline_data_col");
+
+        if (i) {
+          for (var r = this.getPreparedEvents(a), o = 0; o < this._rendered_labels_cache.length; o++) {
+            var _ = this._rendered_labels_cache[o],
+                d = "",
+                s = e._timeline_get_cur_row_stats(a, _);
+
+            s = e._timeline_get_fit_events_stats(a, _, s);
+            var l;
+
+            if (l = "cell" == a.render ? i.querySelector('[data-section-index="' + _ + '"]') : i.querySelector('[data-section-index="' + _ + '"] .dhx_timeline_data_row')) {
+              for (var c = 0; c < t.length; c++) {
+                if (!l.querySelector('[data-col-id="' + t[c] + '"]')) {
+                  var h = this.getVisibleGridCell(a, n, s, r, _, t[c]);
+                  h && (d += h);
+                }
+              }
+
+              l.insertAdjacentHTML("beforeEnd", d);
+            }
+          }
+
+          this._cols_to_add = [];
+        }
+      },
+      getVisibleGridCell: function getVisibleGridCell(t, a, n, i, r, o) {
+        if (t._h_cols[o]) {
+          var _ = "",
+              d = t._h_cols[o].left - t.dx;
+          return "cell" == t.render ? e._ignores[o] || (_ += e._timeline_get_html_for_cell(o, r, t, i[r][o], n, d)) : e._ignores[o] || (_ += e._timeline_get_html_for_bar(o, r, t, i[r], d)), _;
+        }
+      }
+    };
+  }, e._temp_matrix_scope();
+});
 
 /***/ }),
 
