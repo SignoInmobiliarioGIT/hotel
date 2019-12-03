@@ -20,7 +20,14 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/adminlte', function () {
-    DB::table('users')->get();
-    return view('adminlte');
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/', function () {
+        return view('dashboard');
+    });
+
+    Route::get('user/profile', function () {
+        // Uses first & second Middleware
+    });
 });
