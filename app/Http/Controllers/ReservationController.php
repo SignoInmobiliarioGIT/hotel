@@ -13,13 +13,10 @@ use DB;
 
 class ReservationController extends Controller
 {
-    /*
-     * Pantalla inicial del modulo de reservas.
-     * Formulario para realizar una reserva.
-     */
     public function index(Request $request)
     {
         $dateRange = $request->filled('dateRange') ? $request->dateRange : null;
+
         if(!$dateRange){
             $dateFrom = Carbon::now()->toDateString();
             $dateTo = Carbon::now()->toDateString();
@@ -29,7 +26,11 @@ class ReservationController extends Controller
             $dateTo = Carbon::create($dateRangeExplode[1])->toDateString();
         }
 
-        return view('reservations.index');
+        $reservations = Reservation::betweenDates($dateFrom, $dateTo);
+
+        session()->flashInput($request->input());
+
+        return view('reservations.index', ['reservations'=>$reservations]);
     }
 
     /*
@@ -52,45 +53,11 @@ class ReservationController extends Controller
     }
 
     /*
-     * Metodo para mostrar la lista de reservas.
-     */
-    public function list(Request $request)
-    {
-        // if (!Auth::user()->can("reservations.view")) {
-        //     Flash::error('No tiene permisos para ver esta sección');
-        //     return redirect("/home");
-        // }
-        $query = Reservation::query();
-
-        if ($request->filled('from_date')) {
-            $query->where('from_date', '>=', Carbon::parse($request->input('from_date'))->format('Y-m-d'));
-        } elseif ($request->filled('to_date')) {
-            $query->where('to_date', '<=', Carbon::parse($request->input('to_date'))->format('Y-m-d'));
-        } else {
-            $query->whereRaw('from_date >= curdate()');
-        }
-        return view('reservations.list')
-            ->with("reservations", $query->get());
-    }
-
-    /*
      * Metodo para mostrar la pantalla de edición de reserva.
      */
     public function edit($id)
     {
-        $reservation = Reservation::where('id', $id)->get();
-
-        if (count($reservation) < 1) {
-            \Flash::error("Reserva no encontrada.");
-            return view('reservations.list');
-        }
-        $reservation = $reservation[0];
-        $rooms = [];
-        foreach ($reservation->reservedRooms as $reservedRoom) {
-            $rooms[$reservedRoom->room_id] = $reservedRoom->room->name;
-        }
-
-        return view("reservations.edit")->with(['reservation' => $reservation, 'rooms' => $rooms]);
+        $reservation = Reservation::find($id)->first();
     }
 
     public function update(UpdateReservationRequest $request)

@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^5.11.2",
+        "datatables": "^1.10.18",
         "daterangepicker": "^3.0.5",
         "icheck-bootstrap": "^3.0.1",
         "moment": "^2.24.0",

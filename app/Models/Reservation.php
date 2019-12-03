@@ -126,7 +126,7 @@ class Reservation extends Model
     static function betweenDates($from, $to)
     {
         return Reservation::whereBetween('from_date',[$from,$to])->orWhereBetween('to_date',[$from,$to])
-        ->with(['reserved_rooms', 'rooms'])
+        ->with(['reservedRooms', 'rooms', 'customer'])
         ->get();
     }
 }

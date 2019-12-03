@@ -7,11 +7,13 @@
             <div class="row">
                 <div class="col-3">
                     <input type="text" name="dateRange"
-                        class="form-control my-daterangepicker">
+                        class="form-control my-daterangepicker"
+                        @if(old('dateRange')) value="{{old('dateRange')}}"
+                        @endif>
                 </div>
                 <div class="col-5">
-                    <button type="submit"
-                        class="btn btn-primary">Filtrar</button>
+                    <button type="submit" class="btn btn-primary"><i
+                            class="fas fa-filter mx-2"></i>Filtrar</button>
                 </div>
             </div>
         </form>

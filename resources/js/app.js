@@ -32,3 +32,4 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 // });
 
 require('./reservations/filters');
+require('./custom-datatables');
