@@ -5,17 +5,33 @@ namespace App\Traits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
-
+use App\Models\Reservation;
+use App\Traits\DateFormatTrait;
 
 trait CalendarTrait
 {
-    public function calendar()
+    use DateFormatTrait;
+
+    public function calendar(Request $request)
     {
+        $size = $request->filled('size') ? $request->size : 15;
+        $dd =  $request->filled('dd') ? $request->dd : Carbon::now()->day;
+        $mm =  $request->filled('mm') ? $request->mm : Carbon::now()->month;
+        $yy =  $request->filled('yyyy') ? $request->yyyy : Carbon::now()->year;
+
+        $dt = Carbon::create($yy, $mm, $dd);
+
+        $dateFrom = $dt->subMonths(1)->toDateString();
+        $dateTo =  $dt->addMonths(3)->toDateString();
+
         $reservations = DB::table('reserved_room')
             ->join('reservation', 'reserved_room.reservation_id', '=', 'reservation.id')
             ->join('rooms', 'reserved_room.room_id', '=', 'rooms.id')
             ->select('reserved_room.*', 'reservation.from_date', 'reservation.to_date', 'rooms.name')
+            ->whereBetween('from_date', [$dateFrom, $dateTo])
+            ->orWhereBetween('to_date', [$dateFrom, $dateTo])
             ->get();
+
         $rooms = DB::table('rooms')->get();
 
         $dataReservations = [];
@@ -40,10 +56,10 @@ trait CalendarTrait
         return [
             'reservations' => $dataReservations,
             'rooms' => $dataRooms,
-            'size' => isset($_GET['size']) ? $_GET['size'] : 15,
-            'dd' => isset($_GET['dd']) ? $_GET['dd'] : Carbon::now()->day,
-            'mm' => isset($_GET['mm']) ? $_GET['mm'] : Carbon::now()->month,
-            'yy' => isset($_GET['yyyy']) ? $_GET['yyyy'] : Carbon::now()->year
+            'size' => $size,
+            'dd' => $dd,
+            'mm' => $mm,
+            'yy' => $yy
         ];
     }
 

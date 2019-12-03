@@ -90982,14 +90982,14 @@ __webpack_require__(/*! ./dhtmlxscheduler_timeline */ "./resources/js/calendar/d
 __webpack_require__(/*! ./dhtmlxscheduler_collision */ "./resources/js/calendar/dhtmlxscheduler_collision.js");
 
 window.onload = function () {
-  scheduler.config.dblclick_create = false;
-  scheduler.config.details_on_create = false;
-  scheduler.config.details_on_dblclick = false;
-  scheduler.config.drag_resize = false;
-  scheduler.config.drag_move = false;
-  scheduler.config.drag_create = false;
+  scheduler.config.dblclick_create = true;
+  scheduler.config.details_on_create = true;
+  scheduler.config.details_on_dblclick = true;
+  scheduler.config.drag_resize = true;
+  scheduler.config.drag_move = true;
+  scheduler.config.drag_create = true;
   scheduler.attachEvent("onDblClick", function () {
-    return false;
+    return true;
   });
 
   window.showRooms = function showRooms(type) {
@@ -91053,13 +91053,13 @@ window.onload = function () {
     height: 72,
     type: "time",
     map_to: "auto"
-  }]; // scheduler.attachEvent('onEventCreated', function (event_id) {
-  // var ev = scheduler.getEvent(event_id);
-  // ev.status = 1;
-  // ev.is_paid = false;
-  // ev.text = 'new booking';
-  // });
-
+  }];
+  scheduler.attachEvent('onEventCreated', function (event_id) {
+    var ev = scheduler.getEvent(event_id);
+    ev.status = 1;
+    ev.is_paid = false;
+    ev.text = 'new booking';
+  });
   scheduler.attachEvent("onParse", function () {
     showRooms("all");
     var roomSelect = document.querySelector("#room_filter");

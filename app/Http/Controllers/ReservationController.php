@@ -9,28 +9,32 @@ use App\Models\Room;
 use App\Models\StateOfService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use DB;
+use \App\Traits\DateFormatTrait;
+
 
 class ReservationController extends Controller
 {
+    use DateFormatTrait;
+
     public function index(Request $request)
     {
+
         $dateRange = $request->filled('dateRange') ? $request->dateRange : null;
 
-        if(!$dateRange){
+        if (!$dateRange) {
             $dateFrom = Carbon::now()->toDateString();
             $dateTo = Carbon::now()->toDateString();
         } else {
             $dateRangeExplode = explode(' - ', $dateRange);
-            $dateFrom = Carbon::create($dateRangeExplode[0])->toDateString();
-            $dateTo = Carbon::create($dateRangeExplode[1])->toDateString();
+            $dateFrom = $this->app2Bd($dateRangeExplode[0]);
+            $dateTo = $this->app2Bd($dateRangeExplode[1]);
         }
 
         $reservations = Reservation::betweenDates($dateFrom, $dateTo);
 
         session()->flashInput($request->input());
 
-        return view('reservations.index', ['reservations'=>$reservations]);
+        return view('reservations.index', ['reservations' => $reservations]);
     }
 
     /*

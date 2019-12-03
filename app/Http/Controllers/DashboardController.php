@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\DateFormatTrait;
+use App\Traits\CalendarTrait;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
-    use \App\Traits\CalendarTrait;
+    use CalendarTrait;
+    use DateFormatTrait;
 
-    public function index()
+    public function index(Request $request)
     {
-        $calendar = $this->calendar();
+        $calendar = $this->calendar($request);
         return view('dashboard', [
             'reservations' => $calendar['reservations'],
             'rooms' => $calendar['rooms'], 'now' => Carbon::now(),
