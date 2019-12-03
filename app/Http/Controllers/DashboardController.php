@@ -14,7 +14,11 @@ class DashboardController extends Controller
         $calendar = $this->calendar();
         return view('dashboard', [
             'reservations' => $calendar['reservations'],
-            'rooms' => $calendar['rooms'], 'now' => Carbon::now()
+            'rooms' => $calendar['rooms'], 'now' => Carbon::now(),
+            'size' => $calendar['size'],
+            'dd' => $calendar['dd'],
+            'mm' => $calendar['mm'],
+            'yy' => $calendar['yy'],
         ]);
     }
 }

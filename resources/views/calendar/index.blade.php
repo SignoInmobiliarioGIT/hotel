@@ -1,32 +1,41 @@
-@section('css')
-<link rel="stylesheet" type="text/css"
-    href="./css/dhtmlxscheduler/dhtmlxscheduler.css">
-@endsection
 @php
-$size = isset($_GET['size']) ? $_GET['size'] : 15;
-$dd = isset($_GET['dd']) ? $_GET['dd'] : $now->day;
-$mm = isset($_GET['mm']) ? $_GET['mm'] : $now->month;
-$yy = isset($_GET['yyyy']) ? $_GET['yyyy'] : $now->year;
-@endphp
 
-<div class="row text-center">
-    <div class="col-md-5 offset-md-1">
-        <input type="text" name="birthday" />
+@endphp
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-success">
+            <div class="card-header">
+                <h3 class="card-title">Seleccione una fecha</h3>
+            </div>
+            <div class="card-body">
+                <input class="form-control form-control-sm" type="text"
+                    name="birthday">
+            </div>
+        </div>
     </div>
     <div class="col-md-6">
-        <ul class="nav nav-pills" role="tablist">
-            <li role="presentation" class="{{ $size == 7 ? 'active' : '' }}"><a
-                    href="{{ route('dashboard', ['size' => 7, 'dd' => $dd, 'mm' => $mm, 'yyyy' => $yy]) }}">7
-                    dias</a></li>
-            <li role="presentation" class="{{ $size == 15 ? 'active' : '' }}">
-                <a
-                    href="{{ route('dashboard', ['size' => 15, 'dd' => $dd, 'mm' => $mm, 'yyyy' => $yy]) }}">15
-                    dias</a></li>
-            <li role="presentation" class="{{ $size == 30 ? 'active' : '' }}">
-                <a
-                    href="{{ route('dashboard', ['size' => 30, 'dd' => $dd, 'mm' => $mm, 'yyyy' => $yy]) }}">30
-                    dias</a></li>
-        </ul>
+        <div class="card card-success">
+            <div class="card-header">
+                <h3 class="card-title">Seleccione un período</h3>
+            </div>
+            <div class="card-body">
+                <div class="btn-group d-flex">
+                    <a href="{{ route('dashboard', ['size' => 7, 'dd' => $dd, 'mm' => $mm, 'yyyy' => $yy]) }}"
+                        type="button"
+                        class="btn btn-info btn-sm {{ $size == 7 ? 'active' : '' }}">7
+                        días</a>
+                    <a href="{{ route('dashboard', ['size' => 15, 'dd' => $dd, 'mm' => $mm, 'yyyy' => $yy]) }}"
+                        type="button"
+                        class="btn btn-info btn-sm {{ $size == 15 ? 'active' : '' }}">15
+                        días</a>
+                    <a href="{{ route('dashboard', ['size' => 30, 'dd' => $dd, 'mm' => $mm, 'yyyy' => $yy]) }}"
+                        type="button"
+                        class="btn btn-info btn-sm {{ $size == 30 ? 'active' : '' }}">30
+                        días</a>
+                </div>
+
+            </div>
+        </div>
     </div>
 </div>
 <div class="col-12" style="height: 800px">
@@ -48,35 +57,15 @@ $yy = isset($_GET['yyyy']) ? $_GET['yyyy'] : $now->year;
     </div>
 </div>
 
-{{-- <script>
-    var dd = {{$dd}};
-var mm = {{$mm}};
-var yy = {{$yy}};
-var size = {{$size}};
-var reservations = @JSON($reservations);
-var rooms = @JSON($rooms);
-var date_pick= dd + '/' + mm + '/' + yy;
-var date_pick_scheduler = yy + '/' + mm + '/' + dd;
-</script> --}}
-
-
 @push('scripts')
-{{-- <script type="text/javascript" src="./js/dhtmlxscheduler/dhtmlxscheduler.js">
-</script>
-<script type="text/javascript"
-    src="./js/dhtmlxscheduler/dhtmlxscheduler_timeline.js">
-</script>
-<script type="text/javascript"
-    src="./js/dhtmlxscheduler/dhtmlxscheduler_collision.js"></script>
-<script type="text/javascript" src="./js/calendar/calendar.js"></script> --}}
 <script>
     var dd = {{$dd}};
-var mm = {{$mm}};
-var yy = {{$yy}};
-var size = {{$size}};
-var reservations = @JSON($reservations);
-var rooms = @JSON($rooms);
-var date_pick= dd + '/' + mm + '/' + yy;
-var date_pick_scheduler = yy + '/' + mm + '/' + dd;
+    var mm = {{$mm}};
+    var yy = {{$yy}};
+    var size = {{$size}};
+    var reservations = @JSON($reservations);
+    var rooms = @JSON($rooms);
+    var date_pick= dd + '/' + mm + '/' + yy;
+    var date_pick_scheduler = yy + '/' + mm + '/' + dd;
 </script>
 @endpush

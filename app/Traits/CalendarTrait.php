@@ -4,6 +4,8 @@ namespace App\Traits;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
+
 
 trait CalendarTrait
 {
@@ -35,7 +37,14 @@ trait CalendarTrait
             ];
         };
 
-        return ['reservations' => $dataReservations, 'rooms' => $dataRooms];
+        return [
+            'reservations' => $dataReservations,
+            'rooms' => $dataRooms,
+            'size' => isset($_GET['size']) ? $_GET['size'] : 15,
+            'dd' => isset($_GET['dd']) ? $_GET['dd'] : Carbon::now()->day,
+            'mm' => isset($_GET['mm']) ? $_GET['mm'] : Carbon::now()->month,
+            'yy' => isset($_GET['yyyy']) ? $_GET['yyyy'] : Carbon::now()->year
+        ];
     }
 
     public function calendarAjaxRequest()
