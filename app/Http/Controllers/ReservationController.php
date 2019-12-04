@@ -9,12 +9,10 @@ use App\Models\Room;
 use App\Models\StateOfService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use \App\Traits\DateFormatTrait;
 
 
 class ReservationController extends Controller
 {
-    use DateFormatTrait;
 
     public function index(Request $request)
     {
@@ -26,8 +24,8 @@ class ReservationController extends Controller
             $dateTo = Carbon::now()->toDateString();
         } else {
             $dateRangeExplode = explode(' - ', $dateRange);
-            $dateFrom = $this->app2Bd($dateRangeExplode[0]);
-            $dateTo = $this->app2Bd($dateRangeExplode[1]);
+            $dateFrom = changeDateFormat($dateRangeExplode[0], 'YYYY-MM-DD');
+            $dateTo = changeDateFormat($dateRangeExplode[1], 'YYYY-MM-DD');
         }
 
         $reservations = Reservation::betweenDates($dateFrom, $dateTo);

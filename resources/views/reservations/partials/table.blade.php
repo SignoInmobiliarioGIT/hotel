@@ -19,8 +19,10 @@
                 @foreach ($reservations as $reservation)
                 <tr>
                     <td scope="row">{{$reservation->id}}</td>
-                    <td>{{$reservation->from_date}}</td>
-                    <td>{{$reservation->to_date}}</td>
+                    <td>{{ changeDateFormat($reservation->from_date, 'd-m-yy')}}
+                    </td>
+                    <td>{{ changeDateFormat($reservation->to_date, 'd-m-yy')}}
+                    </td>
                     <td>{{$reservation->customer->name}}</td>
                     <td>
                         @foreach ($reservation->rooms as $room)

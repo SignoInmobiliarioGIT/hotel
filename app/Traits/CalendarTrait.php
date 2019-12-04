@@ -5,12 +5,9 @@ namespace App\Traits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
-use App\Models\Reservation;
-use App\Traits\DateFormatTrait;
 
 trait CalendarTrait
 {
-    use DateFormatTrait;
 
     public function calendar(Request $request)
     {
