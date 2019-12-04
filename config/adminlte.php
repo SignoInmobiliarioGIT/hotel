@@ -173,28 +173,28 @@ return [
     */
 
     'menu' => [
+        // [
+        //     'text' => 'search',
+        //     'search' => true,
+        //     'topnav' => true,
+        // ],
+        // [
+        //     'text' => 'blog',
+        //     'url'  => 'admin/blog',
+        //     'can'  => 'manage-blog',
+        // ],
         [
-            'text' => 'search',
-            'search' => true,
-            'topnav' => true,
-        ],
-        [
-            'text' => 'blog',
-            'url'  => 'admin/blog',
-            'can'  => 'manage-blog',
-        ],
-        [
-            'text'        => 'dashboard',
+            'text'        => 'Dashboard',
             'url'         => '/',
-            'icon'        => '<i class="fas fa-tachometer-alt"></i>',
+            'icon'        => 'fas fa-tachometer-alt',
             // 'label'       => 4,
             // 'label_color' => 'success',
         ],
         // ['header' => 'account_settings'],
         [
-            'text' => 'reservas',
+            'text' => 'Reservas',
             'url'  => '/reservations',
-            'icon' => '<i class="fas fa-tachometer-alt"></i>',
+            'icon' => 'fas fa-hotel',
         ],
         // [
         //     'text' => 'change_password',
