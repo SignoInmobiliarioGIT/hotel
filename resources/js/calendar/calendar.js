@@ -6,17 +6,6 @@ window.onload = function () {
         return 'Reserva N° ' + ev.id + '<br>' + ev.customer;
     };
 
-    scheduler.attachEvent("onEventCollision", function (ev, evs) {
-        //any custom logic here
-        alert('No grabar');
-        return true;
-    });
-
-    // scheduler.attachEvent("onBeforeEventChanged", function (id, mode, e) {
-    //     // var event_obj = dragged_event;
-    //     alert('Grabar');
-    // });
-
     scheduler.config.dblclick_create = true;
     scheduler.config.details_on_create = false;
     scheduler.config.details_on_dblclick = false;
