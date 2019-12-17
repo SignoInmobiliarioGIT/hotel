@@ -1,4 +1,5 @@
-    export function templateNew(ev, roomData) {
+class MyLightBox {
+    templateNew(ev, roomData) {
 
         ev.my_template = '<dl class="row">';
         ev.my_template += '<dt class="col-sm-3">Desde</dt>' +
@@ -13,7 +14,7 @@
         ev.my_template += '</dl>';
     }
 
-    export function templateEdit(ev) {
+    templateEdit(ev) {
 
         ev.my_template = '<dl class="row">';
         ev.my_template += '<dt class="col-sm-3">Desde</dt>' +
@@ -43,3 +44,6 @@
 
         ev.my_template += '</dl>';
     }
+};
+
+export default new MyLightBox();

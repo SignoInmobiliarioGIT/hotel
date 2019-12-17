@@ -1,7 +1,10 @@
-const MyLightBox = require('./my-light-box');
-// import MyLightBox from './my-light-box';
+import MyLightBox from './my-light-box';
 
 window.onload = function () {
+
+    scheduler.templates.event_bar_text = function (start, end, ev) {
+        return 'Reserva N° ' + ev.id + '<br>' + ev.customer;
+    };
 
     scheduler.config.dblclick_create = true;
     scheduler.config.details_on_create = false;

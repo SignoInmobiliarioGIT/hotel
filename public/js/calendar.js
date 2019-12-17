@@ -90,13 +90,19 @@
 /*!*******************************************!*\
   !*** ./resources/js/calendar/calendar.js ***!
   \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-var MyLightBox = __webpack_require__(/*! ./my-light-box */ "./resources/js/calendar/my-light-box.js"); // import MyLightBox from './my-light-box';
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _my_light_box__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./my-light-box */ "./resources/js/calendar/my-light-box.js");
 
 
 window.onload = function () {
+  scheduler.templates.event_bar_text = function (start, end, ev) {
+    return 'Reserva N° ' + ev.id + '<br>' + ev.customer;
+  };
+
   scheduler.config.dblclick_create = true;
   scheduler.config.details_on_create = false;
   scheduler.config.details_on_dblclick = false;
@@ -232,7 +238,7 @@ window.onload = function () {
           };
         }
       });
-      MyLightBox.templateNew(ev, roomData);
+      _my_light_box__WEBPACK_IMPORTED_MODULE_0__["default"].templateNew(ev, roomData);
     } else {
       scheduler.config.buttons_right = ["more_info"];
       scheduler.locale.labels["more_info"] = "+ INFO";
@@ -241,7 +247,7 @@ window.onload = function () {
         return 'Reserva N° ' + ev.id;
       };
 
-      MyLightBox.templateEdit(ev);
+      _my_light_box__WEBPACK_IMPORTED_MODULE_0__["default"].templateEdit(ev);
     }
 
     return true;
@@ -254,37 +260,59 @@ window.onload = function () {
 /*!***********************************************!*\
   !*** ./resources/js/calendar/my-light-box.js ***!
   \***********************************************/
-/*! exports provided: templateNew, templateEdit */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "templateNew", function() { return templateNew; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "templateEdit", function() { return templateEdit; });
-function templateNew(ev, roomData) {
-  ev.my_template = '<dl class="row">';
-  ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Categoría de la habitación</dt>' + '<dd class="col-sm-3">' + roomData.category + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Habitación</dt>' + '<dd class="col-sm-3">' + roomData.name + '</dd>';
-  ev.my_template += '</dl>';
-}
-function templateEdit(ev) {
-  ev.my_template = '<dl class="row">';
-  ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.end_date).format('DD/MM/YYYY') + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Categoría de la habitación</dt>' + '<dd class="col-sm-3">' + ev.room_category + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Habitación</dt>' + '<dd class="col-sm-3">' + ev.room + '</dd>';
-  ev.my_template += '</dl>';
-  ev.my_template += '<hr>';
-  ev.my_template += '<dl class="row">';
-  ev.my_template += '<dt class="col-sm-3">Titular</dt>' + '<dd class="col-sm-3">' + ev.customer + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Status</dt>' + '<dd class="col-sm-3">' + ev.status + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Pago</dt>' + '<dd class="col-sm-3">' + ev.payment + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Moneda</dt>' + '<dd class="col-sm-3">' + ev.currency + '</dd>';
-  ev.my_template += '<dt class="col-sm-3">Garantía</dt>' + '<dd class="col-sm-3">' + ev.warranty + '</dd>';
-  ev.my_template += '</dl>';
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var MyLightBox =
+/*#__PURE__*/
+function () {
+  function MyLightBox() {
+    _classCallCheck(this, MyLightBox);
+  }
+
+  _createClass(MyLightBox, [{
+    key: "templateNew",
+    value: function templateNew(ev, roomData) {
+      ev.my_template = '<dl class="row">';
+      ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Categoría de la habitación</dt>' + '<dd class="col-sm-3">' + roomData.category + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Habitación</dt>' + '<dd class="col-sm-3">' + roomData.name + '</dd>';
+      ev.my_template += '</dl>';
+    }
+  }, {
+    key: "templateEdit",
+    value: function templateEdit(ev) {
+      ev.my_template = '<dl class="row">';
+      ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.end_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Categoría de la habitación</dt>' + '<dd class="col-sm-3">' + ev.room_category + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Habitación</dt>' + '<dd class="col-sm-3">' + ev.room + '</dd>';
+      ev.my_template += '</dl>';
+      ev.my_template += '<hr>';
+      ev.my_template += '<dl class="row">';
+      ev.my_template += '<dt class="col-sm-3">Titular</dt>' + '<dd class="col-sm-3">' + ev.customer + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Status</dt>' + '<dd class="col-sm-3">' + ev.status + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Pago</dt>' + '<dd class="col-sm-3">' + ev.payment + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Moneda</dt>' + '<dd class="col-sm-3">' + ev.currency + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Garantía</dt>' + '<dd class="col-sm-3">' + ev.warranty + '</dd>';
+      ev.my_template += '</dl>';
+    }
+  }]);
+
+  return MyLightBox;
+}();
+
+;
+/* harmony default export */ __webpack_exports__["default"] = (new MyLightBox());
 
 /***/ }),
 
