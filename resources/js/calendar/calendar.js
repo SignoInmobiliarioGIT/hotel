@@ -1,20 +1,13 @@
-require('./dhtmlxscheduler');
-require('./dhtmlxscheduler_timeline');
-require('./dhtmlxscheduler_collision');
-
-
+import * as MyLightBox from './my-light-box.js';
 
 window.onload = function () {
     scheduler.config.dblclick_create = true;
-    scheduler.config.details_on_create = true;
-    scheduler.config.details_on_dblclick = true;
+    scheduler.config.details_on_create = false;
+    scheduler.config.details_on_dblclick = false;
 
     scheduler.config.drag_resize = true;
     scheduler.config.drag_move = true;
     scheduler.config.drag_create = true;
-    scheduler.attachEvent("onDblClick", function () {
-        return true
-    });
 
     window.showRooms = function showRooms(type) {
         var allRooms = scheduler.serverList("rooms");
@@ -41,15 +34,16 @@ window.onload = function () {
     scheduler.serverList("roomStatuses");
     scheduler.serverList("bookingStatuses");
     scheduler.serverList("rooms");
+    scheduler.serverList("reservations");
 
     scheduler.createTimelineView({
         fit_events: true,
         name: "timeline",
-        y_property: "room",
+        y_property: "room_id",
         render: 'bar',
         x_unit: "day",
         x_date: "%d",
-        x_size: (typeof syze === 'undefined') ? '15' : size,
+        x_size: (typeof size === 'undefined') ? '15' : size,
         dy: 52,
         dx: 52,
         event_dy: 48,
@@ -67,34 +61,20 @@ window.onload = function () {
     //===============
     //Data loading
     //===============
-    scheduler.config.lightbox.sections = [{
-            name: "description",
-            height: 130,
-            map_to: "text",
-            type: "textarea",
-            focus: true
-        },
-        {
-            name: "custom",
-            height: 23,
-            type: "select",
-            options: scheduler.serverList("rooms"),
-            map_to: "room"
-        },
-        {
-            name: "time",
-            height: 72,
-            type: "time",
-            map_to: "auto"
-        }
-    ];
+    scheduler.locale.labels.section_template = '';
 
-    scheduler.attachEvent('onEventCreated', function (event_id) {
-        var ev = scheduler.getEvent(event_id);
-        ev.status = 1;
-        ev.is_paid = false;
-        ev.text = 'new booking';
-    });
+    scheduler.config.lightbox.sections = [{
+        name: "template",
+        height: 200,
+        type: "template",
+        map_to: "my_template"
+    }, ];
+
+
+
+
+
+
 
     scheduler.attachEvent("onParse", function () {
         showRooms("all");
@@ -151,4 +131,62 @@ window.onload = function () {
     }, function (start, end, label) {
         window.location.replace('?size=' + size + "&dd=" + start.format('DD') + "&mm=" + start.format('MM') + "&yyyy=" + start.format('YYYY'));
     });
+
+
+
+
+
+    scheduler.attachEvent("onBeforeLightbox", function (id, e) {
+        var ev = scheduler.getEvent(id);
+        scheduler.config.buttons_left = ["cancel"];
+        scheduler.locale.labels["cancel"] = "Cancelar";
+        scheduler.resetLightbox();
+
+        scheduler.attachEvent("onLightboxButton", function (button_id, node, e) {
+            if (button_id == "cancel") {
+                scheduler.endLightbox(false);
+            }
+
+            if (button_id == "more_info") {
+                window.location.replace("/reservations");
+            }
+        });
+
+        if (typeof ev.customer === 'undefined') {
+
+            scheduler.templates.lightbox_header = function (start, end, ev) {
+                return 'Nueva Reserva';
+            };
+
+            scheduler.config.buttons_right = ["save"];
+            scheduler.locale.labels["save"] = "Grabar";
+
+            $.each(rooms, function (index, room) {
+                if (room.value == ev.room_id) {
+                    roomData = {
+                        "name": room.label,
+                        "category": room.category
+                    }
+                }
+            })
+            MyLightBox.templateNew(ev, roomData)
+
+        } else {
+            scheduler.config.buttons_right = ["more_info"];
+            scheduler.locale.labels["more_info"] = "+ INFO";
+
+            scheduler.templates.lightbox_header = function (start, end, ev) {
+                return 'Reserva N° ' + ev.id;
+            };
+
+
+            customTemplateLightBoxEdit(ev);
+        }
+
+        return true;
+    });
+}
+
+function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => object[key] === value);
 }

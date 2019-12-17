@@ -14,6 +14,9 @@ try {
     require('overlayscrollbars');
     require('../../vendor/almasaeed2010/adminlte/dist/js/adminlte');
 
+    require('./dhtmlxscheduler/dhtmlxscheduler');
+
+
     require('bootstrap');
 } catch (e) {}
 
@@ -48,3 +51,7 @@ window.moment = require('moment');
 window.daterangepicker = require('daterangepicker');
 window.DataTable = require('datatables');
 window.dhtmlxscheduler = require('dhtmlx-scheduler');
+
+
+require('./dhtmlxscheduler/dhtmlxscheduler_timeline');
+require('./dhtmlxscheduler/dhtmlxscheduler_collision');

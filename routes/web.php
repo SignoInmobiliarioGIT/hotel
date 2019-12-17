@@ -26,3 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', 'DashboardController@index')->name('dashboard');
     Route::get('reservations', 'ReservationController@index');
 });
+
+Route::get('/scheduler', function () {
+    return view('scheduler/scheduler');
+});

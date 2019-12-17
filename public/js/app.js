@@ -90936,6 +90936,8 @@ try {
 
   __webpack_require__(/*! ../../vendor/almasaeed2010/adminlte/dist/js/adminlte */ "./vendor/almasaeed2010/adminlte/dist/js/adminlte.js");
 
+  __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler.js");
+
   __webpack_require__(/*! bootstrap */ "./node_modules/bootstrap/dist/js/bootstrap.js");
 } catch (e) {}
 /**
@@ -90966,31 +90968,32 @@ window.daterangepicker = __webpack_require__(/*! daterangepicker */ "./node_modu
 window.DataTable = __webpack_require__(/*! datatables */ "./node_modules/datatables/media/js/jquery.dataTables.js");
 window.dhtmlxscheduler = __webpack_require__(/*! dhtmlx-scheduler */ "./node_modules/dhtmlx-scheduler/codebase/dhtmlxscheduler.js");
 
+__webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_timeline */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_timeline.js");
+
+__webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_collision */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_collision.js");
+
 /***/ }),
 
 /***/ "./resources/js/calendar/calendar.js":
 /*!*******************************************!*\
   !*** ./resources/js/calendar/calendar.js ***!
   \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-__webpack_require__(/*! ./dhtmlxscheduler */ "./resources/js/calendar/dhtmlxscheduler.js");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _my_light_box_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./my-light-box.js */ "./resources/js/calendar/my-light-box.js");
+/* harmony import */ var _my_light_box_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_my_light_box_js__WEBPACK_IMPORTED_MODULE_0__);
 
-__webpack_require__(/*! ./dhtmlxscheduler_timeline */ "./resources/js/calendar/dhtmlxscheduler_timeline.js");
-
-__webpack_require__(/*! ./dhtmlxscheduler_collision */ "./resources/js/calendar/dhtmlxscheduler_collision.js");
 
 window.onload = function () {
   scheduler.config.dblclick_create = true;
-  scheduler.config.details_on_create = true;
-  scheduler.config.details_on_dblclick = true;
+  scheduler.config.details_on_create = false;
+  scheduler.config.details_on_dblclick = false;
   scheduler.config.drag_resize = true;
   scheduler.config.drag_move = true;
   scheduler.config.drag_create = true;
-  scheduler.attachEvent("onDblClick", function () {
-    return true;
-  });
 
   window.showRooms = function showRooms(type) {
     var allRooms = scheduler.serverList("rooms");
@@ -91014,14 +91017,15 @@ window.onload = function () {
   scheduler.serverList("roomStatuses");
   scheduler.serverList("bookingStatuses");
   scheduler.serverList("rooms");
+  scheduler.serverList("reservations");
   scheduler.createTimelineView({
     fit_events: true,
     name: "timeline",
-    y_property: "room",
+    y_property: "room_id",
     render: 'bar',
     x_unit: "day",
     x_date: "%d",
-    x_size: typeof syze === 'undefined' ? '15' : size,
+    x_size: typeof size === 'undefined' ? '15' : size,
     dy: 52,
     dx: 52,
     event_dy: 48,
@@ -91036,30 +91040,13 @@ window.onload = function () {
   //Data loading
   //===============
 
+  scheduler.locale.labels.section_template = '';
   scheduler.config.lightbox.sections = [{
-    name: "description",
-    height: 130,
-    map_to: "text",
-    type: "textarea",
-    focus: true
-  }, {
-    name: "custom",
-    height: 23,
-    type: "select",
-    options: scheduler.serverList("rooms"),
-    map_to: "room"
-  }, {
-    name: "time",
-    height: 72,
-    type: "time",
-    map_to: "auto"
+    name: "template",
+    height: 200,
+    type: "template",
+    map_to: "my_template"
   }];
-  scheduler.attachEvent('onEventCreated', function (event_id) {
-    var ev = scheduler.getEvent(event_id);
-    ev.status = 1;
-    ev.is_paid = false;
-    ev.text = 'new booking';
-  });
   scheduler.attachEvent("onParse", function () {
     showRooms("all");
     var roomSelect = document.querySelector("#room_filter");
@@ -91105,14 +91092,211 @@ window.onload = function () {
   }, function (start, end, label) {
     window.location.replace('?size=' + size + "&dd=" + start.format('DD') + "&mm=" + start.format('MM') + "&yyyy=" + start.format('YYYY'));
   });
+  scheduler.attachEvent("onBeforeLightbox", function (id, e) {
+    var ev = scheduler.getEvent(id);
+    scheduler.config.buttons_left = ["cancel"];
+    scheduler.locale.labels["cancel"] = "Cancelar";
+    scheduler.resetLightbox();
+    scheduler.attachEvent("onLightboxButton", function (button_id, node, e) {
+      if (button_id == "cancel") {
+        scheduler.endLightbox(false);
+      }
+
+      if (button_id == "more_info") {
+        window.location.replace("/reservations");
+      }
+    });
+
+    if (typeof ev.customer === 'undefined') {
+      scheduler.templates.lightbox_header = function (start, end, ev) {
+        return 'Nueva Reserva';
+      };
+
+      scheduler.config.buttons_right = ["save"];
+      scheduler.locale.labels["save"] = "Grabar";
+      $.each(rooms, function (index, room) {
+        if (room.value == ev.room_id) {
+          roomData = {
+            "name": room.label,
+            "category": room.category
+          };
+        }
+      });
+      _my_light_box_js__WEBPACK_IMPORTED_MODULE_0__["templateNew"](ev, roomData);
+    } else {
+      scheduler.config.buttons_right = ["more_info"];
+      scheduler.locale.labels["more_info"] = "+ INFO";
+
+      scheduler.templates.lightbox_header = function (start, end, ev) {
+        return 'Reserva N° ' + ev.id;
+      };
+
+      customTemplateLightBoxEdit(ev);
+    }
+
+    return true;
+  });
 };
+
+function getKeyByValue(object, value) {
+  return Object.keys(object).find(function (key) {
+    return object[key] === value;
+  });
+}
 
 /***/ }),
 
-/***/ "./resources/js/calendar/dhtmlxscheduler.js":
-/*!**************************************************!*\
-  !*** ./resources/js/calendar/dhtmlxscheduler.js ***!
-  \**************************************************/
+/***/ "./resources/js/calendar/my-light-box.js":
+/*!***********************************************!*\
+  !*** ./resources/js/calendar/my-light-box.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var MyLightBox =
+/*#__PURE__*/
+function () {
+  function MyLightBox() {
+    _classCallCheck(this, MyLightBox);
+  }
+
+  _createClass(MyLightBox, null, [{
+    key: "templateNew",
+    value: function templateNew(ev, roomData) {
+      ev.my_template = '<dl class="row">';
+      ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Categoría de la habitación</dt>' + '<dd class="col-sm-3">' + roomData.category + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Habitación</dt>' + '<dd class="col-sm-3">' + roomData.name + '</dd>';
+      ev.my_template += '</dl>';
+    }
+  }, {
+    key: "templateEdit",
+    value: function templateEdit(ev) {
+      ev.my_template = '<dl class="row">';
+      ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.end_date).format('DD/MM/YYYY') + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Categoría de la habitación</dt>' + '<dd class="col-sm-3">' + ev.room_category + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Habitación</dt>' + '<dd class="col-sm-3">' + ev.room + '</dd>';
+      ev.my_template += '</dl>';
+      ev.my_template += '<hr>';
+      ev.my_template += '<dl class="row">';
+      ev.my_template += '<dt class="col-sm-3">Titular</dt>' + '<dd class="col-sm-3">' + ev.customer + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Status</dt>' + '<dd class="col-sm-3">' + ev.status + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Pago</dt>' + '<dd class="col-sm-3">' + ev.payment + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Moneda</dt>' + '<dd class="col-sm-3">' + ev.currency + '</dd>';
+      ev.my_template += '<dt class="col-sm-3">Garantía</dt>' + '<dd class="col-sm-3">' + ev.warranty + '</dd>';
+      ev.my_template += '</dl>';
+    }
+  }]);
+
+  return MyLightBox;
+}();
+
+/***/ }),
+
+/***/ "./resources/js/components/ExampleComponent.vue":
+/*!******************************************************!*\
+  !*** ./resources/js/components/ExampleComponent.vue ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
+/* harmony import */ var _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/ExampleComponent.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************!*\
+  !*** ./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&":
+/*!*************************************************************************************!*\
+  !*** ./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e& ***!
+  \*************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/custom-datatables.js":
+/*!*******************************************!*\
+  !*** ./resources/js/custom-datatables.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+$(function () {
+  $('#reservations').DataTable({
+    "paging": true,
+    "lengthChange": false,
+    "searching": false,
+    "ordering": true,
+    "info": true,
+    "autoWidth": false,
+    "language": {
+      "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
+    }
+  });
+});
+
+/***/ }),
+
+/***/ "./resources/js/dhtmlxscheduler/dhtmlxscheduler.js":
+/*!*********************************************************!*\
+  !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -96008,10 +96192,10 @@ You are not allowed to use it on any other site
 
 /***/ }),
 
-/***/ "./resources/js/calendar/dhtmlxscheduler_collision.js":
-/*!************************************************************!*\
-  !*** ./resources/js/calendar/dhtmlxscheduler_collision.js ***!
-  \************************************************************/
+/***/ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_collision.js":
+/*!*******************************************************************!*\
+  !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler_collision.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -96105,10 +96289,10 @@ Scheduler.plugin(function (e) {
 
 /***/ }),
 
-/***/ "./resources/js/calendar/dhtmlxscheduler_timeline.js":
-/*!***********************************************************!*\
-  !*** ./resources/js/calendar/dhtmlxscheduler_timeline.js ***!
-  \***********************************************************/
+/***/ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_timeline.js":
+/*!******************************************************************!*\
+  !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler_timeline.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -97897,98 +98081,6 @@ Scheduler.plugin(function (e) {
       }
     };
   }, e._temp_matrix_scope();
-});
-
-/***/ }),
-
-/***/ "./resources/js/components/ExampleComponent.vue":
-/*!******************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue ***!
-  \******************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
-/* harmony import */ var _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
-
-
-
-
-
-/* normalize component */
-
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
-  false,
-  null,
-  null,
-  null
-  
-)
-
-/* hot reload */
-if (false) { var api; }
-component.options.__file = "resources/js/components/ExampleComponent.vue"
-/* harmony default export */ __webpack_exports__["default"] = (component.exports);
-
-/***/ }),
-
-/***/ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&":
-/*!*******************************************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js& ***!
-  \*******************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
-
-/***/ }),
-
-/***/ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&":
-/*!*************************************************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e& ***!
-  \*************************************************************************************/
-/*! exports provided: render, staticRenderFns */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
-
-
-
-/***/ }),
-
-/***/ "./resources/js/custom-datatables.js":
-/*!*******************************************!*\
-  !*** ./resources/js/custom-datatables.js ***!
-  \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-$(function () {
-  $('#reservations').DataTable({
-    "paging": true,
-    "lengthChange": false,
-    "searching": false,
-    "ordering": true,
-    "info": true,
-    "autoWidth": false,
-    "language": {
-      "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
-    }
-  });
 });
 
 /***/ }),
