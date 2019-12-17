@@ -30,3 +30,4 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/scheduler', function () {
     return view('scheduler/scheduler');
 });
+Route::resource('scheduler', 'SchedulerController');
