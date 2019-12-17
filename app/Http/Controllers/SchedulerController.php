@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Traits\CalendarTrait;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use App\Models\Reservation;
 
 class SchedulerController extends Controller
 {
