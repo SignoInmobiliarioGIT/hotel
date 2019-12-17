@@ -1,11 +1,11 @@
-class MyLightBox {
-    static templateNew(ev, roomData) {
+    export function templateNew(ev, roomData) {
 
         ev.my_template = '<dl class="row">';
         ev.my_template += '<dt class="col-sm-3">Desde</dt>' +
             '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
         ev.my_template += '<dt class="col-sm-3">Hasta</dt>' +
-            '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
+            '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') +
+            '</dd>';
         ev.my_template += '<dt class="col-sm-3">Categoría de la habitación</dt>' +
             '<dd class="col-sm-3">' + roomData.category + '</dd>';
         ev.my_template += '<dt class="col-sm-3">Habitación</dt>' +
@@ -13,7 +13,7 @@ class MyLightBox {
         ev.my_template += '</dl>';
     }
 
-    static templateEdit(ev) {
+    export function templateEdit(ev) {
 
         ev.my_template = '<dl class="row">';
         ev.my_template += '<dt class="col-sm-3">Desde</dt>' +
@@ -43,4 +43,3 @@ class MyLightBox {
 
         ev.my_template += '</dl>';
     }
-}

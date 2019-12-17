@@ -1,6 +1,8 @@
-import * as MyLightBox from './my-light-box.js';
+const MyLightBox = require('./my-light-box');
+// import MyLightBox from './my-light-box';
 
 window.onload = function () {
+
     scheduler.config.dblclick_create = true;
     scheduler.config.details_on_create = false;
     scheduler.config.details_on_dblclick = false;
@@ -23,8 +25,6 @@ window.onload = function () {
 
         scheduler.updateCollection("visibleRooms", visibleRooms);
     };
-
-
 
     //===============
     //Configuration
@@ -161,6 +161,8 @@ window.onload = function () {
             scheduler.config.buttons_right = ["save"];
             scheduler.locale.labels["save"] = "Grabar";
 
+            let roomData;
+
             $.each(rooms, function (index, room) {
                 if (room.value == ev.room_id) {
                     roomData = {
@@ -180,13 +182,9 @@ window.onload = function () {
             };
 
 
-            customTemplateLightBoxEdit(ev);
+            MyLightBox.templateEdit(ev);
         }
 
         return true;
     });
-}
-
-function getKeyByValue(object, value) {
-    return Object.keys(object).find(key => object[key] === value);
 }
