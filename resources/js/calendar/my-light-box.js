@@ -1,6 +1,24 @@
 class MyLightBox {
     templateNew(ev, roomData) {
 
+        scheduler.templates.lightbox_header = function (start, end, ev) {
+            return 'Nueva Reserva';
+        };
+
+        // let roomData;
+
+        $.each(rooms, function (index, room) {
+            if (room.value == ev.room_id) {
+                roomData = {
+                    "name": room.label,
+                    "category": room.category
+                }
+            }
+        });
+
+        scheduler.config.buttons_right = ["save"];
+        scheduler.locale.labels["save"] = "Grabar";
+
         ev.my_template = '<dl class="row">';
         ev.my_template += '<dt class="col-sm-3">Desde</dt>' +
             '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
@@ -15,6 +33,13 @@ class MyLightBox {
     }
 
     templateEdit(ev) {
+
+        scheduler.config.buttons_right = ["more_info"];
+        scheduler.locale.labels["more_info"] = "+ INFO";
+
+        scheduler.templates.lightbox_header = function (start, end, ev) {
+            return 'Reserva N° ' + ev.id;
+        };
 
         ev.my_template = '<dl class="row">';
         ev.my_template += '<dt class="col-sm-3">Desde</dt>' +

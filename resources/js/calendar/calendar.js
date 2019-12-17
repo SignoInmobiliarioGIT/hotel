@@ -6,6 +6,17 @@ window.onload = function () {
         return 'Reserva N° ' + ev.id + '<br>' + ev.customer;
     };
 
+    scheduler.attachEvent("onEventCollision", function (ev, evs) {
+        //any custom logic here
+        alert('No grabar');
+        return true;
+    });
+
+    // scheduler.attachEvent("onBeforeEventChanged", function (id, mode, e) {
+    //     // var event_obj = dragged_event;
+    //     alert('Grabar');
+    // });
+
     scheduler.config.dblclick_create = true;
     scheduler.config.details_on_create = false;
     scheduler.config.details_on_dblclick = false;
@@ -107,6 +118,7 @@ window.onload = function () {
     scheduler.init('scheduler_here',
         (typeof date_pick_scheduler === 'undefined') ? '' : date_pick_scheduler, "timeline");
 
+
     scheduler.parse(JSON.stringify({
         "data": reservations,
         "collections": {
@@ -156,35 +168,8 @@ window.onload = function () {
         });
 
         if (typeof ev.customer === 'undefined') {
-
-            scheduler.templates.lightbox_header = function (start, end, ev) {
-                return 'Nueva Reserva';
-            };
-
-            scheduler.config.buttons_right = ["save"];
-            scheduler.locale.labels["save"] = "Grabar";
-
-            let roomData;
-
-            $.each(rooms, function (index, room) {
-                if (room.value == ev.room_id) {
-                    roomData = {
-                        "name": room.label,
-                        "category": room.category
-                    }
-                }
-            })
-            MyLightBox.templateNew(ev, roomData)
-
+            MyLightBox.templateNew(ev)
         } else {
-            scheduler.config.buttons_right = ["more_info"];
-            scheduler.locale.labels["more_info"] = "+ INFO";
-
-            scheduler.templates.lightbox_header = function (start, end, ev) {
-                return 'Reserva N° ' + ev.id;
-            };
-
-
             MyLightBox.templateEdit(ev);
         }
 

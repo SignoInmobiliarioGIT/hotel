@@ -103,6 +103,15 @@ window.onload = function () {
     return 'Reserva N° ' + ev.id + '<br>' + ev.customer;
   };
 
+  scheduler.attachEvent("onEventCollision", function (ev, evs) {
+    //any custom logic here
+    alert('No grabar');
+    return true;
+  }); // scheduler.attachEvent("onBeforeEventChanged", function (id, mode, e) {
+  //     // var event_obj = dragged_event;
+  //     alert('Grabar');
+  // });
+
   scheduler.config.dblclick_create = true;
   scheduler.config.details_on_create = false;
   scheduler.config.details_on_dblclick = false;
@@ -223,30 +232,8 @@ window.onload = function () {
     });
 
     if (typeof ev.customer === 'undefined') {
-      scheduler.templates.lightbox_header = function (start, end, ev) {
-        return 'Nueva Reserva';
-      };
-
-      scheduler.config.buttons_right = ["save"];
-      scheduler.locale.labels["save"] = "Grabar";
-      var roomData;
-      $.each(rooms, function (index, room) {
-        if (room.value == ev.room_id) {
-          roomData = {
-            "name": room.label,
-            "category": room.category
-          };
-        }
-      });
-      _my_light_box__WEBPACK_IMPORTED_MODULE_0__["default"].templateNew(ev, roomData);
+      _my_light_box__WEBPACK_IMPORTED_MODULE_0__["default"].templateNew(ev);
     } else {
-      scheduler.config.buttons_right = ["more_info"];
-      scheduler.locale.labels["more_info"] = "+ INFO";
-
-      scheduler.templates.lightbox_header = function (start, end, ev) {
-        return 'Reserva N° ' + ev.id;
-      };
-
       _my_light_box__WEBPACK_IMPORTED_MODULE_0__["default"].templateEdit(ev);
     }
 
@@ -281,6 +268,21 @@ function () {
   _createClass(MyLightBox, [{
     key: "templateNew",
     value: function templateNew(ev, roomData) {
+      scheduler.templates.lightbox_header = function (start, end, ev) {
+        return 'Nueva Reserva';
+      }; // let roomData;
+
+
+      $.each(rooms, function (index, room) {
+        if (room.value == ev.room_id) {
+          roomData = {
+            "name": room.label,
+            "category": room.category
+          };
+        }
+      });
+      scheduler.config.buttons_right = ["save"];
+      scheduler.locale.labels["save"] = "Grabar";
       ev.my_template = '<dl class="row">';
       ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
       ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
@@ -291,6 +293,13 @@ function () {
   }, {
     key: "templateEdit",
     value: function templateEdit(ev) {
+      scheduler.config.buttons_right = ["more_info"];
+      scheduler.locale.labels["more_info"] = "+ INFO";
+
+      scheduler.templates.lightbox_header = function (start, end, ev) {
+        return 'Reserva N° ' + ev.id;
+      };
+
       ev.my_template = '<dl class="row">';
       ev.my_template += '<dt class="col-sm-3">Desde</dt>' + '<dd class="col-sm-3">' + moment(ev.start_date).format('DD/MM/YYYY') + '</dd>';
       ev.my_template += '<dt class="col-sm-3">Hasta</dt>' + '<dd class="col-sm-3">' + moment(ev.end_date).format('DD/MM/YYYY') + '</dd>';
