@@ -326,13 +326,14 @@ function () {
 /***/ }),
 
 /***/ 1:
-/*!*************************************************!*\
-  !*** multi ./resources/js/calendar/calendar.js ***!
-  \*************************************************/
+/*!*****************************************************************************************!*\
+  !*** multi ./resources/js/calendar/calendar.js ./resources/js/calendar/my-light-box.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\laravel-projects\hotel6\resources\js\calendar\calendar.js */"./resources/js/calendar/calendar.js");
+__webpack_require__(/*! C:\laravel-projects\hotel6\resources\js\calendar\calendar.js */"./resources/js/calendar/calendar.js");
+module.exports = __webpack_require__(/*! C:\laravel-projects\hotel6\resources\js\calendar\my-light-box.js */"./resources/js/calendar/my-light-box.js");
 
 
 /***/ })
