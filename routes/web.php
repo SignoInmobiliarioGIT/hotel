@@ -28,6 +28,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('scheduler', 'SchedulerController');
 });
 
-// Route::get('/scheduler', function () {
-//     return view('scheduler/scheduler');
-// });
+Route::get('/scheduler-test', function () {
+    return view('scheduler/scheduler');
+});
+
+
