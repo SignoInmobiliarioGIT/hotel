@@ -33,3 +33,9 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 
 require('./reservations/filters');
 require('./custom-datatables');
+
+require('./dhtmlxscheduler/dhtmlxscheduler');
+require('./dhtmlxscheduler/dhtmlxscheduler_limit');
+require('./dhtmlxscheduler/dhtmlxscheduler_timeline');
+require('./dhtmlxscheduler/dhtmlxscheduler_collision');
+require('./dhtmlxscheduler/dhtmlxscheduler_tooltip');

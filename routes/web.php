@@ -25,11 +25,10 @@ Auth::routes();
 Route::middleware(['auth'])->group(function () {
     Route::get('/', 'SchedulerController@index')->name('dashboard');
     Route::get('reservations', 'ReservationController@index');
-    Route::resource('scheduler', 'SchedulerController');
 });
+
+Route::resource('scheduler', 'SchedulerController');
 
 Route::get('/scheduler-test', function () {
     return view('scheduler/scheduler');
 });
-
-

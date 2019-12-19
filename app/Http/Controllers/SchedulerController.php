@@ -13,16 +13,42 @@ class SchedulerController extends Controller
 
     public function index(Request $request)
     {
-        $calendar = $this->calendar($request);
-
-        return view('dashboard', [
-            'reservations' => $calendar['reservations'],
-            'rooms' => $calendar['rooms'], 'now' => Carbon::now(),
-            'size' => $calendar['size'],
-            'dd' => $calendar['dd'],
-            'mm' => $calendar['mm'],
-            'yy' => $calendar['yy'],
-        ]);
+        $response = [
+            'data' => [
+                ['text' => 'reserva 1', 'start_date' => '2019-12-18', 'end_date' => '2019-12-22', 'room' => '1', 'id' => '1', 'status' => '1', 'is_paid' => '1'],
+                ['text' => 'reserva 2', 'start_date' => '2019-12-20', 'end_date' => '2019-12-23', 'room' => '2', 'id' => '2', 'status' => '1', 'is_paid' => '1']
+            ],
+            'collections' => [
+                'rooms' => [
+                    ['value' => '1', 'label' => 'Hab 1', 'type' => '4', 'status' => '1'],
+                    ['value' => '2', 'label' => 'Hab 2', 'type' => '2', 'status' => '2'],
+                    ['value' => '3', 'label' => 'Hab 3', 'type' => '2', 'status' => '1'],
+                    ['value' => '4', 'label' => 'Hab 4', 'type' => '4', 'status' => '3'],
+                    ['value' => '5', 'label' => 'Hab 100', 'type' => '3', 'status' => '2'],
+                    ['value' => '6', 'label' => 'Hab 101', 'type' => '3', 'status' => '1'],
+                    ['value' => '7', 'label' => 'Hab 102', 'type' => '3', 'status' => '1'],
+                    ['value' => '8', 'label' => 'Hab 103', 'type' => '3', 'status' => '2']
+                ],
+                'roomTypes' => [
+                    ['value' => '1', 'label' => 'Simple'],
+                    ['value' => '2', 'label' => 'Doble'],
+                    ['value' => '3', 'label' => 'Triple'],
+                    ['value' => '4', 'label' => 'Suite']
+                ],
+                'roomStatuses' => [
+                    ['value' => '1', 'label' => 'Lista'],
+                    ['value' => '2', 'label' => 'Sucia'],
+                    ['value' => '3', 'label' => 'Limpiar']
+                ],
+                'bookingStatuses' => [
+                    ['value' => '1', 'label' => 'Nueva'],
+                    ['value' => '2', 'label' => 'Confirmada'],
+                    ['value' => '3', 'label' => 'De entrada'],
+                    ['value' => '4', 'label' => 'De salida']
+                ]
+            ]
+        ];
+        return response()->json($response);
     }
 
     public function store(Request $request)
