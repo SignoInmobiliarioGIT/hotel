@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
+
 use Eloquent as Model;
 
 /**
@@ -18,7 +20,7 @@ class RoomCategory extends Model
 {
 
     public $table = 'room_categories';
-    
+
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
@@ -62,7 +64,12 @@ class RoomCategory extends Model
         "max_capacity.min" => "El valor del campo 'Capacidad Máxima' debe ser mayor a :min",
         "price.required" => "El campo 'Precio' es obligatorio",
         "price.min" => "El valor del campo 'Precio' debe ser mayor a :min"
-        ];
+    ];
 
-    
+    static function toScheduler()
+    {
+        return RoomCategory::select(DB::raw('id as value, name as label'))
+            ->get()
+            ->toArray();
+    }
 }

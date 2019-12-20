@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 
 class Reservation extends Model
@@ -133,5 +134,12 @@ class Reservation extends Model
         return Reservation::whereBetween('from_date', [$from, $to])->orWhereBetween('to_date', [$from, $to])
             ->with(['reservedRooms', 'rooms', 'customer', 'status'])
             ->get();
+    }
+
+    static function toScheduler()
+    {
+        return DB::table('reservation')
+            ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room, status_id as status, payment_option_id as is_paid'))
+            ->leftJoin('reserved_room', 'reserved_room.reservation_id', '=', 'reservation.id')->get()->toArray();
     }
 }

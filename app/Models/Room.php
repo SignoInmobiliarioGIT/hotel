@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
+
 use Eloquent as Model;
 
 /**
@@ -171,5 +173,11 @@ class Room extends Model
                 ->WhereBetween('from_date', [$from, $to])
                 ->orWhereBetween('to_date', [$from, $to]))
             ->get();
+    }
+    static function toScheduler()
+    {
+        return Room::select(DB::raw('id as value, name as label,status, room_category as type, status'))
+            ->get()
+            ->toArray();
     }
 }
