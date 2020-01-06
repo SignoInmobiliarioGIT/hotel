@@ -17778,6 +17778,7 @@ window.onload = function () {
   scheduler.setLoadMode("day");
   scheduler.init('scheduler_here', moment(), "timeline");
   scheduler.load("/scheduler", "json");
+  lightboxConfiguration();
 };
 
 window.showRooms = function showRooms(type) {
@@ -17869,6 +17870,45 @@ function highLightWeekend() {
     zones: "fullday",
     css: "timeline_weekend"
   });
+}
+
+function lightboxConfiguration() {
+  scheduler.config.lightbox.sections = [{
+    map_to: "text",
+    name: "text",
+    type: "textarea",
+    height: 24
+  }, {
+    map_to: "room",
+    name: "room",
+    type: "select",
+    options: scheduler.serverList("visibleRooms")
+  }, {
+    map_to: "status",
+    name: "status",
+    type: "radio",
+    options: scheduler.serverList("bookingStatuses")
+  }, {
+    map_to: "is_paid",
+    name: "is_paid",
+    type: "checkbox",
+    checked_value: true,
+    unchecked_value: false
+  }, {
+    map_to: "time",
+    name: "time",
+    type: "calendar_time"
+  }];
+  scheduler.locale.labels.section_text = 'Name';
+  scheduler.locale.labels.section_room = 'Room';
+  scheduler.locale.labels.section_status = 'Status';
+  scheduler.locale.labels.section_is_paid = 'Paid';
+  scheduler.locale.labels.section_time = 'Time';
+
+  scheduler.templates.lightbox_header = function (start, end, ev) {
+    var formatFunc = scheduler.date.date_to_str('%d.%m.%Y');
+    return formatFunc(start) + " - " + formatFunc(end);
+  };
 }
 
 /***/ }),

@@ -39,3 +39,5 @@ require('./dhtmlxscheduler/dhtmlxscheduler_limit');
 require('./dhtmlxscheduler/dhtmlxscheduler_timeline');
 require('./dhtmlxscheduler/dhtmlxscheduler_collision');
 require('./dhtmlxscheduler/dhtmlxscheduler_tooltip');
+require('./dhtmlxscheduler/dhtmlxscheduler_minical');
+require('./dhtmlxscheduler/dhtmlxscheduler_editors');
