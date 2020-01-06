@@ -17774,8 +17774,10 @@ window.onload = function () {
   innerHtmlReservation();
   toolTip();
   highLightWeekend();
-  scheduler.load("/scheduler", "json");
+  scheduler.config.date_format = "%d-%M-%Y";
+  scheduler.setLoadMode("day");
   scheduler.init('scheduler_here', moment(), "timeline");
+  scheduler.load("/scheduler", "json");
 };
 
 window.showRooms = function showRooms(type) {
