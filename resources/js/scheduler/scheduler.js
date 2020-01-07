@@ -1,6 +1,6 @@
 const moment = require("moment");
 
-require('./lightbox');
+import LightBox from './lightbox';
 
 window.onload = function () {
 
@@ -59,7 +59,7 @@ window.onload = function () {
     dp.init(scheduler);
     dp.setTransactionMode("REST", false);
 
-    window.lightboxConfiguration();
+    LightBox.configuration();
 }
 
 window.showRooms = function showRooms(type) {

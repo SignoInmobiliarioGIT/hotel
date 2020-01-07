@@ -17728,48 +17728,72 @@ module.exports = function(module) {
 /*!********************************************!*\
   !*** ./resources/js/scheduler/lightbox.js ***!
   \********************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-window.lightboxConfiguration = function () {
-  scheduler.config.lightbox.sections = [{
-    map_to: "text",
-    name: "text",
-    type: "textarea",
-    height: 24
-  }, {
-    map_to: "room",
-    name: "room",
-    type: "select",
-    options: scheduler.serverList("visibleRooms")
-  }, {
-    map_to: "status",
-    name: "status",
-    type: "radio",
-    options: scheduler.serverList("bookingStatuses")
-  }, {
-    map_to: "is_paid",
-    name: "is_paid",
-    type: "checkbox",
-    checked_value: true,
-    unchecked_value: false
-  }, {
-    map_to: "time",
-    name: "time",
-    type: "calendar_time"
-  }];
-  scheduler.locale.labels.section_text = 'Titular';
-  scheduler.locale.labels.section_room = 'Habitación';
-  scheduler.locale.labels.section_status = 'Estado';
-  scheduler.locale.labels.section_is_paid = 'Pagado';
-  scheduler.locale.labels.section_time = 'Fecha';
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LightBox; });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  scheduler.templates.lightbox_header = function (start, end, ev) {
-    // var formatFunc = scheduler.date.date_to_str('%d.%m.%Y');
-    // return formatFunc(start) + " - " + formatFunc(end);
-    return "Reserva";
-  };
-};
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var LightBox =
+/*#__PURE__*/
+function () {
+  function LightBox() {
+    _classCallCheck(this, LightBox);
+  }
+
+  _createClass(LightBox, null, [{
+    key: "configuration",
+    value: function configuration() {
+      scheduler.config.lightbox.sections = [{
+        map_to: "text",
+        name: "text",
+        type: "textarea",
+        height: 24
+      }, {
+        map_to: "room",
+        name: "room",
+        type: "select",
+        options: scheduler.serverList("visibleRooms")
+      }, {
+        map_to: "status",
+        name: "status",
+        type: "radio",
+        options: scheduler.serverList("bookingStatuses")
+      }, {
+        map_to: "is_paid",
+        name: "is_paid",
+        type: "checkbox",
+        checked_value: true,
+        unchecked_value: false
+      }, {
+        map_to: "time",
+        name: "time",
+        type: "calendar_time"
+      }];
+      scheduler.locale.labels.section_text = 'Titular';
+      scheduler.locale.labels.section_room = 'Habitación';
+      scheduler.locale.labels.section_status = 'Estado';
+      scheduler.locale.labels.section_is_paid = 'Pagado';
+      scheduler.locale.labels.section_time = 'Fecha';
+
+      scheduler.templates.lightbox_header = function (start, end, ev) {
+        // var formatFunc = scheduler.date.date_to_str('%d.%m.%Y');
+        // return formatFunc(start) + " - " + formatFunc(end);
+        return "Reserva";
+      };
+    }
+  }]);
+
+  return LightBox;
+}();
+
+
 
 /***/ }),
 
@@ -17777,12 +17801,15 @@ window.lightboxConfiguration = function () {
 /*!*********************************************!*\
   !*** ./resources/js/scheduler/scheduler.js ***!
   \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _lightbox__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lightbox */ "./resources/js/scheduler/lightbox.js");
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 
-__webpack_require__(/*! ./lightbox */ "./resources/js/scheduler/lightbox.js");
+
 
 window.onload = function () {
   scheduler.locale.labels.timeline_tab = "Timeline";
@@ -17832,7 +17859,7 @@ window.onload = function () {
   var dp = new dataProcessor("/scheduler");
   dp.init(scheduler);
   dp.setTransactionMode("REST", false);
-  window.lightboxConfiguration();
+  _lightbox__WEBPACK_IMPORTED_MODULE_0__["default"].configuration();
 };
 
 window.showRooms = function showRooms(type) {
