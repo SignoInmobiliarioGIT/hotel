@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CleaningStatus;
+use App\Models\Customer;
 use App\Traits\CalendarTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -29,7 +30,8 @@ class SchedulerController extends Controller
                 'rooms' => Room::toScheduler(),
                 'roomTypes' => RoomCategory::toScheduler(),
                 'roomStatuses' => CleaningStatus::toScheduler(),
-                'bookingStatuses' => reservationStatus::toScheduler()
+                'bookingStatuses' => ReservationStatus::toScheduler(),
+                'customers' => Customer::toScheduler()
             ]
         ];
         return response()->json($response);

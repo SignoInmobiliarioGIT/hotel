@@ -1,4 +1,9 @@
 export default class LightBox {
+
+    static init() {
+        LightBox.configuration();
+    }
+
     static configuration() {
         scheduler.config.lightbox.sections = [{
                 map_to: "text",

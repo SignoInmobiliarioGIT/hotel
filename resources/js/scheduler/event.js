@@ -1,6 +1,10 @@
 import Helper from './helper';
 
 export default class Event {
+    static init() {
+        Event.innerHtmlReservation();
+        Event.toolTip();
+    }
     static innerHtmlReservation() {
         var eventDateFormat = scheduler.date.date_to_str("%d %m %Y");
 

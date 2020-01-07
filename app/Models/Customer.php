@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Eloquent as Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class Customer
@@ -119,5 +120,13 @@ class Customer extends Model
     public function documentType()
     {
         return $this->belongsTo(\App\Models\DocumentType::class, "document_type");
+    }
+
+    static function toScheduler()
+    {
+        return DB::table('customers')
+            ->select(DB::raw('id as value, name as label, document_number'))
+            ->get()
+            ->toArray();
     }
 }

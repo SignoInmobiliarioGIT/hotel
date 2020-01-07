@@ -1,6 +1,14 @@
 import Helper from './helper';
 
 export default class Grid {
+    static init() {
+        Grid.configuration();
+
+        scheduler.locale.labels.timeline_scale_header = Grid.headerHTML();
+        Grid.addMultipleColumnLeftTimeline();
+        Grid.highLightWeekend();
+    }
+
     static headerHTML() {
         return "<div class='timeline_item_separator'></div>" +
             "<div class='timeline_item_cell'>Hab.</div>" +
@@ -35,6 +43,30 @@ export default class Grid {
             days: [0, 6],
             zones: "fullday",
             css: "timeline_weekend"
+        });
+    }
+
+    static configuration() {
+        scheduler.locale.labels.timeline_tab = "Timeline";
+        scheduler.locale.labels.section_custom = "Section";
+
+        scheduler.createTimelineView({
+            name: "timeline",
+            x_unit: "day",
+            x_date: "%j",
+            x_step: 1,
+            x_size: 31,
+            section_autoheight: false,
+            y_unit: scheduler.serverList("visibleRooms"),
+            y_property: "room",
+            render: "bar",
+            round_position: true,
+            dy: 60,
+            event_dy: "full",
+            second_scale: {
+                x_unit: "month",
+                x_date: "%F, %Y"
+            }
         });
     }
 }

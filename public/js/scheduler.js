@@ -17751,6 +17751,12 @@ function () {
   }
 
   _createClass(Event, null, [{
+    key: "init",
+    value: function init() {
+      Event.innerHtmlReservation();
+      Event.toolTip();
+    }
+  }, {
     key: "innerHtmlReservation",
     value: function innerHtmlReservation() {
       var eventDateFormat = scheduler.date.date_to_str("%d %m %Y");
@@ -17816,6 +17822,14 @@ function () {
   }
 
   _createClass(Grid, null, [{
+    key: "init",
+    value: function init() {
+      Grid.configuration();
+      scheduler.locale.labels.timeline_scale_header = Grid.headerHTML();
+      Grid.addMultipleColumnLeftTimeline();
+      Grid.highLightWeekend();
+    }
+  }, {
     key: "headerHTML",
     value: function headerHTML() {
       return "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell'>Hab.</div>" + "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell'>Tipo</div>" + "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell room_status'>Estado</div>";
@@ -17837,6 +17851,30 @@ function () {
         days: [0, 6],
         zones: "fullday",
         css: "timeline_weekend"
+      });
+    }
+  }, {
+    key: "configuration",
+    value: function configuration() {
+      scheduler.locale.labels.timeline_tab = "Timeline";
+      scheduler.locale.labels.section_custom = "Section";
+      scheduler.createTimelineView({
+        name: "timeline",
+        x_unit: "day",
+        x_date: "%j",
+        x_step: 1,
+        x_size: 31,
+        section_autoheight: false,
+        y_unit: scheduler.serverList("visibleRooms"),
+        y_property: "room",
+        render: "bar",
+        round_position: true,
+        dy: 60,
+        event_dy: "full",
+        second_scale: {
+          x_unit: "month",
+          x_date: "%F, %Y"
+        }
       });
     }
   }]);
@@ -17939,6 +17977,11 @@ function () {
   }
 
   _createClass(LightBox, null, [{
+    key: "init",
+    value: function init() {
+      LightBox.configuration();
+    }
+  }, {
     key: "configuration",
     value: function configuration() {
       scheduler.config.lightbox.sections = [{
@@ -18000,35 +18043,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lightbox__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lightbox */ "./resources/js/scheduler/lightbox.js");
 /* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./resources/js/scheduler/grid.js");
 /* harmony import */ var _event__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./event */ "./resources/js/scheduler/event.js");
-/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helper */ "./resources/js/scheduler/helper.js");
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 
 
 
 
 
-
 window.onload = function () {
-  scheduler.locale.labels.timeline_tab = "Timeline";
-  scheduler.locale.labels.section_custom = "Section";
-  scheduler.createTimelineView({
-    name: "timeline",
-    x_unit: "day",
-    x_date: "%j",
-    x_step: 1,
-    x_size: 31,
-    section_autoheight: false,
-    y_unit: scheduler.serverList("visibleRooms"),
-    y_property: "room",
-    render: "bar",
-    round_position: true,
-    dy: 60,
-    event_dy: "full",
-    second_scale: {
-      x_unit: "month",
-      x_date: "%F, %Y"
-    }
-  });
+  _grid__WEBPACK_IMPORTED_MODULE_1__["default"].init();
   scheduler.attachEvent("onParse", function () {
     showRooms("all");
     var roomSelect = document.querySelector("#room_filter");
@@ -18039,16 +18061,11 @@ window.onload = function () {
     });
     roomSelect.innerHTML = typeElements.join("");
   });
-  scheduler.locale.labels.timeline_scale_header = _grid__WEBPACK_IMPORTED_MODULE_1__["default"].headerHTML();
-  _grid__WEBPACK_IMPORTED_MODULE_1__["default"].addMultipleColumnLeftTimeline();
-  _grid__WEBPACK_IMPORTED_MODULE_1__["default"].highLightWeekend();
 
   scheduler.templates.event_class = function (start, end, event) {
     return "event_" + (event.status || "");
   };
 
-  _event__WEBPACK_IMPORTED_MODULE_2__["default"].innerHtmlReservation();
-  _event__WEBPACK_IMPORTED_MODULE_2__["default"].toolTip();
   scheduler.config.date_format = "%d-%m-%Y";
   scheduler.setLoadMode("day");
   scheduler.init('scheduler_here', moment(), "timeline");
@@ -18056,7 +18073,8 @@ window.onload = function () {
   var dp = new dataProcessor("/scheduler");
   dp.init(scheduler);
   dp.setTransactionMode("REST", false);
-  _lightbox__WEBPACK_IMPORTED_MODULE_0__["default"].configuration();
+  _lightbox__WEBPACK_IMPORTED_MODULE_0__["default"].init();
+  _event__WEBPACK_IMPORTED_MODULE_2__["default"].init();
 };
 
 window.showRooms = function showRooms(type) {
