@@ -47,10 +47,15 @@ window.onload = function () {
     toolTip();
     highLightWeekend();
 
-    scheduler.config.date_format = "%d-%M-%Y";
+    scheduler.config.date_format = "%d-%m-%Y";
     scheduler.setLoadMode("day");
+
     scheduler.init('scheduler_here', moment(), "timeline");
+
     scheduler.load("/scheduler", "json");
+    var dp = new dataProcessor("/scheduler");
+    dp.init(scheduler);
+    dp.setTransactionMode("REST", false);
 
     lightboxConfiguration();
 }

@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Carbon;
 
 class Reservation extends Model
 {
     use SoftDeletes;
 
     public $timestamps = true;
+
+    // protected $dates = ['from_date', 'to_date'];
+    // protected $dateFormat = 'Y-m-d';
 
     public $table = 'reservation';
 
@@ -136,10 +139,26 @@ class Reservation extends Model
             ->get();
     }
 
+    /**
+     * Metodo para el scheduler
+     *
+     * Selecciona y renombra los campos para el scheduler
+     *
+     * @return array
+     */
     static function toScheduler()
     {
         return DB::table('reservation')
             ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room, status_id as status, payment_option_id as is_paid'))
             ->leftJoin('reserved_room', 'reserved_room.reservation_id', '=', 'reservation.id')->get()->toArray();
+    }
+
+    public function setFromDateAttribute($value)
+    {
+        $this->attributes['from_date'] = Carbon::createFromFormat('d-m-Y', $value)->format('Y-m-d');
+    }
+    public function setToDateAttribute($value)
+    {
+        $this->attributes['to_date'] = Carbon::createFromFormat('d-m-Y', $value)->format('Y-m-d');
     }
 }

@@ -37,12 +37,17 @@ class SchedulerController extends Controller
 
     public function store(Request $request)
     {
-
         $reservation = new Reservation();
 
-        $reservation->text = strip_tags($request->text);
-        $reservation->start_date = $request->start_date;
-        $reservation->end_date = $request->end_date;
+        $reservation->customer_id = 1;
+        $reservation->total_to_bill = 10000;
+
+        // $reservation->from_date = Carbon::createFromFormat('d-m-Y', $request->start_date)->format('Y-m-d');
+        // $reservation->to_date = Carbon::createFromFormat('d-m-Y', $request->end_date)->format('Y-m-d');
+
+        $reservation->from_date = $request->start_date;
+        $reservation->to_date = $request->end_date;
+
         $reservation->save();
 
         return response()->json([
