@@ -17724,6 +17724,197 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./resources/js/scheduler/event.js":
+/*!*****************************************!*\
+  !*** ./resources/js/scheduler/event.js ***!
+  \*****************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Event; });
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./helper */ "./resources/js/scheduler/helper.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var Event =
+/*#__PURE__*/
+function () {
+  function Event() {
+    _classCallCheck(this, Event);
+  }
+
+  _createClass(Event, null, [{
+    key: "innerHtmlReservation",
+    value: function innerHtmlReservation() {
+      var eventDateFormat = scheduler.date.date_to_str("%d %m %Y");
+
+      scheduler.templates.event_bar_text = function (start, end, event) {
+        var paidStatus = _helper__WEBPACK_IMPORTED_MODULE_0__["default"].getPaidStatus(event.is_paid);
+        var startDate = eventDateFormat(event.start_date);
+        var endDate = eventDateFormat(event.end_date);
+        return [event.text + "<br />", startDate + " - " + endDate, "<div class='booking_status booking-option'>" + _helper__WEBPACK_IMPORTED_MODULE_0__["default"].getBookingStatus(event.status) + "</div>", "<div class='booking_paid booking-option'>" + paidStatus + "</div>"].join("");
+      };
+    }
+  }, {
+    key: "toolTip",
+    value: function toolTip() {
+      var eventDateFormat = scheduler.date.date_to_str("%d %m %Y");
+
+      scheduler.templates.tooltip_text = function (start, end, event) {
+        var room = _helper__WEBPACK_IMPORTED_MODULE_0__["default"].getRoom(event.room) || {
+          label: ""
+        };
+        var html = [];
+        html.push("Booking: <b>" + event.text + "</b>");
+        html.push("Room: <b>" + room.label + "</b>");
+        html.push("Check-in: <b>" + eventDateFormat(start) + "</b>");
+        html.push("Check-out: <b>" + eventDateFormat(end) + "</b>");
+        html.push(_helper__WEBPACK_IMPORTED_MODULE_0__["default"].getBookingStatus(event.status) + ", " + _helper__WEBPACK_IMPORTED_MODULE_0__["default"].getPaidStatus(event.is_paid));
+        return html.join("<br>");
+      };
+    }
+  }]);
+
+  return Event;
+}();
+
+
+
+/***/ }),
+
+/***/ "./resources/js/scheduler/grid.js":
+/*!****************************************!*\
+  !*** ./resources/js/scheduler/grid.js ***!
+  \****************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Grid; });
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./helper */ "./resources/js/scheduler/helper.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var Grid =
+/*#__PURE__*/
+function () {
+  function Grid() {
+    _classCallCheck(this, Grid);
+  }
+
+  _createClass(Grid, null, [{
+    key: "headerHTML",
+    value: function headerHTML() {
+      return "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell'>Hab.</div>" + "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell'>Tipo</div>" + "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell room_status'>Estado</div>";
+    }
+  }, {
+    key: "addMultipleColumnLeftTimeline",
+    value: function addMultipleColumnLeftTimeline() {
+      scheduler.attachEvent("onTemplatesReady", function () {
+        scheduler.templates.timeline_scale_label = function (key, label, section) {
+          var roomStatus = _helper__WEBPACK_IMPORTED_MODULE_0__["default"].getRoomStatus(section.status);
+          return ["<div class='timeline_item_separator'></div>", "<div class='timeline_item_cell'>" + label + "</div>", "<div class='timeline_item_separator'></div>", "<div class='timeline_item_cell'>" + _helper__WEBPACK_IMPORTED_MODULE_0__["default"].getRoomType(section.type) + "</div>", "<div class='timeline_item_separator'></div>", "<div class='timeline_item_cell room_status'>", "<span class='room_status_indicator room_status_indicator_" + section.status + "'></span>", "<span class='status-label'>" + roomStatus.label + "</span>", "</div>"].join("");
+        };
+      });
+    }
+  }, {
+    key: "highLightWeekend",
+    value: function highLightWeekend() {
+      scheduler.addMarkedTimespan({
+        days: [0, 6],
+        zones: "fullday",
+        css: "timeline_weekend"
+      });
+    }
+  }]);
+
+  return Grid;
+}();
+
+
+
+/***/ }),
+
+/***/ "./resources/js/scheduler/helper.js":
+/*!******************************************!*\
+  !*** ./resources/js/scheduler/helper.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Helper; });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var Helper =
+/*#__PURE__*/
+function () {
+  function Helper() {
+    _classCallCheck(this, Helper);
+  }
+
+  _createClass(Helper, null, [{
+    key: "getRoomType",
+    value: function getRoomType(key) {
+      return Helper.findInArray(scheduler.serverList("roomTypes"), key).label;
+    }
+  }, {
+    key: "getRoomStatus",
+    value: function getRoomStatus(key) {
+      return Helper.findInArray(scheduler.serverList("roomStatuses"), key);
+    }
+  }, {
+    key: "getRoom",
+    value: function getRoom(key) {
+      return Helper.findInArray(scheduler.serverList("rooms"), key);
+    }
+  }, {
+    key: "getBookingStatus",
+    value: function getBookingStatus(key) {
+      var bookingStatus = Helper.findInArray(scheduler.serverList("bookingStatuses"), key);
+      return !bookingStatus ? '' : bookingStatus.label;
+    }
+  }, {
+    key: "getPaidStatus",
+    value: function getPaidStatus(isPaid) {
+      return isPaid ? "paid" : "not paid";
+    }
+  }, {
+    key: "findInArray",
+    value: function findInArray(array, key) {
+      for (var i = 0; i < array.length; i++) {
+        if (key == array[i].key) return array[i];
+      }
+
+      return null;
+    }
+  }]);
+
+  return Helper;
+}();
+
+
+
+/***/ }),
+
 /***/ "./resources/js/scheduler/lightbox.js":
 /*!********************************************!*\
   !*** ./resources/js/scheduler/lightbox.js ***!
@@ -17807,7 +17998,13 @@ function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lightbox__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lightbox */ "./resources/js/scheduler/lightbox.js");
+/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./resources/js/scheduler/grid.js");
+/* harmony import */ var _event__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./event */ "./resources/js/scheduler/event.js");
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helper */ "./resources/js/scheduler/helper.js");
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
+
+
 
 
 
@@ -17842,16 +18039,16 @@ window.onload = function () {
     });
     roomSelect.innerHTML = typeElements.join("");
   });
-  scheduler.locale.labels.timeline_scale_header = headerHTML();
-  addMultipleColumnLeftTimeline();
+  scheduler.locale.labels.timeline_scale_header = _grid__WEBPACK_IMPORTED_MODULE_1__["default"].headerHTML();
+  _grid__WEBPACK_IMPORTED_MODULE_1__["default"].addMultipleColumnLeftTimeline();
+  _grid__WEBPACK_IMPORTED_MODULE_1__["default"].highLightWeekend();
 
   scheduler.templates.event_class = function (start, end, event) {
     return "event_" + (event.status || "");
   };
 
-  innerHtmlReservation();
-  toolTip();
-  highLightWeekend();
+  _event__WEBPACK_IMPORTED_MODULE_2__["default"].innerHtmlReservation();
+  _event__WEBPACK_IMPORTED_MODULE_2__["default"].toolTip();
   scheduler.config.date_format = "%d-%m-%Y";
   scheduler.setLoadMode("day");
   scheduler.init('scheduler_here', moment(), "timeline");
@@ -17876,82 +18073,6 @@ window.showRooms = function showRooms(type) {
 
   scheduler.updateCollection("visibleRooms", visibleRooms);
 };
-
-function headerHTML() {
-  return "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell'>Hab.</div>" + "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell'>Tipo</div>" + "<div class='timeline_item_separator'></div>" + "<div class='timeline_item_cell room_status'>Estado</div>";
-}
-
-function addMultipleColumnLeftTimeline() {
-  scheduler.attachEvent("onTemplatesReady", function () {
-    scheduler.templates.timeline_scale_label = function (key, label, section) {
-      var roomStatus = getRoomStatus(section.status);
-      return ["<div class='timeline_item_separator'></div>", "<div class='timeline_item_cell'>" + label + "</div>", "<div class='timeline_item_separator'></div>", "<div class='timeline_item_cell'>" + getRoomType(section.type) + "</div>", "<div class='timeline_item_separator'></div>", "<div class='timeline_item_cell room_status'>", "<span class='room_status_indicator room_status_indicator_" + section.status + "'></span>", "<span class='status-label'>" + roomStatus.label + "</span>", "</div>"].join("");
-    };
-  });
-}
-
-var eventDateFormat = scheduler.date.date_to_str("%d %M %Y");
-
-function innerHtmlReservation() {
-  scheduler.templates.event_bar_text = function (start, end, event) {
-    var paidStatus = getPaidStatus(event.is_paid);
-    var startDate = eventDateFormat(event.start_date);
-    var endDate = eventDateFormat(event.end_date);
-    return [event.text + "<br />", startDate + " - " + endDate, "<div class='booking_status booking-option'>" + getBookingStatus(event.status) + "</div>", "<div class='booking_paid booking-option'>" + paidStatus + "</div>"].join("");
-  };
-}
-
-function findInArray(array, key) {
-  for (var i = 0; i < array.length; i++) {
-    if (key == array[i].key) return array[i];
-  }
-
-  return null;
-}
-
-function getRoomType(key) {
-  return findInArray(scheduler.serverList("roomTypes"), key).label;
-}
-
-function getRoomStatus(key) {
-  return findInArray(scheduler.serverList("roomStatuses"), key);
-}
-
-function getRoom(key) {
-  return findInArray(scheduler.serverList("rooms"), key);
-}
-
-function getBookingStatus(key) {
-  var bookingStatus = findInArray(scheduler.serverList("bookingStatuses"), key);
-  return !bookingStatus ? '' : bookingStatus.label;
-}
-
-function getPaidStatus(isPaid) {
-  return isPaid ? "paid" : "not paid";
-}
-
-function toolTip() {
-  scheduler.templates.tooltip_text = function (start, end, event) {
-    var room = getRoom(event.room) || {
-      label: ""
-    };
-    var html = [];
-    html.push("Booking: <b>" + event.text + "</b>");
-    html.push("Room: <b>" + room.label + "</b>");
-    html.push("Check-in: <b>" + eventDateFormat(start) + "</b>");
-    html.push("Check-out: <b>" + eventDateFormat(end) + "</b>");
-    html.push(getBookingStatus(event.status) + ", " + getPaidStatus(event.is_paid));
-    return html.join("<br>");
-  };
-}
-
-function highLightWeekend() {
-  scheduler.addMarkedTimespan({
-    days: [0, 6],
-    zones: "fullday",
-    css: "timeline_weekend"
-  });
-}
 
 /***/ }),
 
