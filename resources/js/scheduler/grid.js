@@ -68,5 +68,12 @@ export default class Grid {
                 x_date: "%F, %Y"
             }
         });
+
+        scheduler.config.date_format = "%d-%m-%Y";
+        scheduler.setLoadMode("day");
+
+        scheduler.init('scheduler_here', moment(), "timeline");
+
+        scheduler.load("/scheduler", "json");
     }
 }

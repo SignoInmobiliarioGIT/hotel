@@ -17876,6 +17876,10 @@ function () {
           x_date: "%F, %Y"
         }
       });
+      scheduler.config.date_format = "%d-%m-%Y";
+      scheduler.setLoadMode("day");
+      scheduler.init('scheduler_here', moment(), "timeline");
+      scheduler.load("/scheduler", "json");
     }
   }]);
 
@@ -18066,10 +18070,6 @@ window.onload = function () {
     return "event_" + (event.status || "");
   };
 
-  scheduler.config.date_format = "%d-%m-%Y";
-  scheduler.setLoadMode("day");
-  scheduler.init('scheduler_here', moment(), "timeline");
-  scheduler.load("/scheduler", "json");
   var dp = new dataProcessor("/scheduler");
   dp.init(scheduler);
   dp.setTransactionMode("REST", false);

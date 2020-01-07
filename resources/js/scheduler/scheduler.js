@@ -20,17 +20,9 @@ window.onload = function () {
 
     });
 
-
     scheduler.templates.event_class = function (start, end, event) {
         return "event_" + (event.status || "");
     };
-
-    scheduler.config.date_format = "%d-%m-%Y";
-    scheduler.setLoadMode("day");
-
-    scheduler.init('scheduler_here', moment(), "timeline");
-
-    scheduler.load("/scheduler", "json");
 
     var dp = new dataProcessor("/scheduler");
     dp.init(scheduler);
