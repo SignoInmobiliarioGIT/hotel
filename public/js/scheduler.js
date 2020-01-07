@@ -17902,15 +17902,16 @@ function lightboxConfiguration() {
     name: "time",
     type: "calendar_time"
   }];
-  scheduler.locale.labels.section_text = 'Name';
-  scheduler.locale.labels.section_room = 'Room';
-  scheduler.locale.labels.section_status = 'Status';
-  scheduler.locale.labels.section_is_paid = 'Paid';
-  scheduler.locale.labels.section_time = 'Time';
+  scheduler.locale.labels.section_text = 'Titular';
+  scheduler.locale.labels.section_room = 'Habitación';
+  scheduler.locale.labels.section_status = 'Estado';
+  scheduler.locale.labels.section_is_paid = 'Pagado';
+  scheduler.locale.labels.section_time = 'Fecha';
 
   scheduler.templates.lightbox_header = function (start, end, ev) {
-    var formatFunc = scheduler.date.date_to_str('%d.%m.%Y');
-    return formatFunc(start) + " - " + formatFunc(end);
+    // var formatFunc = scheduler.date.date_to_str('%d.%m.%Y');
+    // return formatFunc(start) + " - " + formatFunc(end);
+    return "Reserva";
   };
 }
 
