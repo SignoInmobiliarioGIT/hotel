@@ -17824,9 +17824,9 @@ function () {
   _createClass(Grid, null, [{
     key: "init",
     value: function init() {
+      Grid.addMultipleColumnLeftTimeline();
       Grid.configuration();
       scheduler.locale.labels.timeline_scale_header = Grid.headerHTML();
-      Grid.addMultipleColumnLeftTimeline();
       Grid.highLightWeekend();
     }
   }, {
@@ -17878,7 +17878,7 @@ function () {
       });
       scheduler.config.date_format = "%d-%m-%Y";
       scheduler.setLoadMode("day");
-      scheduler.init('scheduler_here', moment(), "timeline");
+      scheduler.init('scheduler_here', moment().subtract(7, "days"), "timeline");
       scheduler.load("/scheduler", "json");
     }
   }]);
