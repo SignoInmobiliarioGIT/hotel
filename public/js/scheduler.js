@@ -17984,46 +17984,74 @@ function () {
     key: "init",
     value: function init() {
       LightBox.configuration();
+      LightBox.customNewTitular();
     }
   }, {
     key: "configuration",
     value: function configuration() {
       scheduler.config.lightbox.sections = [{
         map_to: "text",
-        name: "text",
+        name: "Seleccionar titular",
         type: "textarea",
         height: 24
       }, {
+        name: "Titular nuevo",
+        height: 35,
+        type: "newTitular"
+      }, {
         map_to: "room",
-        name: "room",
+        name: "Habitación",
         type: "select",
         options: scheduler.serverList("visibleRooms")
       }, {
         map_to: "status",
-        name: "status",
+        name: "Estado",
         type: "radio",
         options: scheduler.serverList("bookingStatuses")
       }, {
         map_to: "is_paid",
-        name: "is_paid",
+        name: "Pagado",
         type: "checkbox",
         checked_value: true,
         unchecked_value: false
       }, {
         map_to: "time",
-        name: "time",
+        name: "Fechas",
         type: "calendar_time"
       }];
-      scheduler.locale.labels.section_text = 'Titular';
-      scheduler.locale.labels.section_room = 'Habitación';
-      scheduler.locale.labels.section_status = 'Estado';
-      scheduler.locale.labels.section_is_paid = 'Pagado';
-      scheduler.locale.labels.section_time = 'Fecha';
 
       scheduler.templates.lightbox_header = function (start, end, ev) {
         // var formatFunc = scheduler.date.date_to_str('%d.%m.%Y');
         // return formatFunc(start) + " - " + formatFunc(end);
         return "Reserva";
+      };
+    }
+  }, {
+    key: "customNewTitular",
+    value: function customNewTitular() {
+      scheduler.form_blocks["newTitular"] = {
+        render: function render(config) {
+          // config- section configuration object
+          var height = (config.height || 50) + "px";
+          return "<div class='dhx_cal_ltext' style='height:" + height + ";'>" + "<textarea></textarea></div>";
+        },
+        set_value: function set_value(node, value, ev, config) {
+          // node - HTML object related to HTML defined above
+          // value - value defined by map_to property
+          // ev - event object
+          // config - section configuration object
+          node.querySelector("textarea").value = value || "";
+        },
+        get_value: function get_value(node, ev, config) {
+          // node - HTML object related to HTML defined above
+          // event object
+          // config - section configuration object
+          return node.querySelector("textarea").value;
+        },
+        focus: function focus(node) {
+          // node - HTML object related to HTML defined above
+          node.querySelector("textarea").focus();
+        }
       };
     }
   }]);
@@ -18047,7 +18075,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lightbox__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lightbox */ "./resources/js/scheduler/lightbox.js");
 /* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./resources/js/scheduler/grid.js");
 /* harmony import */ var _event__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./event */ "./resources/js/scheduler/event.js");
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helper */ "./resources/js/scheduler/helper.js");
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+
 
 
 
@@ -18090,7 +18120,18 @@ window.showRooms = function showRooms(type) {
   }
 
   scheduler.updateCollection("visibleRooms", visibleRooms);
-};
+}; //needs to be attached to the 'save' button
+
+
+function save_form() {
+  var ev = scheduler.getEvent(scheduler.getState().lightbox_id);
+  scheduler.endLightbox(true, custom_form);
+} //needs to be attached to the 'cancel' button
+
+
+function close_form(argument) {
+  scheduler.endLightbox(false, custom_form);
+}
 
 /***/ }),
 

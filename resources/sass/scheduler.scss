@@ -98,3 +98,25 @@ body {
 .timeline_weekend {
     background-color: #FFF9C4;
 }
+
+
+.dhx_minical_popup {
+    z-index: 10002;
+}
+
+#formReservation {
+    position: absolute;
+    top: 100px;
+    left: 200px;
+    z-index: 10001;
+    display: none;
+    background-color: white;
+    border: 2px outset gray;
+    padding: 20px;
+    font-family: Tahoma;
+    font-size: 10pt;
+}
+
+#formReservation label {
+    width: 200px;
+}
