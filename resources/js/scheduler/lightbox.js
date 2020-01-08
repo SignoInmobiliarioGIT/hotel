@@ -10,8 +10,8 @@ export default class LightBox {
         scheduler.config.lightbox.sections = [{
                 map_to: "text",
                 name: "Seleccionar titular",
-                type: "textarea",
-                height: 24
+                type: "select",
+                options: scheduler.serverList("customers")
             },
             {
                 name: "Titular nuevo",
