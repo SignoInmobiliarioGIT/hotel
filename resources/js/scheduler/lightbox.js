@@ -8,14 +8,14 @@ export default class LightBox {
 
     static configuration() {
         scheduler.config.lightbox.sections = [{
-                map_to: "text",
+                map_to: "customer",
                 name: "Seleccionar titular",
                 type: "select",
                 options: scheduler.serverList("customers")
             },
             {
+                map_to: 'titular',
                 name: "Titular nuevo",
-                height: 35,
                 type: "newTitular"
             },
             {
@@ -53,26 +53,17 @@ export default class LightBox {
     static customNewTitular() {
         scheduler.form_blocks["newTitular"] = {
             render: function (config) { // config- section configuration object
-                var height = (config.height || 50) + "px";
-                return "<div class='dhx_cal_ltext' style='height:" + height + ";'>" +
-                    "<textarea></textarea></div>";
+                return "<div class='dhx_cal_ltext' style='height:100px;'><input type='text' name='name' class='form-control form-control-sm'  placeholder='Nombre y apellido' style='width:33%; float:left'><input type='text' name='document' class='form-control form-control-sm' placeholder='Documento' style='width:33%;float:left'> <input type='text' name='phone' class='form-control form-control-sm' placeholder='Teléfono' style='width:33%; float:left><hr></div>";
             },
             set_value: function (node, value, ev, config) {
-                // node - HTML object related to HTML defined above
-                // value - value defined by map_to property
-                // ev - event object
-                // config - section configuration object
-                node.querySelector("textarea").value = value || "";
+                node.querySelector("[name='name']").value = value || "";
+                node.querySelector("[name='document']").value = ev.document || "";
+                node.querySelector("[name='phone']").value = ev.phone || "";
             },
             get_value: function (node, ev, config) {
-                // node - HTML object related to HTML defined above
-                // event object
-                // config - section configuration object
-                return node.querySelector("textarea").value;
-            },
-            focus: function (node) {
-                // node - HTML object related to HTML defined above
-                node.querySelector("textarea").focus();
+                ev.document = node.querySelector("[name='document']").value;
+                ev.phone = node.querySelector("[name='phone']").value;
+                return node.querySelector("[name='name']").value;
             }
         };
     }

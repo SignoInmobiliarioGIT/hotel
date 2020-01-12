@@ -39,6 +39,7 @@ class SchedulerController extends Controller
 
     public function store(Request $request)
     {
+
         $reservation = new Reservation();
 
         $reservation->customer_id = 1;
