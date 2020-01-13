@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CleaningStatus;
+use App\Models\Currency;
 use App\Models\Customer;
 use App\Traits\CalendarTrait;
 use Illuminate\Http\Request;
@@ -32,6 +33,7 @@ class SchedulerController extends Controller
                 'roomStatuses' => CleaningStatus::toScheduler(),
                 'bookingStatuses' => ReservationStatus::toScheduler(),
                 'customers' => Customer::toScheduler(),
+                'currencies' => Currency::toScheduler(),
                 'adults' => [
                     ['value' => 1, 'label' => 1],
                     ['value' => 2, 'label' => 2],

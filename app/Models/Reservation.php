@@ -149,8 +149,10 @@ class Reservation extends Model
     static function toScheduler()
     {
         return DB::table('reservation')
-            ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room, status_id as status, payment_option_id as is_paid'))
-            ->leftJoin('reserved_room', 'reserved_room.reservation_id', '=', 'reservation.id')->get()->toArray();
+            ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room, status_id as status, payment_option_id as is_paid, customers.id as customer_id, customers.name as customer_name'))
+            ->leftJoin('reserved_room', 'reserved_room.reservation_id', '=', 'reservation.id')
+            ->leftJoin('customers', 'customers.id', '=', 'reservation.customer_id')
+            ->get()->toArray();
     }
 
     public function setFromDateAttribute($value)

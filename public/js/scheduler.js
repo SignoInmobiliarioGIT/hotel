@@ -152,7 +152,7 @@ class LightBox {
 
     static configuration() {
         scheduler.config.lightbox.sections = [{
-                map_to: "customer",
+                map_to: "customer_id",
                 name: "Titular",
                 type: "select",
                 options: scheduler.serverList("customers")
@@ -170,10 +170,16 @@ class LightBox {
                 options: scheduler.serverList("children")
             },
             {
-                map_to: "room",
+                map_to: "room_id",
                 name: "Habitación",
                 type: "select",
                 options: scheduler.serverList("visibleRooms")
+            },
+            {
+                map_to: "currency_id",
+                name: "Moneda",
+                type: "select",
+                options: scheduler.serverList("currencies")
             },
             {
                 map_to: "status",
