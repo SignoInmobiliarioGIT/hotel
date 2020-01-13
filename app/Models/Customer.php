@@ -126,6 +126,7 @@ class Customer extends Model
     {
         return DB::table('customers')
             ->select(DB::raw('id as value, name as label, document_number'))
+            ->orderBy('name', 'asc')
             ->get()
             ->toArray();
     }

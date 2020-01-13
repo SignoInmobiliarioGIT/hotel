@@ -148,21 +148,26 @@ class LightBox {
 
     static init() {
         LightBox.configuration();
-        LightBox.controlTitular();
     }
 
     static configuration() {
-        scheduler.config.lightbox.sections = [
-            // {
-            //         map_to: "customer",
-            //         name: "Seleccionar titular",
-            //         type: "select",
-            //         options: scheduler.serverList("customers")
-            //     },
-            {
-                map_to: 'customer_id',
+        scheduler.config.lightbox.sections = [{
+                map_to: "customer",
                 name: "Titular",
-                type: "controlTitular"
+                type: "select",
+                options: scheduler.serverList("customers")
+            },
+            {
+                map_to: 'adults',
+                name: "Adultos",
+                type: "select",
+                options: scheduler.serverList("adults")
+            },
+            {
+                map_to: "children",
+                name: "Niños",
+                type: "select",
+                options: scheduler.serverList("children")
             },
             {
                 map_to: "room",
@@ -219,7 +224,7 @@ class LightBox {
         scheduler.form_blocks["controlTitular"] = {
             render: function (config) { // config- section configuration object
                 var html = '';
-                html += "<div class='dhx_cal_ltext' style='height:35px;'>";
+                html += "<div class='dhx_cal_ltext' style='height:40px;'>";
                 html += '<input type="hidden" name="customer_id" value="55">';
                 html += "<div class='row'> <div class='col'><input type='text' class='form-control form-control-sm' disabled></div>";
                 html += "<div class='col'><button type='button' class='btn btn-primary btn-sm'  data-toggle='modal' data-target='#exampleModal'>Seleccionar titular</button></div>";
@@ -228,10 +233,10 @@ class LightBox {
                 return html;
             },
             set_value: function (node, value, ev, config) {
-                // node.querySelector("[name='customer_id']").value = value || "";
+                node.querySelector("[name='customer_id']").value = value || "";
             },
             get_value: function (node, ev, config) {
-                return node.querySelector("[name='customer_id']").value;
+                return node.querySelector("[name='customer_id']").value || '';
             }
         };
     }
