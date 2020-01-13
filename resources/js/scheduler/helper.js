@@ -1,4 +1,4 @@
-export default class Helper {
+class Helper {
     static getRoomType(key) {
         return Helper.findInArray(scheduler.serverList("roomTypes"), key).label;
     }

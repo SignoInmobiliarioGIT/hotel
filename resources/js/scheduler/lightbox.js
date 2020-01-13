@@ -1,22 +1,22 @@
-export default class LightBox {
+class LightBox {
 
     static init() {
         LightBox.configuration();
-        LightBox.customNewTitular();
+        LightBox.controlTitular();
     }
 
-
     static configuration() {
-        scheduler.config.lightbox.sections = [{
-                map_to: "customer",
-                name: "Seleccionar titular",
-                type: "select",
-                options: scheduler.serverList("customers")
-            },
+        scheduler.config.lightbox.sections = [
+            // {
+            //         map_to: "customer",
+            //         name: "Seleccionar titular",
+            //         type: "select",
+            //         options: scheduler.serverList("customers")
+            //     },
             {
-                map_to: 'titular',
-                name: "Titular nuevo",
-                type: "newTitular"
+                map_to: 'customer_id',
+                name: "Titular",
+                type: "controlTitular"
             },
             {
                 map_to: "room",
@@ -50,10 +50,11 @@ export default class LightBox {
             return "Reserva"
         };
     }
+
     static customNewTitular() {
         scheduler.form_blocks["newTitular"] = {
             render: function (config) { // config- section configuration object
-                return "<div class='dhx_cal_ltext' style='height:100px;'><input type='text' name='name' class='form-control form-control-sm'  placeholder='Nombre y apellido' style='width:33%; float:left'><input type='text' name='document' class='form-control form-control-sm' placeholder='Documento' style='width:33%;float:left'> <input type='text' name='phone' class='form-control form-control-sm' placeholder='Teléfono' style='width:33%; float:left><hr></div>";
+                return "<div class='dhx_cal_ltext' style='height:50px;'><input type='text' name='name' class='form-control form-control-sm'  placeholder='Nombre y apellido' style='width:33%; float:left'><input type='text' name='document' class='form-control form-control-sm' placeholder='Documento' style='width:33%;float:left'> <input type='text' name='phone' class='form-control form-control-sm' placeholder='Teléfono' style='width:33%; float:left><hr></div>";
             },
             set_value: function (node, value, ev, config) {
                 node.querySelector("[name='name']").value = value || "";
@@ -64,6 +65,27 @@ export default class LightBox {
                 ev.document = node.querySelector("[name='document']").value;
                 ev.phone = node.querySelector("[name='phone']").value;
                 return node.querySelector("[name='name']").value;
+            }
+        };
+    }
+
+    static controlTitular() {
+        scheduler.form_blocks["controlTitular"] = {
+            render: function (config) { // config- section configuration object
+                var html = '';
+                html += "<div class='dhx_cal_ltext' style='height:35px;'>";
+                html += '<input type="hidden" name="customer_id" value="55">';
+                html += "<div class='row'> <div class='col'><input type='text' class='form-control form-control-sm' disabled></div>";
+                html += "<div class='col'><button type='button' class='btn btn-primary btn-sm'  data-toggle='modal' data-target='#exampleModal'>Seleccionar titular</button></div>";
+
+                html += "</div>"
+                return html;
+            },
+            set_value: function (node, value, ev, config) {
+                // node.querySelector("[name='customer_id']").value = value || "";
+            },
+            get_value: function (node, ev, config) {
+                return node.querySelector("[name='customer_id']").value;
             }
         };
     }

@@ -1,6 +1,4 @@
-import Helper from './helper';
-
-export default class Event {
+class Event {
     static init() {
         Event.innerHtmlReservation();
         Event.toolTip();

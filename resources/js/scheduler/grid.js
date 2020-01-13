@@ -1,6 +1,4 @@
-import Helper from './helper';
-
-export default class Grid {
+class Grid {
     static init() {
         Grid.addMultipleColumnLeftTimeline();
         Grid.configuration();

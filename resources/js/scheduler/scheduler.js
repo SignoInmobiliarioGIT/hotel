@@ -1,10 +1,3 @@
-const moment = require("moment");
-
-import LightBox from './lightbox';
-import Grid from './grid';
-import Event from './event';
-import Helper from './helper';
-
 window.onload = function () {
     Grid.init();
 
