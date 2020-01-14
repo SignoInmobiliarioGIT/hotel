@@ -90910,9 +90910,6 @@ __webpack_require__(/*! ./reservations/filters */ "./resources/js/reservations/f
 
 __webpack_require__(/*! ./custom-datatables */ "./resources/js/custom-datatables.js");
 
-<<<<<<< HEAD
-__webpack_require__(/*! ./calendar/calendar */ "./resources/js/calendar/calendar.js");
-=======
 __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler.js");
 
 __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_limit */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_limit.js");
@@ -90926,7 +90923,6 @@ __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_tooltip */ "./resource
 __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_minical */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_minical.js");
 
 __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_editors */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_editors.js");
->>>>>>> 2scheduler
 
 /***/ }),
 
@@ -90984,151 +90980,102 @@ window.dhtmlxscheduler = __webpack_require__(/*! dhtmlx-scheduler */ "./node_mod
 
 /***/ }),
 
-/***/ "./resources/js/calendar/calendar.js":
-/*!*******************************************!*\
-  !*** ./resources/js/calendar/calendar.js ***!
-  \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "./resources/js/components/ExampleComponent.vue":
+/*!******************************************************!*\
+  !*** ./resources/js/components/ExampleComponent.vue ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-__webpack_require__(/*! ./dhtmlxscheduler */ "./resources/js/calendar/dhtmlxscheduler.js");
-
-__webpack_require__(/*! ./dhtmlxscheduler_timeline */ "./resources/js/calendar/dhtmlxscheduler_timeline.js");
-
-__webpack_require__(/*! ./dhtmlxscheduler_collision */ "./resources/js/calendar/dhtmlxscheduler_collision.js");
-
-window.onload = function () {
-  scheduler.config.dblclick_create = true;
-  scheduler.config.details_on_create = true;
-  scheduler.config.details_on_dblclick = true;
-  scheduler.config.drag_resize = true;
-  scheduler.config.drag_move = true;
-  scheduler.config.drag_create = true;
-  scheduler.attachEvent("onDblClick", function () {
-    return true;
-  });
-
-  window.showRooms = function showRooms(type) {
-    var allRooms = scheduler.serverList("rooms");
-    var visibleRooms;
-
-    if (type == 'all') {
-      visibleRooms = allRooms.slice();
-    } else {
-      visibleRooms = allRooms.filter(function (room) {
-        return room.type == type;
-      });
-    }
-
-    scheduler.updateCollection("visibleRooms", visibleRooms);
-  }; //===============
-  //Configuration
-  //===============
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
+/* harmony import */ var _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
-  scheduler.serverList("roomTypes");
-  scheduler.serverList("roomStatuses");
-  scheduler.serverList("bookingStatuses");
-  scheduler.serverList("rooms");
-  scheduler.createTimelineView({
-    fit_events: true,
-    name: "timeline",
-    y_property: "room",
-    render: 'bar',
-    x_unit: "day",
-    x_date: "%d",
-    x_size: typeof syze === 'undefined' ? '15' : size,
-    dy: 52,
-    dx: 52,
-    event_dy: 48,
-    section_autoheight: false,
-    round_position: true,
-    y_unit: scheduler.serverList("visibleRooms"),
-    second_scale: {
-      x_unit: "month",
-      x_date: "%F %Y"
-    }
-  }); //===============
-  //Data loading
-  //===============
 
-  scheduler.config.lightbox.sections = [{
-    name: "description",
-    height: 130,
-    map_to: "text",
-    type: "textarea",
-    focus: true
-  }, {
-    name: "custom",
-    height: 23,
-    type: "select",
-    options: scheduler.serverList("rooms"),
-    map_to: "room"
-  }, {
-    name: "time",
-    height: 72,
-    type: "time",
-    map_to: "auto"
-  }];
-  scheduler.attachEvent('onEventCreated', function (event_id) {
-    var ev = scheduler.getEvent(event_id);
-    ev.status = 1;
-    ev.is_paid = false;
-    ev.text = 'new booking';
-  });
-  scheduler.attachEvent("onParse", function () {
-    showRooms("all");
-    var roomSelect = document.querySelector("#room_filter");
-    var types = scheduler.serverList("roomTypes");
-    var typeElements = ["<option value='all'>All</option>"];
-    types.forEach(function (type) {
-      typeElements.push("<option value='" + type.key + "'>" + type.label + "</option>");
-    });
-    if (roomSelect != null) roomSelect.innerHTML = typeElements.join("");
-  });
-  scheduler.attachEvent("onEventCollision", function (ev, evs) {
-    for (var i = 0; i < evs.length; i++) {
-      if (ev.room != evs[i].room) continue;
-      dhtmlx.message({
-        type: "error",
-        text: "This room is already booked for this date."
-      });
-    }
 
-    return true;
-  });
-  scheduler.init('scheduler_here', typeof date_pick_scheduler === 'undefined' ? '' : date_pick_scheduler, "timeline");
-  scheduler.parse(JSON.stringify({
-    "data": reservations,
-    "collections": {
-      "rooms": rooms
-    }
-  }), "json");
-  $.ajaxSetup({
-    headers: {
-      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    }
-  });
-  $('input[name="birthday"]').val(date_pick);
-  $('input[name="birthday"]').daterangepicker({
-    singleDatePicker: true,
-    showDropdowns: true,
-    minYear: 1901,
-    maxYear: parseInt(moment().format('YYYY'), 10),
-    locale: {
-      format: 'DD/MM/YYYY'
-    }
-  }, function (start, end, label) {
-    window.location.replace('?size=' + size + "&dd=" + start.format('DD') + "&mm=" + start.format('MM') + "&yyyy=" + start.format('YYYY'));
-  });
-};
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/ExampleComponent.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
 
-/***/ "./resources/js/calendar/dhtmlxscheduler.js":
-/*!**************************************************!*\
-  !*** ./resources/js/calendar/dhtmlxscheduler.js ***!
-  \**************************************************/
+/***/ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************!*\
+  !*** ./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&":
+/*!*************************************************************************************!*\
+  !*** ./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e& ***!
+  \*************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/custom-datatables.js":
+/*!*******************************************!*\
+  !*** ./resources/js/custom-datatables.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+$(function () {
+  $('#reservations').DataTable({
+    "paging": true,
+    "lengthChange": false,
+    "searching": false,
+    "ordering": true,
+    "info": true,
+    "autoWidth": false,
+    "language": {
+      "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
+    }
+  });
+});
+
+/***/ }),
+
+/***/ "./resources/js/dhtmlxscheduler/dhtmlxscheduler.js":
+/*!*********************************************************!*\
+  !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -96024,10 +95971,10 @@ You are not allowed to use it on any other site
 
 /***/ }),
 
-/***/ "./resources/js/calendar/dhtmlxscheduler_collision.js":
-/*!************************************************************!*\
-  !*** ./resources/js/calendar/dhtmlxscheduler_collision.js ***!
-  \************************************************************/
+/***/ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_collision.js":
+/*!*******************************************************************!*\
+  !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler_collision.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -96121,12 +96068,6 @@ Scheduler.plugin(function (e) {
 
 /***/ }),
 
-<<<<<<< HEAD
-/***/ "./resources/js/calendar/dhtmlxscheduler_timeline.js":
-/*!***********************************************************!*\
-  !*** ./resources/js/calendar/dhtmlxscheduler_timeline.js ***!
-  \***********************************************************/
-=======
 /***/ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_editors.js":
 /*!*****************************************************************!*\
   !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler_editors.js ***!
@@ -97161,7 +97102,6 @@ Scheduler.plugin(function (e) {
 /*!******************************************************************!*\
   !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler_timeline.js ***!
   \******************************************************************/
->>>>>>> 2scheduler
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -98954,96 +98894,6 @@ Scheduler.plugin(function (e) {
 
 /***/ }),
 
-<<<<<<< HEAD
-/***/ "./resources/js/components/ExampleComponent.vue":
-/*!******************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue ***!
-  \******************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
-/* harmony import */ var _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ExampleComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
-
-
-
-
-
-/* normalize component */
-
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
-  false,
-  null,
-  null,
-  null
-  
-)
-
-/* hot reload */
-if (false) { var api; }
-component.options.__file = "resources/js/components/ExampleComponent.vue"
-/* harmony default export */ __webpack_exports__["default"] = (component.exports);
-
-/***/ }),
-
-/***/ "./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&":
-/*!*******************************************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js& ***!
-  \*******************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
-
-/***/ }),
-
-/***/ "./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&":
-/*!*************************************************************************************!*\
-  !*** ./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e& ***!
-  \*************************************************************************************/
-/*! exports provided: render, staticRenderFns */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./ExampleComponent.vue?vue&type=template&id=299e239e& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ExampleComponent.vue?vue&type=template&id=299e239e&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["render"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
-
-
-
-/***/ }),
-
-/***/ "./resources/js/custom-datatables.js":
-/*!*******************************************!*\
-  !*** ./resources/js/custom-datatables.js ***!
-  \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-$(function () {
-  $('#reservations').DataTable({
-    "paging": true,
-    "lengthChange": false,
-    "searching": false,
-    "ordering": true,
-    "info": true,
-    "autoWidth": false,
-    "language": {
-      "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
-    }
-  });
-=======
 /***/ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_tooltip.js":
 /*!*****************************************************************!*\
   !*** ./resources/js/dhtmlxscheduler/dhtmlxscheduler_tooltip.js ***!
@@ -99156,7 +99006,6 @@ Scheduler.plugin(function (e) {
       return dhtmlXTooltip.hide(), !0;
     });
   }();
->>>>>>> 2scheduler
 });
 
 /***/ }),
