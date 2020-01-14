@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\Reservation;
 use App\Models\reservationStatus;
+use App\Models\ReservedRoom;
 use App\Models\Room;
 use App\Models\RoomCategory;
 use App\Models\WarrantyOption;
@@ -57,29 +58,40 @@ class SchedulerController extends Controller
     {
 
         $reservation = new Reservation();
-
-        $reservation->customer_id = 1;
-        $reservation->total_to_bill = 10000;
-
         $reservation->from_date = $request->start_date;
         $reservation->to_date = $request->end_date;
-
+        $reservation->status_id = 1;
+        $reservation->customer_id = $request->customer_id;
+        $reservation->warranty_option_id = $request->warranty_id;
+        $reservation->currency_id = $request->currency_id;
+        $reservation->payment_option_id = $request->payment_id;
+        $reservation->total_to_bill = 0;
+        $reservation->comments = "Creación de la reserva";
         $reservation->save();
+
+        $reserved_room = new ReservedRoom();
+        $reserved_room->reservation_id = $reservation->id;
+        $reserved_room->room_id = $request->room_id;
+        $reserved_room->price = 100;
+        $reserved_room->save();
 
         return response()->json([
             "action" => "inserted",
-            "tid" => $reservation->id
+            "tid" => $reservation->id,
+            "reservation_id" => $reservation->id
         ]);
     }
 
     public function update($id, Request $request)
     {
-        $reservation = Reservation::find($id);
-
-        $reservation->text = strip_tags($request->text);
-        $reservation->start_date = $request->start_date;
-        $reservation->end_date = $request->end_date;
+        $reservation = Reservation::find($request->text);
+        $reservation->from_date = $request->start_date;
+        $reservation->to_date = $request->end_date;
         $reservation->save();
+
+        $reserved_room = ReservedRoom::where('reservation_id', $request->text)->first();
+        $reserved_room->room_id = $request->room;
+        $reserved_room->save();
 
         return response()->json([
             "action" => "updated"
