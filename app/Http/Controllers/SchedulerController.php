@@ -87,10 +87,18 @@ class SchedulerController extends Controller
         $reservation = Reservation::find($request->text);
         $reservation->from_date = $request->start_date;
         $reservation->to_date = $request->end_date;
+        $reservation->status_id = 1;
+        $reservation->customer_id = $request->customer_id;
+        $reservation->warranty_option_id = $request->warranty_id;
+        $reservation->currency_id = $request->currency_id;
+        $reservation->payment_option_id = $request->payment_id;
+        $reservation->total_to_bill = 0;
+        $reservation->comments = "Creación de la reserva";
         $reservation->save();
 
         $reserved_room = ReservedRoom::where('reservation_id', $request->text)->first();
         $reserved_room->room_id = $request->room;
+        $reserved_room->price = 100;
         $reserved_room->save();
 
         return response()->json([
