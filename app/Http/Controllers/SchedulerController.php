@@ -12,6 +12,7 @@ use App\Models\Reservation;
 use App\Models\reservationStatus;
 use App\Models\Room;
 use App\Models\RoomCategory;
+use App\Models\WarrantyOption;
 use Illuminate\Support\Facades\DB;
 
 class SchedulerController extends Controller
@@ -34,6 +35,7 @@ class SchedulerController extends Controller
                 'bookingStatuses' => ReservationStatus::toScheduler(),
                 'customers' => Customer::toScheduler(),
                 'currencies' => Currency::toScheduler(),
+                'warranty' => WarrantyOption::toScheduler(),
                 'adults' => [
                     ['value' => 1, 'label' => 1],
                     ['value' => 2, 'label' => 2],
@@ -58,9 +60,6 @@ class SchedulerController extends Controller
 
         $reservation->customer_id = 1;
         $reservation->total_to_bill = 10000;
-
-        // $reservation->from_date = Carbon::createFromFormat('d-m-Y', $request->start_date)->format('Y-m-d');
-        // $reservation->to_date = Carbon::createFromFormat('d-m-Y', $request->end_date)->format('Y-m-d');
 
         $reservation->from_date = $request->start_date;
         $reservation->to_date = $request->end_date;

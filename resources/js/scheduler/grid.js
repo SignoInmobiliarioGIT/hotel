@@ -72,5 +72,9 @@ class Grid {
         scheduler.init('scheduler_here', moment().subtract(7, "days"), "timeline");
 
         scheduler.load("/scheduler", "json");
+
+        // var dp = new dataProcessor("/scheduler");
+        // dp.init(scheduler);
+        // dp.setTransactionMode("REST", false);
     }
 }

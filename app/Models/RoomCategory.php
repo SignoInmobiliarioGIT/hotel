@@ -68,7 +68,7 @@ class RoomCategory extends Model
 
     static function toScheduler()
     {
-        return RoomCategory::select(DB::raw('id as value, name as label'))
+        return RoomCategory::select(DB::raw('id as value, name as label, price, max_capacity'))
             ->get()
             ->toArray();
     }
