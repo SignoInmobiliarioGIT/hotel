@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use App\Models\Reservation;
 
 class ReservationSeeder extends Seeder
 {
@@ -12,6 +13,8 @@ class ReservationSeeder extends Seeder
      */
     public function run()
     {
+        // $users = factory(Reservation::class, 1000)->create();
+
         $now = Carbon::now()->format('Y-m-d H:i:s');
         for ($i = 1; $i < 10; $i++) {
             $reservation = \App\Models\Reservation::create([

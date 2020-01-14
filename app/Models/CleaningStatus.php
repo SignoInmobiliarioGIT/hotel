@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
+
 use Eloquent as Model;
 
 /**
@@ -17,7 +19,7 @@ class CleaningStatus extends Model
 {
 
     public $table = 'cleaning_statuses';
-    
+
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
@@ -51,7 +53,12 @@ class CleaningStatus extends Model
     public static $messages = [
         "decription.required" => "El campo 'Descripción' es obligatorio",
         "description.min" => "El valor del campo 'Descripción' debe contener al menos :min caracteres"
-        ];
+    ];
 
-    
+    static function toScheduler()
+    {
+        return CleaningStatus::select(DB::raw('id as value, description as label'))
+            ->get()
+            ->toArray();
+    }
 }

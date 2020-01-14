@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -23,6 +24,12 @@ Auth::routes();
 
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/', 'DashboardController@index')->name('dashboard');
-    Route::get('reservations', 'ReservationController@index');
+    Route::get('/', 'SchedulerController@index')->name('dashboard');
+    // Route::get('reservations', 'ReservationController@index');
+});
+
+Route::resource('scheduler', 'SchedulerController');
+
+Route::get('/scheduler-test', function () {
+    return view('scheduler/scheduler');
 });

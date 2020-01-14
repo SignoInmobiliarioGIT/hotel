@@ -2,40 +2,27 @@
 
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="/css/scheduler.css">
 
-    <script src="https://cdn.dhtmlx.com/scheduler/edge/dhtmlxscheduler.js">
-    </script>
-    <link href="https://cdn.dhtmlx.com/scheduler/edge/dhtmlxscheduler.css"
-        rel="stylesheet">
-
-    <style type="text/css">
-        html,
-        body {
-            height: 100%;
-            padding: 0px;
-            margin: 0px;
-            overflow: hidden;
-        }
-
-    </style>
+    <script src="/js/app.js"></script>
+    <script src="/js/scheduler.js"></script>
 </head>
 
 <body>
     <div id="scheduler_here" class="dhx_cal_container"
-        style='width:100%; height:100%;'>
+        style='width:100%; height:800px;'>
         <div class="dhx_cal_navline">
             <div class="dhx_cal_prev_button">&nbsp;</div>
             <div class="dhx_cal_next_button">&nbsp;</div>
             <div class="dhx_cal_today_button"></div>
             <div class="dhx_cal_date"></div>
-            <div class="dhx_cal_tab" name="day_tab"></div>
-            <div class="dhx_cal_tab" name="week_tab"></div>
-            <div class="dhx_cal_tab" name="month_tab"></div>
+            <select id="room_filter" onchange='showRooms(this.value)'></select>
         </div>
-        <div class="dhx_cal_header"></div>
-        <div class="dhx_cal_data"></div>
+        <div class="dhx_cal_header">
+        </div>
+        <div class="dhx_cal_data">
+        </div>
     </div>
-    <script type="text/javascript">
-        scheduler.init("scheduler_here");
-    </script>
 </body>
