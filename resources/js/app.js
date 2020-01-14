@@ -34,9 +34,6 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 
 require('./reservations/filters');
 require('./custom-datatables');
-<<<<<<< HEAD
-require('./calendar/calendar');
-=======
 
 require('./dhtmlxscheduler/dhtmlxscheduler');
 require('./dhtmlxscheduler/dhtmlxscheduler_limit');
@@ -45,4 +42,3 @@ require('./dhtmlxscheduler/dhtmlxscheduler_collision');
 require('./dhtmlxscheduler/dhtmlxscheduler_tooltip');
 require('./dhtmlxscheduler/dhtmlxscheduler_minical');
 require('./dhtmlxscheduler/dhtmlxscheduler_editors');
->>>>>>> 2scheduler
