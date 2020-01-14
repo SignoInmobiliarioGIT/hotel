@@ -73,8 +73,6 @@ class Grid {
 
         scheduler.load("/scheduler", "json");
 
-        // var dp = new dataProcessor("/scheduler");
-        // dp.init(scheduler);
-        // dp.setTransactionMode("REST", false);
+
     }
 }

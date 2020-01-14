@@ -111,9 +111,7 @@ class Grid {
 
         scheduler.load("/scheduler", "json");
 
-        // var dp = new dataProcessor("/scheduler");
-        // dp.init(scheduler);
-        // dp.setTransactionMode("REST", false);
+
     }
 }
 
@@ -217,6 +215,7 @@ class LightBox {
     }
 }
 
+var dp;
 window.onload = function () {
     Grid.init();
 
@@ -237,13 +236,13 @@ window.onload = function () {
         return "event_" + (event.status || "");
     };
 
-
-
     LightBox.init();
     Event.init();
+
+    dp = new dataProcessor("/scheduler");
+    dp.init(scheduler);
+    dp.setTransactionMode("REST", false);
 }
-
-
 
 window.showRooms = function showRooms(type) {
     var allRooms = scheduler.serverList("rooms");
@@ -258,4 +257,14 @@ window.showRooms = function showRooms(type) {
     }
 
     scheduler.updateCollection("visibleRooms", visibleRooms);
+}
+
+//needs to be attached to the 'save' button
+function save_form() {
+    var ev = scheduler.getEvent(scheduler.getState().lightbox_id);
+    scheduler.endLightbox(true, custom_form);
+}
+//needs to be attached to the 'cancel' button
+function close_form(argument) {
+    scheduler.endLightbox(false, custom_form);
 }
