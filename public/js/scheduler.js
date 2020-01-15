@@ -196,13 +196,6 @@ class LightBox {
                 options: scheduler.serverList("bookingStatuses")
             },
             {
-                map_to: "is_paid",
-                name: "Pagado",
-                type: "checkbox",
-                checked_value: true,
-                unchecked_value: false
-            },
-            {
                 map_to: "time",
                 name: "Fechas",
                 type: "calendar_time"
