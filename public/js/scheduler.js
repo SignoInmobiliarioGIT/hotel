@@ -4,17 +4,12 @@ class Event {
         Event.toolTip();
     }
     static innerHtmlReservation() {
-        var eventDateFormat = scheduler.date.date_to_str("%d %m %Y");
 
         scheduler.templates.event_bar_text = function (start, end, event) {
-            var paidStatus = Helper.getPaidStatus(event.is_paid);
-            var startDate = eventDateFormat(event.start_date);
-            var endDate = eventDateFormat(event.end_date);
-            return [event.text + "<br />",
-                startDate + " - " + endDate,
-                "<div class='booking_status booking-option'>" + Helper.getBookingStatus(event.status) + "</div>",
-                "<div class='booking_paid booking-option'>" + paidStatus + "</div>"
-            ].join("");
+            return "<div class='event_reservation_id'>" +
+                event.reservation_id + "</div>" +
+                "<div class='event_customer_name'>" +
+                event.customer_name + "</div>";
         };
     }
     static toolTip() {
@@ -93,7 +88,7 @@ class Grid {
             x_size: 31,
             section_autoheight: false,
             y_unit: scheduler.serverList("visibleRooms"),
-            y_property: "room",
+            y_property: "room_id",
             render: "bar",
             round_position: true,
             dy: 60,
@@ -190,7 +185,7 @@ class LightBox {
                 options: scheduler.serverList("warranty")
             },
             {
-                map_to: "status",
+                map_to: "status_id",
                 name: "Estado",
                 type: "radio",
                 options: scheduler.serverList("bookingStatuses")

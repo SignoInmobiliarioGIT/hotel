@@ -55,7 +55,7 @@ class Grid {
             x_size: 31,
             section_autoheight: false,
             y_unit: scheduler.serverList("visibleRooms"),
-            y_property: "room",
+            y_property: "room_id",
             render: "bar",
             round_position: true,
             dy: 60,

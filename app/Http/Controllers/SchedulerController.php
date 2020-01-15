@@ -34,7 +34,7 @@ class SchedulerController extends Controller
                 'rooms' => Room::toScheduler(),
                 'roomTypes' => RoomCategory::toScheduler(),
                 'roomStatuses' => CleaningStatus::toScheduler(),
-                'bookingStatuses' => ReservationStatus::toScheduler(),
+                'reservationStatuses' => ReservationStatus::toScheduler(),
                 'customers' => Customer::toScheduler(),
                 'currencies' => Currency::toScheduler(),
                 'warranty' => WarrantyOption::toScheduler(),

@@ -4,17 +4,12 @@ class Event {
         Event.toolTip();
     }
     static innerHtmlReservation() {
-        var eventDateFormat = scheduler.date.date_to_str("%d %m %Y");
 
         scheduler.templates.event_bar_text = function (start, end, event) {
-            var paidStatus = Helper.getPaidStatus(event.is_paid);
-            var startDate = eventDateFormat(event.start_date);
-            var endDate = eventDateFormat(event.end_date);
-            return [event.text + "<br />",
-                startDate + " - " + endDate,
-                "<div class='booking_status booking-option'>" + Helper.getBookingStatus(event.status) + "</div>",
-                "<div class='booking_paid booking-option'>" + paidStatus + "</div>"
-            ].join("");
+            return "<div class='event_reservation_id'>" +
+                event.reservation_id + "</div>" +
+                "<div class='event_customer_name'>" +
+                event.customer_name + "</div>";
         };
     }
     static toolTip() {

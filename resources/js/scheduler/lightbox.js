@@ -42,7 +42,7 @@ class LightBox {
                 options: scheduler.serverList("warranty")
             },
             {
-                map_to: "status",
+                map_to: "status_id",
                 name: "Estado",
                 type: "radio",
                 options: scheduler.serverList("bookingStatuses")
