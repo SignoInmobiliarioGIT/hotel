@@ -15,10 +15,11 @@ use App\Models\Room;
 use App\Models\RoomCategory;
 use App\Models\WarrantyOption;
 use Illuminate\Support\Facades\DB;
+use App\Traits\TotalToBillTrait;
 
 class SchedulerController extends Controller
 {
-    use CalendarTrait;
+    use TotalToBillTrait;
 
     public function index(Request $request)
     {
@@ -65,7 +66,7 @@ class SchedulerController extends Controller
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
         $reservation->payment_option_id = $request->payment_id;
-        $reservation->total_to_bill = 0;
+        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->night_price);
         $reservation->comments = "Creación de la reserva";
         $reservation->save();
 
@@ -92,7 +93,7 @@ class SchedulerController extends Controller
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
         $reservation->payment_option_id = $request->payment_id;
-        $reservation->total_to_bill = 0;
+        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $reservation->id);
         $reservation->comments = "Creación de la reserva";
         $reservation->save();
 

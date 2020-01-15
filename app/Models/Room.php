@@ -104,21 +104,14 @@ class Room extends Model
     {
         return $this->belongsTo(\App\Models\CleaningStatus::class, "cleaning_status");
     }
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     *
-     **/
-    public function roomCategory()
-    {
-        return $this->belongsTo(\App\Models\RoomCategory::class, "room_category");
-    }
+
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * This method is being used by RoomDatatable.
      * I can't use the method cleaningStatus because there is a bug in Yajra datatables with the name of methods in relationships..
      **/
-    public function room_category()
+    public function roomCategory()
     {
         return $this->belongsTo(\App\Models\RoomCategory::class, "room_category");
     }
