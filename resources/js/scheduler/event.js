@@ -21,11 +21,11 @@ class Event {
             };
 
             var html = [];
-            html.push("Booking: <b>" + event.text + "</b>");
-            html.push("Room: <b>" + room.label + "</b>");
+            html.push("Reserva: <b>" + event.text + "</b>");
+            html.push("Habitación: <b>" + room.label + "</b>");
             html.push("Check-in: <b>" + eventDateFormat(start) + "</b>");
             html.push("Check-out: <b>" + eventDateFormat(end) + "</b>");
-            html.push(Helper.getBookingStatus(event.status) + ", " + Helper.getPaidStatus(event.is_paid));
+            html.push(Helper.getBookingStatus(event.status));
             return html.join("<br>")
         };
     }

@@ -169,7 +169,7 @@ class Room extends Model
     }
     static function toScheduler()
     {
-        return Room::select(DB::raw('rooms.id as value, rooms.name as label,rooms.status, room_category as type, status, room_categories.price, room_categories.max_capacity'))
+        return Room::select(DB::raw('rooms.id as value, rooms.name as label,rooms.status, room_category as type, status, room_categories.price, room_categories.max_capacity, rooms.id as room_id, rooms.name as room_name'))
             ->leftJoin('room_categories', 'room_categories.id', '=', 'rooms.room_category')
             ->get()
             ->toArray();

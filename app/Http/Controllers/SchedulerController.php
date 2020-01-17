@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CleaningStatus;
 use App\Models\Currency;
 use App\Models\Customer;
+use App\Models\PaymentOption;
 use App\Traits\CalendarTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -37,7 +38,8 @@ class SchedulerController extends Controller
                 'reservationStatuses' => ReservationStatus::toScheduler(),
                 'customers' => Customer::toScheduler(),
                 'currencies' => Currency::toScheduler(),
-                'warranty' => WarrantyOption::toScheduler(),
+                'warranties' => WarrantyOption::toScheduler(),
+                'payments' => PaymentOption::toScheduler(),
                 'adults' => [
                     ['value' => 1, 'label' => 1],
                     ['value' => 2, 'label' => 2],
@@ -61,20 +63,22 @@ class SchedulerController extends Controller
         $reservation = new Reservation();
         $reservation->from_date = $request->start_date;
         $reservation->to_date = $request->end_date;
-        $reservation->status_id = 1;
-        $reservation->customer_id = $request->customer_id;
-        $reservation->warranty_option_id = $request->warranty_id;
-        $reservation->currency_id = $request->currency_id;
-        $reservation->payment_option_id = $request->payment_id;
-        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->night_price);
+        // $reservation->status_id = 1;
+        // $reservation->customer_id = $request->customer_id;
+        // $reservation->warranty_option_id = $request->warranty_id;
+        // $reservation->currency_id = $request->currency_id;
+        // $reservation->payment_option_id = $request->payment_id;
+        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->nightPrice);
         $reservation->comments = "Creación de la reserva";
         $reservation->save();
+        $name = "Ale";
 
         $reserved_room = new ReservedRoom();
         $reserved_room->reservation_id = $reservation->id;
         $reserved_room->room_id = $request->room_id;
-        $reserved_room->price = 100;
+        $reserved_room->price = $request->nightPrice;
         $reserved_room->save();
+
 
         return response()->json([
             "action" => "inserted",
@@ -93,13 +97,13 @@ class SchedulerController extends Controller
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
         $reservation->payment_option_id = $request->payment_id;
-        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $reservation->id);
+        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->nightPrice);
         $reservation->comments = "Creación de la reserva";
         $reservation->save();
 
         $reserved_room = ReservedRoom::where('reservation_id', $request->text)->first();
-        $reserved_room->room_id = $request->room;
-        $reserved_room->price = 100;
+        $reserved_room->room_id = $request->room_id;
+        $reserved_room->price = $request->nightPrice;
         $reserved_room->save();
 
         return response()->json([

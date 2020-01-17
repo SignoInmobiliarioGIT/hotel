@@ -21,11 +21,11 @@ class Event {
             };
 
             var html = [];
-            html.push("Booking: <b>" + event.text + "</b>");
-            html.push("Room: <b>" + room.label + "</b>");
+            html.push("Reserva: <b>" + event.text + "</b>");
+            html.push("Habitación: <b>" + room.label + "</b>");
             html.push("Check-in: <b>" + eventDateFormat(start) + "</b>");
             html.push("Check-out: <b>" + eventDateFormat(end) + "</b>");
-            html.push(Helper.getBookingStatus(event.status) + ", " + Helper.getPaidStatus(event.is_paid));
+            html.push(Helper.getBookingStatus(event.status));
             return html.join("<br>")
         };
     }
@@ -182,13 +182,33 @@ class LightBox {
                 map_to: "warranty_id",
                 name: "Garantía",
                 type: "select",
-                options: scheduler.serverList("warranty")
+                options: scheduler.serverList("warranties")
+            },
+            {
+                map_to: "payment_id",
+                name: "Pago",
+                type: "select",
+                options: scheduler.serverList("payments")
+            },
+            {
+                name: "Precio por noche",
+                height: 30,
+                type: "textarea",
+                map_to: "nightPrice",
+                default_value: LightBox.nightPrice()
+            },
+            {
+                name: "Precio total",
+                height: 30,
+                type: "textarea",
+                map_to: "totalToBill",
+                default_value: LightBox.nightPrice()
             },
             {
                 map_to: "status_id",
                 name: "Estado",
                 type: "radio",
-                options: scheduler.serverList("bookingStatuses")
+                options: scheduler.serverList("reservationStatuses")
             },
             {
                 map_to: "time",
@@ -197,10 +217,28 @@ class LightBox {
             }
         ];
 
+
+
+
         scheduler.templates.lightbox_header = function (start, end, ev) {
             return "Reserva"
         };
     }
+
+    static nightPrice() {
+        scheduler.attachEvent("onBeforeLightbox", function (id) {
+            var rooms = scheduler.serverList('rooms');
+            var ev = scheduler.getEvent(id);
+            if (typeof ev.reservation_id === 'undefined') {
+                ev.nightPrice = rooms.find(room => room.room_id === 7).price;
+            } else {
+                ev.nightPrice = ev.night_price;
+            }
+            return true;
+        });
+    }
+
+
 }
 
 var dp;
@@ -230,6 +268,9 @@ window.onload = function () {
     dp = new dataProcessor("/scheduler");
     dp.init(scheduler);
     dp.setTransactionMode("REST", false);
+    dp.attachEvent("onAfterUpdate", function (id, action, tid, response) {
+        location.reload();
+    })
 }
 
 window.showRooms = function showRooms(type) {

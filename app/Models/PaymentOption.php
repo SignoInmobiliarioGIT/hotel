@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PaymentOption extends Model
 {
@@ -13,7 +14,14 @@ class PaymentOption extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      **/
-    public function reservations() {
-        return $this->hasMany(Reservation::class,'payment_option_id');
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class, 'payment_option_id');
+    }
+    static function toScheduler()
+    {
+        return PaymentOption::select(DB::raw('id as value, description as label'))
+            ->get()
+            ->toArray();
     }
 }
