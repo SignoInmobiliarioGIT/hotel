@@ -195,14 +195,14 @@ class LightBox {
                 height: 30,
                 type: "textarea",
                 map_to: "nightPrice",
-                default_value: LightBox.nightPrice()
+                default_value: LightBox.getNightPrice()
             },
             {
-                name: "Precio total",
+                name: "Total",
                 height: 30,
                 type: "textarea",
                 map_to: "totalToBill",
-                default_value: LightBox.nightPrice()
+                default_value: LightBox.getTotaltoBill()
             },
             {
                 map_to: "status_id",
@@ -217,6 +217,10 @@ class LightBox {
             }
         ];
 
+        scheduler.attachEvent("onLightbox", function () {
+            var section = scheduler.formSection('Total');
+            section.control.disabled = true;
+        });
 
 
 
@@ -225,7 +229,7 @@ class LightBox {
         };
     }
 
-    static nightPrice() {
+    static getNightPrice() {
         scheduler.attachEvent("onBeforeLightbox", function (id) {
             var rooms = scheduler.serverList('rooms');
             var ev = scheduler.getEvent(id);
@@ -236,6 +240,9 @@ class LightBox {
             }
             return true;
         });
+    }
+    static getTotaltoBill() {
+        return 444;
     }
 
 
