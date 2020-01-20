@@ -97022,8 +97022,13 @@ Scheduler.plugin(function (e) {
             position: t,
             date: new Date(this._date),
             navigation: !0,
+            // handler: function (a) {
+            // t.value = e.templates.calendar_time(a), t._date = new Date(a)
             handler: function handler(a) {
-              t.value = e.templates.calendar_time(a), t._date = new Date(a), e.destroyCalendar(), e.config.event_duration && e.config.auto_end_date && 0 === n && f();
+              t.value = e.templates.calendar_time(a);
+              t._date = new Date(a);
+              e.callEvent("onDateChanged", [t.value, t._date, t]) //////////////////////////////////////////////////
+              , e.destroyCalendar(), e.config.event_duration && e.config.auto_end_date && 0 === n && f();
             }
           });
         };

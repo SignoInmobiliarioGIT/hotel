@@ -63,15 +63,14 @@ class SchedulerController extends Controller
         $reservation = new Reservation();
         $reservation->from_date = $request->start_date;
         $reservation->to_date = $request->end_date;
-        // $reservation->status_id = 1;
-        // $reservation->customer_id = $request->customer_id;
-        // $reservation->warranty_option_id = $request->warranty_id;
-        // $reservation->currency_id = $request->currency_id;
-        // $reservation->payment_option_id = $request->payment_id;
+        $reservation->status_id = 1;
+        $reservation->customer_id = $request->customer_id;
+        $reservation->warranty_option_id = $request->warranty_id;
+        $reservation->currency_id = $request->currency_id;
+        $reservation->payment_option_id = $request->payment_id;
         $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->nightPrice);
         $reservation->comments = "Creación de la reserva";
         $reservation->save();
-        $name = "Ale";
 
         $reserved_room = new ReservedRoom();
         $reserved_room->reservation_id = $reservation->id;

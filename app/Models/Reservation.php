@@ -144,7 +144,7 @@ class Reservation extends Model
     static function toScheduler()
     {
         return DB::table('reservation')
-            ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room_id, status_id as status_id, payment_option_id as payment_option_id, customers.id as customer_id, customers.name as customer_name, reserved_room.room_id as room_id, reserved_room.price as night_price, reservation.id as reservation_id'))
+            ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room_id, status_id as status_id, payment_option_id as payment_option_id, customers.id as customer_id, customers.name as customer_name, reserved_room.room_id as room_id, reserved_room.price as night_price, reservation.id as reservation_id, total_to_bill'))
             ->leftJoin('reserved_room', 'reserved_room.reservation_id', '=', 'reservation.id')
             ->leftJoin('customers', 'customers.id', '=', 'reservation.customer_id')
             ->get()->toArray();
