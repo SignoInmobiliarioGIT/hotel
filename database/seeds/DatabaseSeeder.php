@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        Eloquent::unguard();
+        // Eloquent::unguard();
 
         // $path = 'database/sqls/permissions.sql';
         // DB::unprepared(file_get_contents($path));

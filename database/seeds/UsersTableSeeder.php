@@ -14,7 +14,7 @@ class UsersTableSeeder extends Seeder
     public function run()
     {
         $user = \App\User::create([
-            "name" => "admin",
+            "name" => "admin@gmail.com",
             "email" => "admin@gmail.com",
             "password" => bcrypt("admin"),
             "created_at" => \Carbon\Carbon::now(),
@@ -24,7 +24,7 @@ class UsersTableSeeder extends Seeder
         // $user->assignRole(["Administrador"]);
 
         $user = \App\User::create([
-            "name" => "user1",
+            "name" => "user1@gmail.com",
             "email" => "user1@gmail.com",
             "password" => bcrypt("password"),
             "created_at" => \Carbon\Carbon::now(),
@@ -34,7 +34,7 @@ class UsersTableSeeder extends Seeder
         // $user->assignRole(["Administrador"]);
 
         $user = \App\User::create([
-            "name" => "user2",
+            "name" => "user2@gmail.com",
             "email" => "user2@gmail.com",
             "password" => bcrypt("password"),
             "created_at" => \Carbon\Carbon::now(),
