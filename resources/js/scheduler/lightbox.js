@@ -111,6 +111,9 @@ class LightBox {
         scheduler.templates.lightbox_header = function (start, end, ev) {
             return "Reserva"
         };
+
+        scheduler.config.buttons_left = ["dhx_save_btn", "dhx_cancel_btn"];
+        scheduler.config.buttons_right = [];
     }
 
     static getNightPrice() {

@@ -110,7 +110,7 @@ class SchedulerController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         $reservation = Reservation::find($id);
         $reservation->delete();
