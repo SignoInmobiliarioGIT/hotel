@@ -16,11 +16,9 @@ use App\Models\Room;
 use App\Models\RoomCategory;
 use App\Models\WarrantyOption;
 use Illuminate\Support\Facades\DB;
-use App\Traits\TotalToBillTrait;
 
 class SchedulerController extends Controller
 {
-    use TotalToBillTrait;
 
     public function index(Request $request)
     {
@@ -67,17 +65,15 @@ class SchedulerController extends Controller
         $reservation->customer_id = $request->customer_id;
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
-        $reservation->adults = $request->adults;
-        $reservation->children = $request->children;
         $reservation->payment_option_id = $request->payment_id;
-        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->nightPrice);
+        $reservation->total_to_bill = $request->total_to_bill;
         $reservation->comments = "Creación de la reserva";
         $reservation->save();
 
         $reserved_room = new ReservedRoom();
         $reserved_room->reservation_id = $reservation->id;
         $reserved_room->room_id = $request->room_id;
-        $reserved_room->price = $request->nightPrice;
+        $reserved_room->price = $request->night_price;
         $reserved_room->save();
 
 
@@ -98,13 +94,15 @@ class SchedulerController extends Controller
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
         $reservation->payment_option_id = $request->payment_id;
-        $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->nightPrice);
+        $reservation->total_to_bill = $request->total_to_bill;
+        $reservation->adults = $request->adults;
+        $reservation->children = $request->children;
         $reservation->comments = "Creación de la reserva";
         $reservation->save();
 
         $reserved_room = ReservedRoom::where('reservation_id', $request->text)->first();
         $reserved_room->room_id = $request->room_id;
-        $reserved_room->price = $request->nightPrice;
+        $reserved_room->price = $request->night_price;
         $reserved_room->save();
 
         return response()->json([

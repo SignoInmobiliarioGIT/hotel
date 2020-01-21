@@ -57,15 +57,13 @@ class LightBox {
                 name: "night_price",
                 height: 30,
                 type: "textarea",
-                map_to: "nightPrice",
-                default_value: LightBox.getNightPrice()
+                map_to: "night_price",
             },
             {
                 name: "total_to_bill",
                 height: 30,
                 type: "textarea",
-                map_to: "totalToBill",
-                default_value: LightBox.getTotaltoBill()
+                map_to: "total_to_bill"
             },
             {
                 map_to: "status_id",
@@ -85,9 +83,7 @@ class LightBox {
         });
 
         scheduler.attachEvent("onLightbox", function () {
-            $('*[data-name="night_price"]').on("change keyup paste", function () {
-                LightBox.setTotalToBillWhenChangesAreDetected();
-            })
+
             var time = scheduler.formSection("time");
 
             var inputs = time.node.getElementsByTagName("input");
@@ -107,7 +103,9 @@ class LightBox {
             LightBox.setAttributeDataName('night_price');
             LightBox.setAttributeDataName('total_to_bill');
 
-
+            $('*[data-name="night_price"]').on("change keyup paste", function () {
+                LightBox.setTotalToBillWhenChangesAreDetected();
+            })
         });
 
         scheduler.templates.lightbox_header = function (start, end, ev) {
@@ -127,12 +125,7 @@ class LightBox {
             return true;
         });
     }
-    static getTotaltoBill() {
-        var a = moment([2007, 0, 29]);
-        var b = moment([2007, 0, 28]);
-        a.diff(b, 'days')
-        return 444;
-    }
+
 
     /**
      *
