@@ -81,16 +81,13 @@ class LightBox {
         });
 
         scheduler.attachEvent("onDateChanged", function (value, date) {
-            var nightPriceSection = scheduler.formSection("night_price");
-            var nihtPrice = nightPriceSection.node.getElementsByTagName('textarea')[0].value;
-
-            var start_date = $('.dhx_readonly')[0].value;
-            var end_date = $('.dhx_readonly')[1].value;
-
-
+            LightBox.setTotalToBillWhenChangesAreDetected();
         });
 
         scheduler.attachEvent("onLightbox", function () {
+            $('*[data-name="night_price"]').on("change keyup paste", function () {
+                LightBox.setTotalToBillWhenChangesAreDetected();
+            })
             var time = scheduler.formSection("time");
 
             var inputs = time.node.getElementsByTagName("input");
@@ -159,5 +156,16 @@ class LightBox {
         scheduler.locale.labels.section_night_price = 'Precio x noche';
         scheduler.locale.labels.section_total_to_bill = 'Total';
         scheduler.locale.labels.section_status_id = 'Estado';
+    }
+
+    static setTotalToBillWhenChangesAreDetected() {
+        var nightPriceSection = scheduler.formSection("night_price");
+        var nightPrice = nightPriceSection.node.getElementsByTagName('textarea')[0].value;
+
+        var start_date = moment([$('.dhx_readonly')[0].value], 'DD-MM-YYYY');
+        var end_date = moment([$('.dhx_readonly')[1].value], 'DD-MM-YYYY');
+        var days = end_date.diff(start_date, 'days') + 1;
+
+        $('*[data-name="total_to_bill"]')[0].value = days * nightPrice;
     }
 }
