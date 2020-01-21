@@ -67,6 +67,8 @@ class SchedulerController extends Controller
         $reservation->customer_id = $request->customer_id;
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
+        $reservation->adults = $request->adults;
+        $reservation->children = $request->children;
         $reservation->payment_option_id = $request->payment_id;
         $reservation->total_to_bill = TotalToBillTrait::get($request->start_date, $request->end_date, $request->nightPrice);
         $reservation->comments = "Creación de la reserva";
