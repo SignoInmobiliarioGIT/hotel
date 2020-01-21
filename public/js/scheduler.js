@@ -213,7 +213,13 @@ class LightBox {
                 name: "status_id",
                 type: "radio",
                 options: scheduler.serverList("reservationStatuses")
-            }
+            },
+            {
+                name: "comments",
+                height: 30,
+                type: "textarea",
+                map_to: "comments"
+            },
         ];
 
         scheduler.attachEvent("onBeforeLightbox", function (id) {
@@ -245,6 +251,7 @@ class LightBox {
             LightBox.setAttributeDataName('payment_id');
             LightBox.setAttributeDataName('night_price');
             LightBox.setAttributeDataName('total_to_bill');
+            LightBox.setAttributeDataName('comments');
 
             $('*[data-name="night_price"]').on("change keyup paste", function () {
                 LightBox.setTotalToBillWhenChangesAreDetected();
@@ -252,7 +259,11 @@ class LightBox {
         });
 
         scheduler.templates.lightbox_header = function (start, end, ev) {
-            return "Reserva"
+            if (typeof ev.reservation_id == 'undefined') {
+                return "Nueva reserva"
+            } else {
+                return "Reserva: " + ev.reservation_id;
+            }
         };
 
         scheduler.config.buttons_left = ["dhx_save_btn", "dhx_cancel_btn"];
@@ -295,6 +306,7 @@ class LightBox {
         scheduler.locale.labels.section_night_price = 'Precio x noche';
         scheduler.locale.labels.section_total_to_bill = 'Total';
         scheduler.locale.labels.section_status_id = 'Estado';
+        scheduler.locale.labels.section_comments = 'Comentario';
     }
 
     static setTotalToBillWhenChangesAreDetected() {
