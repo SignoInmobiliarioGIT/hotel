@@ -10,6 +10,7 @@ use App\Traits\CalendarTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\Reservation;
+use App\Models\ReservationCompanion;
 use App\Models\reservationStatus;
 use App\Models\ReservedRoom;
 use App\Models\Room;
@@ -120,5 +121,12 @@ class SchedulerController extends Controller
         return response()->json([
             "action" => "deleted"
         ]);
+    }
+
+    public function getCompanions(Request $request)
+    {
+        $companions = ReservationCompanion::where('reservation_id', '=', $request->reservation_id)
+            ->get()->toArray();
+        return response()->json($companions);
     }
 }

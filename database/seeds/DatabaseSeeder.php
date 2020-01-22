@@ -35,5 +35,6 @@ class DatabaseSeeder extends Seeder
         $this->call(CustomerCategorySeeder::class);
         $this->call(CustomerSeeder::class);
         $this->call(ReservationSeeder::class);
+        $this->call(ReservationCompanionTableSeeder::class);
     }
 }

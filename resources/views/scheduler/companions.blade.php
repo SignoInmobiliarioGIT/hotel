@@ -11,7 +11,16 @@
                 </button>
             </div>
             <div class="modal-body">
-                ...
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <th scope="row">1</th>
+                            <td>Mark</td>
+                            <td>Otto</td>
+                            <td>@mdo</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"

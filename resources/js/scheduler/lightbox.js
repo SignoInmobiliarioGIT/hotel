@@ -138,9 +138,17 @@ class LightBox {
 
         scheduler.config.buttons_left = ["companions_btn"];
         scheduler.locale.labels["companions_btn"] = "Acompañantes";
+
         scheduler.attachEvent("onLightboxButton", function (button_id, node, e) {
             if (button_id == "companions_btn") {
-                $('#companionsModal').modal('show');
+                axios.get('get-companions', {
+                    params: {
+                        reservation_id: 1
+                    }
+                }).then(function (response) {
+                    $('#companionsModal').modal('show');
+                    console.log(response.data);
+                })
             }
         });
     }
