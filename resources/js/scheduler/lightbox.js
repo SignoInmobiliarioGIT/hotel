@@ -143,13 +143,18 @@ class LightBox {
 
             if (button_id == "companions_btn") {
                 var ev = scheduler.getState().lightbox_id;
+                var reservation_id = scheduler.getEvent(ev).reservation_id;
+                var room_id = scheduler.getEvent(ev).room_id;
                 $('#companionsModal').modal('show');
                 $('#companionsModal tbody').empty();
                 axios.get('get-companions', {
                     params: {
-                        reservation_id: scheduler.getEvent(ev).reservation_id
+                        'reservation_id': reservation_id
                     }
                 }).then(function (response) {
+                    $('#storeCompanion').append('<input type="hidden" name="reservation_id" value="' + reservation_id + '" />');
+                    $('#storeCompanion').append('<input type="hidden" name="room_id" value="' + room_id + '" />');
+
                     $.each(response.data, function (index, value) {
                         $('#companionsModal tbody').append('<tr><td>' + value.name + '</td><td>' + value.dni + '</td><td>' + value.age + '</td><td>' + value.relationship + '</td></tr>');
                     })

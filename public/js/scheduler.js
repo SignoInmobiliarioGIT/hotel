@@ -1,3 +1,39 @@
+class Companion {
+
+    static init() {
+        // var form = document.getElementById('storeCompanion');
+        // if (form.attachEvent) {
+        //     form.attachEvent("submit", Companion.store);
+        // } else {
+        //     form.addEventListener("submit", Companion.store);
+        // }
+        $('#storeCompanion').submit(function (e) {
+            e.preventDefault();
+            Companion.store(e);
+            return false;
+        })
+    }
+    static store(e) {
+        $('#companionModal').modal('show');
+        console.log(e);
+        axios.post('/reservation-companion', {
+                'name': $('[name=name]').val(),
+                'dni': $('[name=document]').val(),
+                'age': $('[name=age]').val(),
+                'relationship': $('[name=relationship]').val(),
+                'reservation_id': $('[name=reservation_id]').val(),
+                'assigned_room_id': $('[name=room_id]').val()
+            })
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        return false;
+    }
+}
+
 class Event {
     static init() {
         Event.innerHtmlReservation();
@@ -292,13 +328,18 @@ class LightBox {
 
             if (button_id == "companions_btn") {
                 var ev = scheduler.getState().lightbox_id;
+                var reservation_id = scheduler.getEvent(ev).reservation_id;
+                var room_id = scheduler.getEvent(ev).room_id;
                 $('#companionsModal').modal('show');
                 $('#companionsModal tbody').empty();
                 axios.get('get-companions', {
                     params: {
-                        reservation_id: scheduler.getEvent(ev).reservation_id
+                        'reservation_id': reservation_id
                     }
                 }).then(function (response) {
+                    $('#storeCompanion').append('<input type="hidden" name="reservation_id" value="' + reservation_id + '" />');
+                    $('#storeCompanion').append('<input type="hidden" name="room_id" value="' + room_id + '" />');
+
                     $.each(response.data, function (index, value) {
                         $('#companionsModal tbody').append('<tr><td>' + value.name + '</td><td>' + value.dni + '</td><td>' + value.age + '</td><td>' + value.relationship + '</td></tr>');
                     })
@@ -366,6 +407,9 @@ class LightBox {
 
 var dp;
 window.onload = function () {
+
+
+    Companion.init();
     Grid.init();
 
     scheduler.attachEvent("onParse", function () {

@@ -1,5 +1,8 @@
 var dp;
 window.onload = function () {
+
+
+    Companion.init();
     Grid.init();
 
     scheduler.attachEvent("onParse", function () {

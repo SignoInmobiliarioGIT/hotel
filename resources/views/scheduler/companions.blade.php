@@ -23,11 +23,40 @@
                     <tbody>
                     </tbody>
                 </table>
+
+                <hr>
+                <h5>Ingresar acompañante</h5>
+                <form id="storeCompanion" action="#" method="GET">
+                    <div class="form-row align-items-center">
+                        <div class="col-auto col-form-label-sm">
+                            <input type="text" class="form-control"
+                                placeholder="Nombre y apellido" name="name"
+                                required>
+                        </div>
+                        <div class="col-auto col-form-label-sm">
+                            <input type="text" class="form-control"
+                                placeholder="Documento" name="document"
+                                required>
+                        </div>
+                        <div class="col-auto col-form-label-sm">
+                            <input type="text" class="form-control"
+                                placeholder="Edad" name="age">
+                        </div>
+                        <div class="col-auto col-form-label-sm">
+                            <input type="text" class="form-control"
+                                placeholder="Relación" name="relationship">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit"
+                                class="btn btn-primary">Guardar</button>
+                        </div>
+                    </div>
+                </form>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                     data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary">Guardar</button>
             </div>
         </div>
     </div>
