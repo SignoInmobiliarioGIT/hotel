@@ -24,9 +24,7 @@
 @stop
 
 @section('css')
-
 <link rel="stylesheet" href="/css/scheduler.css">
-
 @stop
 
 @section('js')

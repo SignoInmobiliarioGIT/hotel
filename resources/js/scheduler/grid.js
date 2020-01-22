@@ -73,6 +73,12 @@ class Grid {
 
         scheduler.load("/scheduler", "json");
 
+        scheduler.attachEvent("onBeforeViewChange", function (oldMode, oldDate, mode, date) {
+            if (oldMode != mode || +oldDate != +date) {
+                scheduler.clearAll();
+            }
+            return true;
+        });
 
     }
 }
