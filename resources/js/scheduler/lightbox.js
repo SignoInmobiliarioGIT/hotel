@@ -144,12 +144,12 @@ class LightBox {
             if (button_id == "companions_btn") {
                 var ev = scheduler.getState().lightbox_id;
                 $('#companionsModal').modal('show');
+                $('#companionsModal tbody').empty();
                 axios.get('get-companions', {
                     params: {
                         reservation_id: scheduler.getEvent(ev).reservation_id
                     }
                 }).then(function (response) {
-                    $('#companionsModal tbody').empty();
                     $.each(response.data, function (index, value) {
                         $('#companionsModal tbody').append('<tr><td>' + value.name + '</td><td>' + value.dni + '</td><td>' + value.age + '</td><td>' + value.relationship + '</td></tr>');
                     })
