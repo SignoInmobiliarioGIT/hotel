@@ -10,15 +10,17 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="conpanions">
                 <table class="table table-sm">
-                    <tbody>
+                    <thead>
                         <tr>
-                            <th scope="row">1</th>
-                            <td>Mark</td>
-                            <td>Otto</td>
-                            <td>@mdo</td>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Documento</th>
+                            <th scope="col">Edad</th>
+                            <th scope="col">Relación</th>
                         </tr>
+                    </thead>
+                    <tbody>
                     </tbody>
                 </table>
             </div>

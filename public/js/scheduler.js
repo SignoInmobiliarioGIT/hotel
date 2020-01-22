@@ -289,14 +289,19 @@ class LightBox {
         scheduler.locale.labels["companions_btn"] = "Acompañantes";
 
         scheduler.attachEvent("onLightboxButton", function (button_id, node, e) {
+
             if (button_id == "companions_btn") {
+                var ev = scheduler.getState().lightbox_id;
+                $('#companionsModal').modal('show');
                 axios.get('get-companions', {
                     params: {
-                        reservation_id: 1
+                        reservation_id: scheduler.getEvent(ev).reservation_id
                     }
                 }).then(function (response) {
-                    $('#companionsModal').modal('show');
-                    console.log(response.data);
+                    $('#companionsModal tbody').empty();
+                    $.each(response.data, function (index, value) {
+                        $('#companionsModal tbody').append('<tr><td>' + value.name + '</td><td>' + value.dni + '</td><td>' + value.age + '</td><td>' + value.relationship + '</td></tr>');
+                    })
                 })
             }
         });
