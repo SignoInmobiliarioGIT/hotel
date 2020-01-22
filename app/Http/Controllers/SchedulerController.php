@@ -67,6 +67,8 @@ class SchedulerController extends Controller
         $reservation->currency_id = $request->currency_id;
         $reservation->payment_option_id = $request->payment_id;
         $reservation->total_to_bill = $request->total_to_bill;
+        $reservation->adults = $request->adults;
+        $reservation->children = $request->children;
         $reservation->comments = $request->comments;
         $reservation->save();
 

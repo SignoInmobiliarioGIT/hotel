@@ -158,7 +158,7 @@ return [
     |
     */
 
-    'enabled_laravel_mix' => true,
+    'enabled_laravel_mix' => false,
 
     /*
     |--------------------------------------------------------------------------
