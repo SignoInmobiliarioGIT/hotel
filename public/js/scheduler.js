@@ -268,10 +268,10 @@ class LightBox {
             if (typeof ev.reservation_id == 'undefined') {
                 LightBox.setPriceNight(ev);
                 LightBox.setTotalToBillWhenChangesAreDetected();
-                $('.partners_btn_set').hide();
+                $('.companions_btn_set').hide();
             }
             if (typeof ev.reservation_id != 'undefined') {
-                $('.partners_btn_set').show();
+                $('.companions_btn_set').show();
             }
         });
 
@@ -285,11 +285,11 @@ class LightBox {
 
         scheduler.config.buttons_right = ["dhx_save_btn", "dhx_cancel_btn"];
 
-        scheduler.config.buttons_left = ["partners_btn"];
-        scheduler.locale.labels["partners_btn"] = "Acompañantes";
+        scheduler.config.buttons_left = ["companions_btn"];
+        scheduler.locale.labels["companions_btn"] = "Acompañantes";
         scheduler.attachEvent("onLightboxButton", function (button_id, node, e) {
-            if (button_id == "partners_btn") {
-                $('#partnersModal').modal('show');
+            if (button_id == "companions_btn") {
+                $('#companionsModal').modal('show');
             }
         });
     }
