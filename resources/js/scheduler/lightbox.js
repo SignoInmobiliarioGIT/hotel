@@ -88,7 +88,9 @@ class LightBox {
             LightBox.setTotalToBillWhenChangesAreDetected();
         });
 
-        scheduler.attachEvent("onLightbox", function () {
+        scheduler.attachEvent("onLightbox", function (id) {
+            var ev = scheduler.getEvent(id);
+
 
             var time = scheduler.formSection("time");
 
@@ -113,6 +115,14 @@ class LightBox {
             $('*[data-name="night_price"]').on("change keyup paste", function () {
                 LightBox.setTotalToBillWhenChangesAreDetected();
             })
+
+            if (typeof ev.reservation_id == 'undefined') {
+                var rooms = scheduler.serverList("rooms");
+                var room = rooms.find(o => o.room_id === ev.room_id);
+                console.log(room);
+                $('*[data-name="night_price"]')[0].value = room.price;
+                LightBox.setTotalToBillWhenChangesAreDetected();
+            }
         });
 
         scheduler.templates.lightbox_header = function (start, end, ev) {
