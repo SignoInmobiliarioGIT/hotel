@@ -391,6 +391,7 @@ window.onload = function () {
     dp = new dataProcessor("/scheduler");
     dp.init(scheduler);
     dp.setTransactionMode("REST", false);
+
     dp.attachEvent("onAfterUpdate", function (id, action, tid, response) {
         location.reload();
     })

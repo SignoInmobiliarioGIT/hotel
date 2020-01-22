@@ -23,10 +23,6 @@ class SchedulerController extends Controller
 
     public function index(Request $request)
     {
-        $rooms = DB::table('rooms')
-            ->select(DB::raw('id as value, name as label,status, room_category as type, status'))
-            ->get()
-            ->toArray();
 
         $response = [
             'data' => Reservation::toScheduler(),
