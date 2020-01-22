@@ -1,6 +1,7 @@
 @extends('adminlte::master')
 
 @section('adminlte_css')
+<link rel="stylesheet" href="/css/app.css">
 @stack('css')
 @yield('css')
 @stop
@@ -275,6 +276,7 @@ config('adminlte.dashboard_url', 'home') )
 @stop
 
 @section('adminlte_js')
+
 <script src="{{ asset('vendor/adminlte/dist/js/adminlte.min.js') }}"></script>
 @stack('js')
 @yield('js')@yield('my_js')
