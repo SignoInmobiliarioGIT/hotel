@@ -276,7 +276,7 @@ config('adminlte.dashboard_url', 'home') )
 @stop
 
 @section('adminlte_js')
-
+<script src="/js/app.js"></script>
 <script src="{{ asset('vendor/adminlte/dist/js/adminlte.min.js') }}"></script>
 @stack('js')
 @yield('js')@yield('my_js')
