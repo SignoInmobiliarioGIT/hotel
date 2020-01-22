@@ -21,6 +21,7 @@
     <div class="dhx_cal_data">
     </div>
 </div>
+@include('scheduler.companions')
 @stop
 
 @section('css')
