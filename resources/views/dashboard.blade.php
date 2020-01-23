@@ -14,7 +14,8 @@
         <div class="dhx_cal_next_button">&nbsp;</div>
         <div class="dhx_cal_today_button"></div>
         <div class="dhx_cal_date"></div>
-        <select id="room_filter" onchange='showRooms(this.value)'></select>
+        <select id="room_filter" onchange='showRooms(this.value)'
+            class="custom-select m-2" style="width:100px"></select>
     </div>
     <div class="dhx_cal_header">
     </div>

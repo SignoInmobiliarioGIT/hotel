@@ -10,7 +10,7 @@ window.onload = function () {
 
         var roomSelect = document.querySelector("#room_filter");
         var types = scheduler.serverList("roomTypes");
-        var typeElements = ["<option value='all'>All</option>"];
+        var typeElements = ["<option value='all'>Todas</option>"];
         types.forEach(function (type) {
             typeElements.push("<option value='" + type.key + "'>" + type.label + "</option>");
         });
