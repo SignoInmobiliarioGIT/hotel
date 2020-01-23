@@ -35,7 +35,8 @@ class ReservationCompanionController extends Controller
      */
     public function store(Request $request)
     {
-        response()->json([ReservationCompanion::insert($request->all())]);
+        $last_id = ReservationCompanion::insertGetId($request->all());
+        return response()->json(['last_id' => $last_id]);
     }
 
     /**
@@ -80,6 +81,6 @@ class ReservationCompanionController extends Controller
      */
     public function destroy($id)
     {
-        //
+        return response()->json(ReservationCompanion::destroy($id));
     }
 }

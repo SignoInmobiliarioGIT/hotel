@@ -156,8 +156,10 @@ class LightBox {
                     $('#storeCompanion').append('<input type="hidden" name="room_id" value="' + room_id + '" />');
 
                     $.each(response.data, function (index, value) {
-                        $('#companionsModal tbody').append('<tr><td>' + value.name + '</td><td>' + value.dni + '</td><td>' + value.age + '</td><td>' + value.relationship + '</td></tr>');
+                        $('#companionsModal tbody').append('<tr><td>' + value.name + '</td><td>' + value.dni + '</td><td>' + value.age + '</td><td>' + value.relationship + '</td><td>' + Companion.setButtonDestroy(value.id) + '</tr>');
                     })
+                    Companion.setOnClickDestroy();
+
                 })
             }
         });

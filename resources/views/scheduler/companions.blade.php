@@ -18,6 +18,7 @@
                             <th scope="col">Documento</th>
                             <th scope="col">Edad</th>
                             <th scope="col">Relación</th>
+                            <th scope="col">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
