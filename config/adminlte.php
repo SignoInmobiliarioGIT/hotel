@@ -193,8 +193,23 @@ return [
         // ['header' => 'account_settings'],
         [
             'text' => 'Reservas',
-            'url'  => '/reservations',
             'icon' => 'fas fa-hotel',
+            'submenu' => [
+                [
+                    'text' => 'Check In',
+                    'url'  => '/reservation-check-in',
+                    'icon' => 'fas fa-sign-in-alt',
+                ],    [
+                    'text' => 'Check Out',
+                    'url'  => '/reservation-check-out',
+                    'icon' => 'fas fa-sign-out-alt',
+                ],
+                [
+                    'text' => 'Todas',
+                    'url'  => '/reservation',
+                    'icon' => 'fas fa-hotel',
+                ]
+            ]
         ],
         // [
         //     'text' => 'change_password',

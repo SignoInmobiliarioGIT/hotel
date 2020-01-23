@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-@include('reservations/partials/filters')
+{{-- @include('reservations/partials/filters') --}}
 @include('reservations/partials/table')
 @stop
 

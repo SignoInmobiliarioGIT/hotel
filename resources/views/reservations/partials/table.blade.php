@@ -3,8 +3,8 @@
         <h3 class="card-title">Resultados</h3>
     </div>
     <div class="card-body">
-        <table class="table table-bordered table-hover dataTable compact nowrap"
-            id="reservations">
+        <table class="table  dataTable compact nowrap mb-3"
+            id="___reservations">
             <thead>
                 <tr>
                     <th>N°</th>
@@ -42,5 +42,6 @@
                 @endforeach
             </tbody>
         </table>
+        {{ $reservations->links() }}
     </div>
 </div>

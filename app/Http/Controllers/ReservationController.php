@@ -17,22 +17,24 @@ class ReservationController extends Controller
     public function index(Request $request)
     {
 
-        $dateRange = $request->filled('dateRange') ? $request->dateRange : null;
+        $reservations = Reservation::withTrashed();
 
-        if (!$dateRange) {
-            $dateFrom = Carbon::now()->toDateString();
-            $dateTo = Carbon::now()->toDateString();
-        } else {
-            $dateRangeExplode = explode(' - ', $dateRange);
-            $dateFrom = changeDateFormat($dateRangeExplode[0], 'YYYY-MM-DD');
-            $dateTo = changeDateFormat($dateRangeExplode[1], 'YYYY-MM-DD');
-        }
+        // ddd(substr($request->dateRange, 0, 9));
+        // if ($request->filled('dateRange')) {
+        //     $from_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, 0, 10))->format('Y-m-d');
+        //     $to_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, -10))->format('Y-m-d');
+        //     // $reservations->where('from_date', '>=', substr($request->dateRange, 0, 9));
+        //     // $reservations->where('to_date', '<=', substr($request->dateRange, -10));
+        //     $reservations->where('from_date', '<=', $to_date);
+        //     $reservations->where('to_date', '>=', $from_date);
+        // } else {
+        //     $reservations->whereRaw('from_date >= CURDATE()');
+        //     $reservations->whereRaw('to_date <= CURDATE() + INTERVAL 30 DAY');
+        // }
+        // ddd($reservations->toSql());
 
-        $reservations = Reservation::betweenDates($dateFrom, $dateTo);
-
-        session()->flashInput($request->input());
-
-        return view('reservations.index', ['reservations' => $reservations]);
+        return view('reservations.index')
+            ->with('reservations', $reservations->paginate(15));
     }
 
     /*
@@ -40,18 +42,6 @@ class ReservationController extends Controller
      */
     public function store(CreateReservationsRequest $request)
     {
-
-
-        $result = ReservationService::storeReservation($request);
-        if ($result) {
-
-            \Flash::success("La reserva se ha realizado con éxito.");
-            return \Response::json("OK", 200);
-        } else {
-
-            \Flash::error("Hubo un error al almacenar la reserva. Por favor intente nuevamente o comuníquese con el depto. de Sistemas.");
-            return \Response::json(array("Error" => "Augh...."), 422);
-        }
     }
 
     /*
@@ -59,21 +49,10 @@ class ReservationController extends Controller
      */
     public function edit($id)
     {
-        $reservation = Reservation::find($id)->first();
     }
 
     public function update(UpdateReservationRequest $request)
     {
-        $result = ReservationService::updateReservation($request);
-        if ($result) {
-
-            \Flash::success("La reserva se ha realizado con éxito.");
-            return \Response::json("OK", 200);
-        } else {
-
-            \Flash::error("Hubo un error al almacenar la reserva. Por favor intente nuevamente o comuníquese con el depto. de Sistemas.");
-            return \Response::json(array("Error" => "Augh...."), 422);
-        }
     }
 
     /*
@@ -81,12 +60,6 @@ class ReservationController extends Controller
      */
     public function destroy($id)
     {
-        if (Auth::user()->can("reservations.delete")) {
-            $reservation = Reservation::find($id);
-            $reservation->delete();
-            \Flash::success("Reserva eliminada con éxito.");
-            return redirect("/reservations/list");
-        }
     }
 
     /*
@@ -94,214 +67,31 @@ class ReservationController extends Controller
      */
     public function restore($id)
     {
-        if (Auth::user()->can("reservations.delete")) {
-            Reservation::withTrashed()
-                ->where('id', $id)
-                ->restore();
-            \Flash::success("Reserva restaurada con éxito.");
-            return redirect("/reservations/list");
-        }
     }
 
-    /*
-     * Metodo para mostrar la lista de acompañantes.
-     */
-    public function companion($id)
-    {
-        $companion = ReservationCompanion::where('reservation_id', $id)->get();
 
-        if (count($companion) > 0) {
-            $reservation = Reservation::find($id);
-            $rooms = array();
-            foreach ($reservation->reservedRooms as $resRoom) {
-                $rooms[$resRoom->room->id] = $resRoom->room->name;
-
-                //$rooms[$resRoom->room->id]['name'] = $resRoom->room->name;
-            }
-            \Log::info($rooms);
-            return view('reservations.include.tables.companionTable')->with(['companion' => $companion, 'rooms' => $rooms]);
-        } else {
-
-            return "<h1>El cliente que realizó la reserva no declaró acompañantes.</h1>";
-        }
-    }
-
-    /*
-     * Metodo para crear un cliente desde un bootbox (Pantalla de alerta).
-     */
-    public function createCustomer()
-    {
-        return view('customers.bootbox.create');
-    }
-
-    public function creditCardInfoFields()
-    {
-        return view('reservations.include.creditCardInfo');
-    }
-
-    public function checkin()
+    public function getCheckIn()
     {
         $reservations = Reservation::where('from_date', Carbon::now()->format('Y-m-d'))
             ->where('status_id', 1)
             ->where('status_id', '!=', 4)
-            ->get();
-        return view('reservations.checkin')->with(['reservations' => $reservations]);
+            ->paginate(15);
+        return view('reservations.index')->with(['reservations' => $reservations]);
     }
 
-    public function checkOut()
+    public function getCheckOut()
     {
-
-        $reservations = Reservation::where('to_date', Carbon::now()->format('Y-m-d'))
+        $reservations = Reservation::where('to_date', Carbon::now()->subDays(1)->format('Y-m-d'))
             ->where('status_id', 2)
             ->where('status_id', '!=', 4)
-            ->get();
+            ->paginate(15);
 
-        return view('reservations.checkout')->with(['reservations' => $reservations]);
-    }
-
-    public function setCheckIn($reservationId)
-    {
-        /*
-         * Busco la habitación a la cual hay que cambiar el estado a checkIn
-         */
-        $reservation = Reservation::findOrFail($reservationId);
-
-        $fromDate = Carbon::parse($reservation->from_date);
-
-        if (Carbon::now()->gte($fromDate)) {
-
-            $reservedRooms = $reservation->reservedRooms;
-
-            /*
-             * Busco el registro de servicio "ocupada"
-             */
-            $occupatedStatus = StateOfService::where('description', 'like', 'Ocupad%')->get();
-
-            $occupatedStatus = $occupatedStatus[0];
-
-            /*
-             * Busco el registro de estado de limpieza "Sucia"
-             */
-            $cleaningStatus = CleaningStatus::where('description', 'like', 'Suci%')->get();
-
-            $cleaningStatus = $cleaningStatus[0];
-
-
-            /*
-             * Pongo el estado ocupada en cada habitación que posea la reserva
-             */
-            foreach ($reservedRooms as $reservedRoom) {
-
-                Room::where('id', $reservedRoom->room_id)->update([
-                    'status' => $occupatedStatus->id,
-                    'cleaning_status' => $cleaningStatus->id
-                ]);
-            }
-
-            /*
-             * Pongo el estado de la reserva en CheckIn
-             */
-            Reservation::where('id', $reservationId)->update([
-                'status_id' => 2
-            ]);
-
-            /*Creo la cuenta corriente para la reserva*/
-            ReservationService::openBillingAccount($reservationId);
-
-            return \Response::json("Ok", 200);
-        }
-
-        return \Response::json(array("Error" => "La reserva seleccionada no está en fecha de CheckIn."), 400);
-    }
-
-
-
-    public function setCheckOut($reservationId)
-    {
-        /*
-         * Busco la habitación a la cual hay que cambiar el estado a checkOut
-         */
-        $reservation = Reservation::findOrFail($reservationId);
-
-        $reservedRooms = $reservation->reservedRooms;
-
-        /*
-         * Busco el registro de servicio "Disponible"
-         */
-        $occupatedStatus = StateOfService::where('description', 'like', 'Disponible')->get();
-
-        $occupatedStatus = $occupatedStatus[0];
-
-        /*
-         * Busco el estado de limpieza "Sucia"
-         */
-        $cleaningStatus = CleaningStatus::where('description', 'like', 'Sucia')->get();
-
-        $cleaningStatus = $cleaningStatus[0];
-
-        /*
-         * Pongo el estado disponible en cada habitación que posea la reserva y le pongo el estado de limpieza "sucia"
-         */
-        foreach ($reservedRooms as $reservedRoom) {
-            Room::where('id', $reservedRoom->room_id)->update([
-                'status' => $occupatedStatus->id,
-                'cleaning_status' => $cleaningStatus->id
-            ]);
-        }
-
-        /*
-         * Pongo el estado de la reserva en CheckOut
-         */
-        Reservation::where('id', $reservationId)->update([
-            'status_id' => 3
-        ]);
-
-        /*Cierro la cta. corriente*/
-        ReservationService::closeBillingAccount($reservationId);
-
-        \Flash::success("Check Out Exitoso.");
-
-        return redirect('/rooms');
-    }
-
-    public function locatedReservations()
-    {
-        $reservations = Reservation::where('status_id', 2)->get();
-
-        return view('reservations.located')->with('reservations', $reservations);
-    }
-
-    public function all(Request $request)
-    {
-        DB::enableQueryLog();
-
-        $reservations = Reservation::withTrashed();
-
-
-        if ($request->filled('from_date')) {
-            $reservations->where('from_date', '>=', Carbon::parse($request->input('from_date'))->format('Y-m-d'));
-        } elseif ($request->filled('to_date')) {
-            $reservations->where('to_date', '<=', Carbon::parse($request->input('to_date'))->format('Y-m-d'));
-        } else {
-            $reservations->whereRaw('from_date >= curdate()');
-        }
-        // dd($reservations->toSql());
-        $reservations->get();
-        return view('reservations.all')
-            ->with('reservations', $reservations->get());
+        return view('reservations.index')->with(['reservations' => $reservations]);
     }
 
     public function show($id)
     {
         return view('reservations.show')
             ->with('reservation', Reservation::withTrashed()->find($id));
-    }
-
-    /**
-     * Accesos con AJAX al formulario de acompañantes
-     */
-    public function formCompanions()
-    {
-        return view('reservations.include.forms.companions');
     }
 }
