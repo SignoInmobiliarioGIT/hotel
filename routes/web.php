@@ -37,7 +37,7 @@ Route::middleware(['auth'])->group(function () {
      */
     Route::get('reservation/check-in', 'ReservationController@getCheckIn');
     Route::get('reservation/check-out', 'ReservationController@getCheckOut');
-    Route::resource('reservation/companion', 'ReservationCompanionController');
+    Route::resource('reservation-companion', 'ReservationCompanionController');
     Route::resource('reservation', 'ReservationController');
 });
 

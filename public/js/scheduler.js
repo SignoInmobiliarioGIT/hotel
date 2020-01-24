@@ -466,12 +466,12 @@ window.showRooms = function showRooms(type) {
     scheduler.updateCollection("visibleRooms", visibleRooms);
 }
 
-//needs to be attached to the 'save' button
-function save_form() {
-    var ev = scheduler.getEvent(scheduler.getState().lightbox_id);
-    scheduler.endLightbox(true, custom_form);
-}
-//needs to be attached to the 'cancel' button
-function close_form(argument) {
-    scheduler.endLightbox(false, custom_form);
-}
+// //needs to be attached to the 'save' button
+// function save_form() {
+//     var ev = scheduler.getEvent(scheduler.getState().lightbox_id);
+//     scheduler.endLightbox(true, custom_form);
+// }
+// //needs to be attached to the 'cancel' button
+// function close_form(argument) {
+//     scheduler.endLightbox(false, custom_form);
+// }
