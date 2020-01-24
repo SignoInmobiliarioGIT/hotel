@@ -69,7 +69,7 @@ class Grid {
         scheduler.config.date_format = "%d-%m-%Y";
         scheduler.setLoadMode("day");
 
-        scheduler.init('scheduler_here', moment().subtract(7, "days"), "timeline");
+        scheduler.init('scheduler_here', Grid.setDay(), "timeline");
 
         scheduler.load("/scheduler", "json");
 
@@ -80,5 +80,15 @@ class Grid {
             return true;
         });
 
+    }
+
+    static setDay() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        if (urlParams.has('date')) {
+            const dateUrl = moment(urlParams.get('date'), 'DD-MM-YYYY');
+            return dateUrl.subtract(7, "days")
+        }
+        return moment().subtract(7, "days")
     }
 }
