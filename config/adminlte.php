@@ -197,11 +197,11 @@ return [
             'submenu' => [
                 [
                     'text' => 'Check In',
-                    'url'  => '/reservation-check-in',
+                    'url'  => '/reservation/check-in',
                     'icon' => 'fas fa-sign-in-alt',
                 ],    [
                     'text' => 'Check Out',
-                    'url'  => '/reservation-check-out',
+                    'url'  => '/reservation/check-out',
                     'icon' => 'fas fa-sign-out-alt',
                 ],
                 [

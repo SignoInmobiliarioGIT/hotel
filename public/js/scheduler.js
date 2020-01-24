@@ -340,7 +340,7 @@ class LightBox {
                 var room_id = scheduler.getEvent(ev).room_id;
                 $('#companionsModal').modal('show');
                 $('#companionsModal tbody').empty();
-                axios.get('get-companions', {
+                axios.get('scheduler/get-companions', {
                     params: {
                         'reservation_id': reservation_id
                     }
