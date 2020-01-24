@@ -13,16 +13,29 @@ class RoomCategoriesSeeder extends Seeder
     {
         \App\Models\RoomCategory::create([
             'name' => "Suite",
-            'description' => "Descripción  de categoría de habitación",
-            'max_capacity' => 4,
+            'description' => "Habitación Suite",
+            'max_capacity' => 2,
             'price' => 5000
         ]);
 
         \App\Models\RoomCategory::create([
             'name' => "Doble",
-            'description' => "Descripción  de categoría de habitación",
+            'description' => "Habitación doble",
             'max_capacity' => 2,
-            'price' => 1500
+            'price' => 2222
+        ]);
+
+        \App\Models\RoomCategory::create([
+            'name' => "Simple",
+            'description' => "Habitación simple",
+            'max_capacity' => 1,
+            'price' => 1111
+        ]);
+        \App\Models\RoomCategory::create([
+            'name' => "Triple",
+            'description' => "Habitación triple",
+            'max_capacity' => 3,
+            'price' => 3333
         ]);
     }
 }
