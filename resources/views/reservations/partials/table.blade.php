@@ -12,7 +12,7 @@
                     <th>Hasta</th>
                     <th>Titular</th>
                     <th>Habitaciones</th>
-                    <th>Acciones</th>
+                    {{-- <th>Acciones</th> --}}
                 </tr>
             </thead>
             <tbody>
@@ -29,7 +29,7 @@
                         {{$room->name}}
                         @endforeach
                     </td>
-                    <td>
+                    {{-- <td>
                         <a href="http://"><i
                                 class="fas fa-eye mx-2 text-success"></i></a><a
                             href="http://"><i
@@ -37,7 +37,7 @@
                             href="http://"><i
                                 class="fas fa-trash-alt mx-2 text-danger"></i></a>
 
-                    </td>
+                    </td> --}}
                 </tr>
                 @endforeach
             </tbody>

@@ -34,7 +34,7 @@ class ReservationController extends Controller
         // ddd($reservations->toSql());
 
         return view('reservations.index')
-            ->with('reservations', $reservations->paginate(15));
+            ->with(['reservations' => $reservations->paginate(15), 'title' => 'Reservas']);
     }
 
     /*
@@ -76,7 +76,7 @@ class ReservationController extends Controller
             ->where('status_id', 1)
             ->where('status_id', '!=', 4)
             ->paginate(15);
-        return view('reservations.index')->with(['reservations' => $reservations]);
+        return view('reservations.index')->with(['reservations' => $reservations, 'title' => 'Check In']);
     }
 
     public function getCheckOut()
@@ -86,7 +86,7 @@ class ReservationController extends Controller
             ->where('status_id', '!=', 4)
             ->paginate(15);
 
-        return view('reservations.index')->with(['reservations' => $reservations]);
+        return view('reservations.index')->with(['reservations' => $reservations, 'title' => 'Check Out']);
     }
 
     public function show($id)

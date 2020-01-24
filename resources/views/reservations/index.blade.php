@@ -3,7 +3,7 @@
 @section('title', 'Reservas')
 
 @section('content_header')
-<h1>Reservas</h1>
+<h1>{{$title}}</h1>
 @stop
 
 @section('content')
