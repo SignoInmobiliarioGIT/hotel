@@ -42,3 +42,10 @@ require('./dhtmlxscheduler/dhtmlxscheduler_collision');
 require('./dhtmlxscheduler/dhtmlxscheduler_tooltip');
 require('./dhtmlxscheduler/dhtmlxscheduler_minical');
 require('./dhtmlxscheduler/dhtmlxscheduler_editors');
+
+require('./reservations/category');
+require('./reservations/daterangepicker');
+
+// require('./reservations/daterangepicker');
+// import DateRangePicker from './reservations/daterangepicker';
+// const DateRangePicker = new _daterangepicker();

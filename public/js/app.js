@@ -90972,6 +90972,12 @@ __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_minical */ "./resource
 
 __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_editors */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_editors.js");
 
+__webpack_require__(/*! ./reservations/category */ "./resources/js/reservations/category.js");
+
+__webpack_require__(/*! ./reservations/daterangepicker */ "./resources/js/reservations/daterangepicker.js"); // require('./reservations/daterangepicker');
+// import DateRangePicker from './reservations/daterangepicker';
+// const DateRangePicker = new _daterangepicker();
+
 /***/ }),
 
 /***/ "./resources/js/bootstrap.js":
@@ -99060,6 +99066,69 @@ Scheduler.plugin(function (e) {
     });
   }();
 });
+
+/***/ }),
+
+/***/ "./resources/js/reservations/category.js":
+/*!***********************************************!*\
+  !*** ./resources/js/reservations/category.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Category = function Category() {
+  _classCallCheck(this, Category);
+};
+
+/***/ }),
+
+/***/ "./resources/js/reservations/daterangepicker.js":
+/*!******************************************************!*\
+  !*** ./resources/js/reservations/daterangepicker.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var DateRangePicker =
+/*#__PURE__*/
+function () {
+  function DateRangePicker() {
+    _classCallCheck(this, DateRangePicker);
+  }
+
+  _createClass(DateRangePicker, null, [{
+    key: "init",
+    value: function init() {
+      $('#dateRange').daterangepicker({
+        locale: {
+          format: 'DD-MM-YYYY',
+          applyLabel: 'Aplicar',
+          cancelLabel: 'Limpiar',
+          fromLabel: 'Desde',
+          toLabel: 'Hasta',
+          customRangeLabel: 'Seleccionar rango',
+          daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+          monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+          firstDay: 1
+        },
+        "startDate": moment(new Date()).format("DD-MM-YYYY"),
+        "endDate": moment(new Date()).add(1, "day").format("DD-MM-YYYY")
+      }, function (start, end, label) {
+        console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ') desde la clase');
+      });
+    }
+  }]);
+
+  return DateRangePicker;
+}();
 
 /***/ }),
 
