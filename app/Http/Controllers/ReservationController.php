@@ -19,20 +19,6 @@ class ReservationController extends Controller
 
         $reservations = Reservation::withTrashed();
 
-        // ddd(substr($request->dateRange, 0, 9));
-        // if ($request->filled('dateRange')) {
-        //     $from_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, 0, 10))->format('Y-m-d');
-        //     $to_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, -10))->format('Y-m-d');
-        //     // $reservations->where('from_date', '>=', substr($request->dateRange, 0, 9));
-        //     // $reservations->where('to_date', '<=', substr($request->dateRange, -10));
-        //     $reservations->where('from_date', '<=', $to_date);
-        //     $reservations->where('to_date', '>=', $from_date);
-        // } else {
-        //     $reservations->whereRaw('from_date >= CURDATE()');
-        //     $reservations->whereRaw('to_date <= CURDATE() + INTERVAL 30 DAY');
-        // }
-        // ddd($reservations->toSql());
-
         return view('reservations.index')
             ->with(['reservations' => $reservations->paginate(15), 'title' => 'Reservas']);
     }
@@ -40,7 +26,7 @@ class ReservationController extends Controller
     /*
      * Metodo para almacenar una reserva.
      */
-    public function store(CreateReservationsRequest $request)
+    public function store(Request $request)
     {
     }
 
@@ -51,7 +37,7 @@ class ReservationController extends Controller
     {
     }
 
-    public function update(UpdateReservationRequest $request)
+    public function update(Request $request)
     {
     }
 
