@@ -183,8 +183,12 @@ class Room extends Model
      * @param string $to
      * @return void
      */
-    static function availableRooms($from, $to)
+    static function availableInRange($from, $to)
     {
-        return Room::with('reservations');
+        return Room::with(['reservation' => function ($q) use ($from, $to) {
+            $q->where('to_date', '>=', $from);
+            $q->where('from_date', '<=', $to);
+        }], 'reserved_room')
+            ->get();
     }
 }

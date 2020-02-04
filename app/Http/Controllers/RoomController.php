@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Room;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
@@ -80,5 +81,11 @@ class RoomController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function availableInRange(Request $request)
+    {
+        $rooms = Room::availableInRange($request->from, $request->to);
+        return response()->json($rooms);
     }
 }

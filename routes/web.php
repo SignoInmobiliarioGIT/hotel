@@ -39,6 +39,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reservation/check-out', 'ReservationController@getCheckOut');
     Route::resource('reservation-companion', 'ReservationCompanionController');
     Route::resource('reservation', 'ReservationController');
+
+    /**
+     * Rooms
+     */
+    Route::get('room/available-in-range', 'RoomController@availableInRange');
+    Route::resource('room', 'RoomController');
 });
 
 
