@@ -82,7 +82,6 @@ class ReservationController extends Controller
     {
         return view('reservations.create')
             ->with('title', 'Reserva - Crear')
-            ->with('warranty_options', WarrantyOption::all())
-            ->with('customer_types', CustomerType::all());
+            ->with('warranty_options', WarrantyOption::all());
     }
 }

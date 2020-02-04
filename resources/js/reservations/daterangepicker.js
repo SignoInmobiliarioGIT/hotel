@@ -6,6 +6,7 @@ class DateRangePicker {
         this.to = options.to || moment(new Date()).add(1, "day").format("DD-MM-YYYY")
     }
 
+
     init() {
         $(this.tag).daterangepicker({
             locale: {
