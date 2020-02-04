@@ -94,7 +94,8 @@
 </script>
 <script>
     window.onload = function () {
-DateRangePicker.init();
-}
+        let dates = new DateRangePicker({tag:'#dateRange'});
+        dates.init();
+    }
 </script>
 @stop
