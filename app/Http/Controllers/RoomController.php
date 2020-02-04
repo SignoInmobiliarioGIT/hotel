@@ -88,4 +88,10 @@ class RoomController extends Controller
         $rooms = Room::availableInRange($request->from, $request->to);
         return response()->json($rooms);
     }
+
+    public function cleaningStatuses()
+    {
+        return view('rooms.cleaning_statuses')
+            ->with(['title' => 'Estado de limpieza', 'rooms' => Room::all()]);
+    }
 }

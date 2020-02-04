@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
      * Rooms
      */
     Route::get('room/available-in-range', 'RoomController@availableInRange');
+    Route::get('room/cleaning-status', 'RoomController@cleaningStatuses');
     Route::resource('room', 'RoomController');
 });
 
