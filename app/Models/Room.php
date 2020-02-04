@@ -174,4 +174,17 @@ class Room extends Model
             ->get()
             ->toArray();
     }
+
+
+    /**
+     * Habitaciones disponibles en un rango de fechas y agrupadas por categoría
+     *
+     * @param string $from
+     * @param string $to
+     * @return void
+     */
+    static function availableRooms($from, $to)
+    {
+        return Room::with('reservations');
+    }
 }

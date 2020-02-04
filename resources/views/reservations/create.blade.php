@@ -105,6 +105,7 @@
     window.onload = function () {
         let dates = new DateRangePicker({tag:'#dateRange'});
         dates.init();
+        new Customer()
     }
 </script>
 @stop

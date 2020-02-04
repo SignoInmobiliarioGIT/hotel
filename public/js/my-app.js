@@ -488,6 +488,12 @@ window.showRooms = function showRooms(type) {
 
 class Category {}
 
+class Customer {
+    constructor() {
+        console.log('customer class')
+    }
+}
+
 class DateRangePicker {
 
     constructor(options) {
