@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CleaningStatus;
+use App\Models\CustomerType;
 use App\Models\Reservation;
-use App\Models\ReservationCompanion;
-use App\Models\Room;
-use App\Models\StateOfService;
+use App\Models\WarrantyOption;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-
 
 class ReservationController extends Controller
 {
@@ -79,5 +76,13 @@ class ReservationController extends Controller
     {
         return view('reservations.show')
             ->with('reservation', Reservation::withTrashed()->find($id));
+    }
+
+    public function create()
+    {
+        return view('reservations.create')
+            ->with('title', 'Reserva - Crear')
+            ->with('warranty_options', WarrantyOption::all())
+            ->with('customer_types', CustomerType::all());
     }
 }
