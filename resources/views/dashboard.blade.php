@@ -30,5 +30,5 @@
 @stop
 
 @section('js')
-<script src="/js/scheduler.js"></script>
+<script src="/js/my-app.js"></script>
 @stop

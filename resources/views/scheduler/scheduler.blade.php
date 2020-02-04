@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/css/scheduler.css">
 
     <script src="/js/app.js"></script>
-    <script src="/js/scheduler.js"></script>
+    <script src="/js/my-app.js"></script>
 </head>
 
 <body>
