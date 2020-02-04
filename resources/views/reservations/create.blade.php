@@ -90,7 +90,7 @@
 @stop
 
 @section('js')
-<script src="/js/scheduler.js">
+<script src="/js/my-app.js">
 </script>
 <script>
     window.onload = function () {

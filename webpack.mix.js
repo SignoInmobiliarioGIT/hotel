@@ -12,6 +12,6 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/app.js', 'public/js')
-    .combine(['resources/js/scheduler/*', 'resources/js/reservations/*'], 'public/js/scheduler.js')
+    .combine(['resources/js/scheduler/*', 'resources/js/reservations/*'], 'public/js/my-app.js')
     .sass('resources/sass/app.scss', 'public/css')
     .sass('resources/sass/scheduler.scss', 'public/css');
