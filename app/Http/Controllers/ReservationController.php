@@ -14,10 +14,10 @@ class ReservationController extends Controller
     public function index(Request $request)
     {
 
-        $reservations = Reservation::withTrashed();
+        $reservations = Reservation::all();
 
         return view('reservations.index')
-            ->with(['reservations' => $reservations->paginate(15), 'title' => 'Reservas']);
+            ->with(['reservations' => Reservation::paginate(15), 'title' => 'Reservas']);
     }
 
     /*
@@ -83,5 +83,14 @@ class ReservationController extends Controller
         return view('reservations.create')
             ->with('title', 'Reserva - Crear')
             ->with('warranty_options', WarrantyOption::all());
+    }
+
+
+    public function all()
+    {
+        $reservations = Reservation::withTrashed();
+
+        return view('reservations.index')
+            ->with(['reservations' => $reservations->paginate(15), 'title' => 'Reservas']);
     }
 }

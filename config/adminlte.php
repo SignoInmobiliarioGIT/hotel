@@ -202,12 +202,12 @@ return [
                 ],
                 [
                     'text' => 'Editar',
-                    'url'  => '/reservation/edit',
+                    'url'  => '/reservation?action=edit',
                     'icon' => 'fas fa-edit',
                 ],
                 [
                     'text' => 'Cancelar',
-                    'url'  => '/reservation/edit',
+                    'url'  => '/reservation?action=cancel',
                     'icon' => 'fas fa-trash-alt',
                 ]
 
