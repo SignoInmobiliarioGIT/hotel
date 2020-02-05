@@ -196,6 +196,28 @@ return [
             'icon' => 'fas fa-hotel',
             'submenu' => [
                 [
+                    'text' => 'Nueva',
+                    'url'  => '/reservation/create',
+                    'icon' => 'fas fa-plus',
+                ],
+                [
+                    'text' => 'Editar',
+                    'url'  => '/reservation/edit',
+                    'icon' => 'fas fa-edit',
+                ],
+                [
+                    'text' => 'Cancelar',
+                    'url'  => '/reservation/edit',
+                    'icon' => 'fas fa-trash-alt',
+                ]
+
+            ]
+        ],
+        [
+            'text' => 'Recepción',
+            'icon' => 'fas fa-hotel',
+            'submenu' => [
+                [
                     'text' => 'Check In',
                     'url'  => '/reservation/check-in',
                     'icon' => 'fas fa-sign-in-alt',
@@ -207,7 +229,22 @@ return [
                 [
                     'text' => 'Todas',
                     'url'  => '/reservation',
-                    'icon' => 'fas fa-hotel',
+                    'icon' => 'fas fa-search-plus',
+                ]
+            ]
+        ],
+        [
+            'text' => 'Ama de llaves',
+            'icon' => 'fas fa-home',
+            'submenu' => [
+                [
+                    'text' => 'Mantenimiento',
+                    'url'  => '/room/out-service',
+                    'icon' => 'fas fa-ban',
+                ],    [
+                    'text' => 'Limpieza',
+                    'url'  => '/room/cleaning-status',
+                    'icon' => 'fas fa-broom',
                 ]
             ]
         ],
