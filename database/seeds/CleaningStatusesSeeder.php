@@ -13,11 +13,19 @@ class CleaningStatusesSeeder extends Seeder
     {
         \App\Models\CleaningStatus::create([
             'description' => "Limpia",
-            'color' => "#0c9602"
+            'color' => "green"
         ]);
 
         \App\Models\CleaningStatus::create([
             'description' => "Sucia",
+            'color' => "red"
+        ]);
+        \App\Models\CleaningStatus::create([
+            'description' => "A inspeccionar",
+            'color' => "red"
+        ]);
+              \App\Models\CleaningStatus::create([
+            'description' => "Rechazo de servicio",
             'color' => "red"
         ]);
     }
