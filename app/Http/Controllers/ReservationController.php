@@ -14,10 +14,25 @@ class ReservationController extends Controller
     public function index(Request $request)
     {
 
-        $reservations = Reservation::all();
+        if ($request->exists('dateRange')) {
+            $from_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, 0, 10))->format('Y-m-d');
+
+            $to_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, -10))->format('Y-m-d');
+
+            $dateRange = $request->dateRange;
+        } else {
+            $from_date = Carbon::now()->format('Y-m-d');
+            $to_date = Carbon::now()->addDay(30)->format('Y-m-d');
+            $dateRange = Carbon::now()->format('d-m-Y') . ' - ' . Carbon::now()->addDay(30)->format('d-m-Y');
+        }
+
+        $reservations = Reservation::whereDate('from_date', '>=', $from_date)
+            ->whereDate('to_date', '<=', $to_date)
+            ->get();
+
 
         return view('reservations.index')
-            ->with(['reservations' => Reservation::paginate(15), 'title' => 'Reservas']);
+            ->with(['reservations' => $reservations, 'title' => 'Reservas', 'dateRange' => $dateRange]);
     }
 
     /*

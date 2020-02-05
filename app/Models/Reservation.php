@@ -13,12 +13,12 @@ class Reservation extends Model
 
     public $timestamps = true;
 
-    // protected $dates = ['from_date', 'to_date'];
-    // protected $dateFormat = 'Y-m-d';
+    protected $dates = ['from_date', 'to_date'];
+    protected $dateFormat = 'Y-m-d';
 
     public $table = 'reservation';
 
-    public $fillable = ['from_date', 'to_date', 'status_id', 'customer_id', 'partner_id', 'payment_option_id', 'warranty_option_id', 'total_to_bill', 'currency_id', 'comments'];
+    public $fillable = ['from_date', 'to_date', 'status_id', 'customer_id', 'partner_id', 'payment_option_id', 'warranty_option_id', 'total_to_bill', 'currency_id', 'comments', 'adults', 'children'];
 
     public static $rules = [
         'fromDate' => 'required|date|after_or_equal:today',
@@ -157,5 +157,14 @@ class Reservation extends Model
     public function setToDateAttribute($value)
     {
         $this->attributes['to_date'] = Carbon::createFromFormat('d-m-Y', $value)->format('Y-m-d');
+    }
+
+        public function getFromDateAttribute($value)
+    {
+        return (new Carbon($value))->format('d-m-Y');
+    }
+    public function getToDateAttribute($value)
+    {
+        return (new Carbon($value))->format('d-m-Y');
     }
 }
