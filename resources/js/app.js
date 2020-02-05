@@ -31,9 +31,6 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 //     el: '#app',
 // });
 
-
-require('./custom-datatables');
-
 require('./dhtmlxscheduler/dhtmlxscheduler');
 require('./dhtmlxscheduler/dhtmlxscheduler_limit');
 require('./dhtmlxscheduler/dhtmlxscheduler_timeline');

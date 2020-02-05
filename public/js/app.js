@@ -90954,8 +90954,6 @@ Vue.component('example-component', __webpack_require__(/*! ./components/ExampleC
 //     el: '#app',
 // });
 
-__webpack_require__(/*! ./custom-datatables */ "./resources/js/custom-datatables.js");
-
 __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler.js");
 
 __webpack_require__(/*! ./dhtmlxscheduler/dhtmlxscheduler_limit */ "./resources/js/dhtmlxscheduler/dhtmlxscheduler_limit.js");
@@ -91092,29 +91090,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
-
-/***/ }),
-
-/***/ "./resources/js/custom-datatables.js":
-/*!*******************************************!*\
-  !*** ./resources/js/custom-datatables.js ***!
-  \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-$(function () {
-  $('#reservations').DataTable({
-    "paging": true,
-    "lengthChange": false,
-    "searching": false,
-    "ordering": true,
-    "info": true,
-    "autoWidth": false,
-    "language": {
-      "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
-    }
-  });
-});
 
 /***/ }),
 

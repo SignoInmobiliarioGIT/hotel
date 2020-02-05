@@ -3,11 +3,10 @@
         <h3 class="card-title">Resultados</h3>
     </div>
     <div class="card-body">
-        <table class="table  dataTable compact nowrap mb-3"
-            id="___reservations">
+        <table class="table dataTable compact nowrap mb-3" id="reservations">
             <thead>
                 <tr>
-                    <th>N°</th>
+                    <th>Reserva N°</th>
                     <th>Desde</th>
                     <th>Hasta</th>
                     <th>Titular</th>
