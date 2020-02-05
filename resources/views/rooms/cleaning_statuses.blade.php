@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Estado de limpieza')
+@section('title', $title)
 
 @section('content_header')
 <h1>{{$title}}</h1>
@@ -12,25 +12,36 @@
         <table id="cleaningStatuses" class="display" style="width:100%">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Position</th>
-                    <th>Office</th>
-                    <th>Age</th>
-                    <th>Start date</th>
-                    <th>Salary</th>
+                    <th>Habitación</th>
+                    <th>Estado de servicio</th>
+                    <th>Estado de limpieza</th>
+                    <th>Cambiar estado</th>
                 </tr>
             </thead>
             <tbody>
-
+                @foreach ($rooms as $room)
+                <tr>
+                    <td>{{$room->name}}</td>
+                    <td>{{$room->stateOfService->description}}</td>
+                    <td>{{$room->cleaningStatus->description}}</td>
+                    <td>
+                        <select class="custom-select">
+                            <option selected>Cambiar estado</option>
+                            @foreach ($cleaning_status as $state)
+                            <option value="{{$state->id}}">
+                                {{$state->description}}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                </tr>
+                @endforeach
             </tbody>
             <tfoot>
                 <tr>
-                    <th>Name</th>
-                    <th>Position</th>
-                    <th>Office</th>
-                    <th>Age</th>
-                    <th>Start date</th>
-                    <th>Salary</th>
+                    <th>Habitación</th>
+                    <th>Estado de servicio</th>
+                    <th>Estado de limpieza</th>
+                    <th>Cambiar estado</th>
                 </tr>
             </tfoot>
         </table>
@@ -39,14 +50,15 @@
 @stop
 
 @section('css')
-<link rel="stylesheet" href="/css/scheduler.css">
+
 @stop
 
 @section('js')
-<script src="/js/my-app.js"></script>
+<script src="/js/my-app.js">
+</script>
 <script>
     $(document).ready(function() {
-        $('#cleaningStatuses').DataTable();
-    });
+$('#cleaningStatuses').DataTable();
+});
 </script>
 @stop

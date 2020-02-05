@@ -31,4 +31,56 @@
 
 @section('js')
 <script src="/js/my-app.js"></script>
+<script>
+    var dp;
+    window.onload = function () {
+
+
+    Companion.init();
+    Grid.init();
+
+    scheduler.attachEvent("onParse", function () {
+    showRooms("all");
+
+    var roomSelect = document.querySelector("#room_filter");
+    var types = scheduler.serverList("roomTypes");
+    var typeElements = ["<option value='all'>Todas</option>"];
+    types.forEach(function (type) {
+    typeElements.push("<option value='" + type.key + "'>" + type.label + "</option>");
+    });
+    roomSelect.innerHTML = typeElements.join("")
+
+    });
+
+    scheduler.templates.event_class = function (start, end, event) {
+    return "event_" + (event.status || "");
+    };
+
+    LightBox.init();
+    Event.init();
+
+    dp = new dataProcessor("/scheduler");
+    dp.init(scheduler);
+    dp.setTransactionMode("REST", false);
+
+    dp.attachEvent("onAfterUpdate", function (id, action, tid, response) {
+    location.reload();
+    })
+    }
+
+    window.showRooms = function showRooms(type) {
+    var allRooms = scheduler.serverList("rooms");
+    var visibleRooms;
+    if (type == 'all') {
+    visibleRooms = allRooms.slice();
+    } else {
+    visibleRooms = allRooms
+    .filter(function (room) {
+    return room.type == type;
+    });
+    }
+
+    scheduler.updateCollection("visibleRooms", visibleRooms);
+    }
+</script>
 @stop

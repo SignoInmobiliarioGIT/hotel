@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Room;
+use App\Models\CleaningStatus;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
@@ -91,7 +92,12 @@ class RoomController extends Controller
 
     public function cleaningStatuses()
     {
+        $rooms = Room::with(['cleaningStatus', 'status'])->get();
         return view('rooms.cleaning_statuses')
-            ->with(['title' => 'Estado de limpieza', 'rooms' => Room::all()]);
+            ->with([
+                'title' => 'Estado de limpieza',
+                'rooms' => $rooms,
+                'cleaning_status'=> CleaningStatus::all()
+                ]);
     }
 }
