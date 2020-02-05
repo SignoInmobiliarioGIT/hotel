@@ -22,8 +22,8 @@ class DateRangePicker {
                 ],
                 firstDay: 1
             },
-            "startDate": this.from,
-            "endDate": this.to
+            //"startDate": this.from,
+            //"endDate": this.to
         }, function (start, end, label) {
             console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' +
                 end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ') desde la clase');
