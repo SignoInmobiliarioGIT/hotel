@@ -12,7 +12,7 @@ use Eloquent as Model;
  * @property \Illuminate\Database\Eloquent\Collection roleHasPermissions
  * @property string description
  */
-class StateOfService extends Model
+class ReceptionState extends Model
 {
 
     public $table = 'state_of_service';
@@ -46,8 +46,8 @@ class StateOfService extends Model
     ];
 
     public static $messages = [
-        "decription.required" => "El campo 'Descripción' es obligatorio",
-        "description.min" => "El valor del campo 'Descripción' debe contener al menos :min caracteres"
+        "decription.required" => "El campo 'Descripci?n' es obligatorio",
+        "description.min" => "El valor del campo 'Descripci?n' debe contener al menos :min caracteres"
     ];
 
     /**
@@ -57,6 +57,4 @@ class StateOfService extends Model
     {
         return $this->hasMany(Room::class, 'status');
     }
-
-
 }
