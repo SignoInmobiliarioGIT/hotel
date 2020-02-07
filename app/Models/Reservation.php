@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use App\Traits\Models\ReservationTrait;
 
 class Reservation extends Model
 {
     use SoftDeletes;
+    use ReservationTrait;
 
     public $timestamps = true;
 
@@ -159,7 +161,7 @@ class Reservation extends Model
         $this->attributes['to_date'] = Carbon::createFromFormat('d-m-Y', $value)->format('Y-m-d');
     }
 
-        public function getFromDateAttribute($value)
+    public function getFromDateAttribute($value)
     {
         return (new Carbon($value))->format('d-m-Y');
     }

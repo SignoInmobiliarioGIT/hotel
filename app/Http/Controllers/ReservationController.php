@@ -70,21 +70,18 @@ class ReservationController extends Controller
 
     public function getCheckIn()
     {
-        $reservations = Reservation::where('from_date', Carbon::now()->format('Y-m-d'))
-            ->where('status_id', 1)
-            ->where('status_id', '!=', 4)
-            ->paginate(15);
-        return view('reservations.index')->with(['reservations' => $reservations, 'title' => 'Check In']);
+        return view('reservations.check_in')->with([
+            'reservations' => Reservation::getChekIn(),
+            'title' => 'Check In'
+        ]);
     }
 
     public function getCheckOut()
     {
-        $reservations = Reservation::where('to_date', Carbon::now()->subDays(1)->format('Y-m-d'))
-            ->where('status_id', 2)
-            ->where('status_id', '!=', 4)
-            ->paginate(15);
-
-        return view('reservations.index')->with(['reservations' => $reservations, 'title' => 'Check Out']);
+        return view('reservations.check_out')->with([
+            'reservations' => Reservation::getChekOut(),
+            'title' => 'Check Out'
+        ]);
     }
 
     public function show($id)
