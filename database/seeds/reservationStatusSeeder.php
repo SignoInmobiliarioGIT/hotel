@@ -13,38 +13,42 @@ class reservationStatusSeeder extends Seeder
     {
         \App\Models\reservationStatus::create([
             'description' => 'Por Salir',
-            'color' => '#51D904'
+            'color' => 'blue'
         ]);
 
         \App\Models\reservationStatus::create([
             'description' => 'Salió',
-            'color' => '#0098E8'
+            'color' => 'orange'
         ]);
 
         \App\Models\reservationStatus::create([
             'description' => 'Por arribar',
-            'color' => '#FFF40D'
+            'color' => 'red'
         ]);
 
         \App\Models\reservationStatus::create([
-            'description' => 'Arrivada',
-            'color' => '#0098E8'
+            'description' => 'Arribada',
+            'color' => 'green'
         ]);
         \App\Models\reservationStatus::create([
-            'description' => 'Ocupada',
-            'color' => '#0098E8'
+            'description' => 'Estancia',
+            'color' => 'yellow'
         ]);
         \App\Models\reservationStatus::create([
             'description' => 'Por Salir / Por arribar',
-            'color' => '#0098E8'
+            'color' => 'purple'
         ]);
         \App\Models\reservationStatus::create([
             'description' => 'Salió / Por Arribar',
-            'color' => '#0098E8'
+            'color' => 'gray'
         ]);
         \App\Models\reservationStatus::create([
-            'description' => 'Salió / Arribado',
-            'color' => '#0098E8'
+            'description' => 'Salió / Arribada',
+            'color' => 'pink'
+        ]);
+        \App\Models\reservationStatus::create([
+            'description' => 'No reservada',
+            'color' => 'brown'
         ]);
     }
 }
