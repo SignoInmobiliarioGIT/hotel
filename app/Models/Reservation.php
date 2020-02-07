@@ -6,12 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
-use App\Traits\Models\ReservationTrait;
 
 class Reservation extends Model
 {
     use SoftDeletes;
-    use ReservationTrait;
 
     public $timestamps = true;
 

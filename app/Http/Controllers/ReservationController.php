@@ -2,37 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CustomerType;
 use App\Models\Reservation;
 use App\Models\WarrantyOption;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Traits\ReservationTrait;
 
 class ReservationController extends Controller
 {
+    use ReservationTrait;
 
     public function index(Request $request)
     {
 
-        if ($request->exists('dateRange')) {
-            $from_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, 0, 10))->format('Y-m-d');
+        $dates = ReservationTrait::getDates($request);
 
-            $to_date = Carbon::createFromFormat('d-m-Y', substr($request->dateRange, -10))->format('Y-m-d');
-
-            $dateRange = $request->dateRange;
-        } else {
-            $from_date = Carbon::now()->format('Y-m-d');
-            $to_date = Carbon::now()->addDay(30)->format('Y-m-d');
-            $dateRange = Carbon::now()->format('d-m-Y') . ' - ' . Carbon::now()->addDay(30)->format('d-m-Y');
-        }
-
-        $reservations = Reservation::whereDate('from_date', '>=', $from_date)
-            ->whereDate('to_date', '<=', $to_date)
+        $reservations = Reservation::whereDate('from_date', '>=', $dates->fromDate)
+            ->whereDate('to_date', '<=', $dates->toDate)
             ->get();
 
 
         return view('reservations.index')
-            ->with(['reservations' => $reservations, 'title' => 'Reservas', 'dateRange' => $dateRange]);
+            ->with([
+                'reservations' => $reservations,
+                'title' => 'Reservas',
+                'dateRange' => $dates->dateRange
+            ]);
     }
 
     /*
@@ -71,7 +66,7 @@ class ReservationController extends Controller
     public function getCheckIn()
     {
         return view('reservations.check_in')->with([
-            'reservations' => Reservation::getChekIn(),
+            'reservations' => ReservationTrait::getChekIn(),
             'title' => 'Check In'
         ]);
     }
@@ -79,7 +74,7 @@ class ReservationController extends Controller
     public function getCheckOut()
     {
         return view('reservations.check_out')->with([
-            'reservations' => Reservation::getChekOut(),
+            'reservations' => ReservationTrait::getChekOut(),
             'title' => 'Check Out'
         ]);
     }
