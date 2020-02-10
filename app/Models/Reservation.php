@@ -18,7 +18,7 @@ class Reservation extends Model
 
     public $table = 'reservation';
 
-    public $fillable = ['from_date', 'to_date', 'status_id', 'customer_id', 'partner_id', 'payment_option_id', 'warranty_option_id', 'total_to_bill', 'currency_id', 'comments', 'adults', 'children'];
+    public $fillable = ['from_date', 'to_date', 'reservation_status_id', 'customer_id', 'partner_id', 'payment_option_id', 'warranty_option_id', 'total_to_bill', 'currency_id', 'comments', 'adults', 'minors'];
 
     public static $rules = [
         'fromDate' => 'required|date|after_or_equal:today',
@@ -62,7 +62,7 @@ class Reservation extends Model
      **/
     public function status()
     {
-        return $this->belongsTo(reservationStatus::class, 'status_id');
+        return $this->belongsTo(reservationStatus::class, 'reservation_status_id');
     }
 
     /**
@@ -144,7 +144,7 @@ class Reservation extends Model
     static function toScheduler()
     {
         return DB::table('reservation')
-            ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room_id, status_id as status_id, payment_option_id as payment_option_id, customers.id as customer_id, customers.name as customer_name, reserved_room.room_id as room_id, reserved_room.price as night_price, reservation.id as reservation_id, total_to_bill, currency_id,  warranty_option_id AS warranty_id, adults, children, comments'))
+            ->select(DB::raw('reservation.id as text, from_date as start_date, to_date as end_date, reserved_room.room_id as room_id, reservation_status_id as status_id, payment_option_id as payment_option_id, customers.id as customer_id, customers.name as customer_name, reserved_room.room_id as room_id, reserved_room.price as night_price, reservation.id as reservation_id, total_to_bill, currency_id,  warranty_option_id AS warranty_id, adults, minors, comments'))
             ->leftJoin('reserved_room', 'reserved_room.reservation_id', '=', 'reservation.id')
             ->leftJoin('customers', 'customers.id', '=', 'reservation.customer_id')
             ->get()->toArray();

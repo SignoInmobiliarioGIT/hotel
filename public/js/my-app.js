@@ -284,10 +284,10 @@ class LightBox {
                 options: scheduler.serverList("adults")
             },
             {
-                map_to: "children",
-                name: "children",
+                map_to: "minors",
+                name: "minors",
                 type: "select",
-                options: scheduler.serverList("children")
+                options: scheduler.serverList("minors")
             },
             {
                 map_to: "room_id",
@@ -364,7 +364,7 @@ class LightBox {
             LightBox.setAttributeDataName('customer_id');
             LightBox.setAttributeDataName('room_id');
             LightBox.setAttributeDataName('adults');
-            LightBox.setAttributeDataName('children');
+            LightBox.setAttributeDataName('minors');
             LightBox.setAttributeDataName('currency_id');
             LightBox.setAttributeDataName('warranty_id');
             LightBox.setAttributeDataName('payment_id');
@@ -459,7 +459,7 @@ class LightBox {
         scheduler.locale.labels.section_customer_id = 'Titular';
         scheduler.locale.labels.section_time = 'Fechas';
         scheduler.locale.labels.section_adults = 'Adultos';
-        scheduler.locale.labels.section_children = 'Niños';
+        scheduler.locale.labels.section_minors = 'Niños';
         scheduler.locale.labels.section_room_id = 'Habitaciones';
         scheduler.locale.labels.section_currency_id = 'Moneda';
         scheduler.locale.labels.section_warranty_id = 'Garantía';

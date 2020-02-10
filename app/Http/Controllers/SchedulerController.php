@@ -42,7 +42,7 @@ class SchedulerController extends Controller
                     ['value' => 4, 'label' => 4],
                     ['value' => 5, 'label' => 5]
                 ],
-                'children' => [
+                'minors' => [
                     ['value' => 0, 'label' => 0],
                     ['value' => 1, 'label' => 1],
                     ['value' => 2, 'label' => 2]
@@ -58,14 +58,14 @@ class SchedulerController extends Controller
         $reservation = new Reservation();
         $reservation->from_date = $request->start_date;
         $reservation->to_date = $request->end_date;
-        $reservation->status_id = 1;
+        $reservation->reservation_status_id = 1;
         $reservation->customer_id = $request->customer_id;
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
         $reservation->payment_option_id = $request->payment_id;
         $reservation->total_to_bill = $request->total_to_bill;
         $reservation->adults = $request->adults;
-        $reservation->children = $request->children;
+        $reservation->minors = $request->minors;
         $reservation->comments = $request->comments;
         $reservation->save();
 
@@ -88,14 +88,14 @@ class SchedulerController extends Controller
         $reservation = Reservation::find($request->text);
         $reservation->from_date = $request->start_date;
         $reservation->to_date = $request->end_date;
-        $reservation->status_id = 1;
+        $reservation->reservation_status_id = 1;
         $reservation->customer_id = $request->customer_id;
         $reservation->warranty_option_id = $request->warranty_id;
         $reservation->currency_id = $request->currency_id;
         $reservation->payment_option_id = $request->payment_id;
         $reservation->total_to_bill = $request->total_to_bill;
         $reservation->adults = $request->adults;
-        $reservation->children = $request->children;
+        $reservation->minors = $request->minors;
         $reservation->comments = $request->comments;
         $reservation->save();
 
