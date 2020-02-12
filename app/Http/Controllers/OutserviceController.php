@@ -14,7 +14,7 @@ class OutserviceController extends Controller
      */
     public function index()
     {
-        //
+        return view('outservice/index');
     }
 
     /**

@@ -239,7 +239,7 @@ return [
             'submenu' => [
                 [
                     'text' => 'Mantenimiento',
-                    'url'  => '/room/out-service',
+                    'url'  => '/outservice',
                     'icon' => 'fas fa-ban',
                 ],    [
                     'text' => 'Limpieza',
