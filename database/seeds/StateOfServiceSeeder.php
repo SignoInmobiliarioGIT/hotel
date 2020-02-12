@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use App\Models\ReceptionState;
 
 class StateOfServiceSeeder extends Seeder
 {
@@ -11,11 +12,11 @@ class StateOfServiceSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\StateOfService::create([
+        ReceptionState::create([
             'description' => "Disponible"
         ]);
 
-        \App\Models\StateOfService::create([
+        ReceptionState::create([
             'description' => "Ocupada"
         ]);
     }

@@ -14,7 +14,10 @@ class CreateSaleSubGroupsTable extends Migration
     public function up()
     {
         Schema::create('sale_sub_groups', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
+            $table->string('name');
+            $table->integer("sale_group_id")->unsigned();
+            $table->foreign("sale_group_id")->references("id")->on("sale_groups")->onDelete('cascade');
             $table->timestamps();
         });
     }

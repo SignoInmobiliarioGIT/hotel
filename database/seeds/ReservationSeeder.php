@@ -30,7 +30,7 @@ class ReservationSeeder extends Seeder
                 $reservation = \App\Models\Reservation::create([
                     'from_date' => $now->addDays($dayFromInit)->format('d-m-Y'),
                     'to_date' => $now->addDays($dayToInit)->format('d-m-Y'),
-                    'status_id' => 1,
+                    'reservation_status_id' => 1,
                     'customer_id' => rand(1, 3),
                     'payment_option_id' => 1,
                     'currency_id' => 1,
@@ -39,7 +39,7 @@ class ReservationSeeder extends Seeder
                     'created_at' => $now,
                     'comments' => Str::random(100),
                     'adults' => 2,
-                    'children' => 1
+                    'minors' => 1
                 ]);
 
 
@@ -53,7 +53,7 @@ class ReservationSeeder extends Seeder
                 $reservation = \App\Models\Reservation::create([
                     'from_date' => $now->addDays(2)->format('d-m-Y'),
                     'to_date' => $now->addDays(3)->format('d-m-Y'),
-                    'status_id' => 1,
+                    'reservation_status_id' => 1,
                     'customer_id' => rand(1, 3),
                     'payment_option_id' => 1,
                     'currency_id' => 1,
@@ -62,7 +62,7 @@ class ReservationSeeder extends Seeder
                     'created_at' => Carbon::now(),
                     'comments' => Str::random(10),
                     'adults' => 2,
-                    'children' => 1
+                    'minors' => 1
                 ]);
 
 
@@ -76,7 +76,7 @@ class ReservationSeeder extends Seeder
                 $reservation = \App\Models\Reservation::create([
                     'from_date' => $now->addDays(2)->format('d-m-Y'),
                     'to_date' => $now->addDays(2)->format('d-m-Y'),
-                    'status_id' => 1,
+                    'reservation_status_id' => 1,
                     'customer_id' => rand(1, 3),
                     'payment_option_id' => 1,
                     'currency_id' => 1,
@@ -85,7 +85,7 @@ class ReservationSeeder extends Seeder
                     'created_at' => Carbon::now(),
                     'comments' => Str::random(10),
                     'adults' => 2,
-                    'children' => 1
+                    'minors' => 1
                 ]);
 
 
