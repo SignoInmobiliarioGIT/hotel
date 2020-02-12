@@ -21,6 +21,8 @@ class CreateSalesTable extends Migration
             $table->foreign("sale_sub_group_id")->references("id")->on("sale_sub_groups")->onDelete('cascade');
             $table->integer("room_id")->unsigned();
             $table->foreign("room_id")->references("id")->on("rooms")->onDelete('cascade');
+            $table->integer("reservation_id")->unsigned();
+            $table->foreign("reservation_id")->references("id")->on("reservation")->onDelete('cascade');
             $table->timestamps();
         });
     }

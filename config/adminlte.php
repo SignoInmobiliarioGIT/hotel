@@ -248,6 +248,11 @@ return [
                 ]
             ]
         ],
+        [
+            'text' => 'Ventas',
+            'icon' => 'fas fa-money-check-alt',
+            'url'  => 'sale',
+        ],
         // [
         //     'text' => 'change_password',
         //     'url'  => 'admin/settings',
