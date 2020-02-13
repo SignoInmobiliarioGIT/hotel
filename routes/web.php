@@ -51,6 +51,11 @@ Route::middleware(['auth'])->group(function () {
      * Out Service
      */
     Route::resource('outservice', 'OutServiceController');
+
+    /**
+     * Sales
+     */
+    Route::resource('sale', 'SaleController');
 });
 
 
