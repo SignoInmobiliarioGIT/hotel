@@ -2,19 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Outservice;
+use App\Models\Outservice;
+use App\Traits\ReservationTrait;
+use App\Http\Requests\Outservices\CreateOutServiceRequest;
+use App\Http\Requests\Outservices\EditOutServiceRequest;
 use Illuminate\Http\Request;
 
 class OutserviceController extends Controller
 {
+    use ReservationTrait;
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('outservice/index');
+        $dates = ReservationTrait::getDates($request);
+
+        $outservices = Outservice::whereDate('from_date', '>=', $dates->fromDate)
+            ->whereDate('from_date', '<=', $dates->toDate)
+            ->with('room')
+            ->get();
+
+        return view('outservice.index')
+            ->with([
+                'outservices' => $outservices,
+                'dateRange' => $dates->dateRange
+            ]);
     }
 
     /**
@@ -24,7 +40,8 @@ class OutserviceController extends Controller
      */
     public function create()
     {
-        //
+        return view('outservice.create')
+            ->with('title', 'Habitación en Mantenimiento - Crear');
     }
 
     /**
@@ -33,9 +50,20 @@ class OutserviceController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateOutServiceRequest $request)
     {
-        //
+        $arrDateRange = explode(' - ', $request->get('dateRange'));
+
+        $outservice = Outservice::create([
+            'from_date'   => date('Y-m-d', strtotime($arrDateRange[0])),
+            'to_date'     => date('Y-m-d', strtotime($arrDateRange[1])),
+            'room_id'     => $request->get('room'),
+            'description' => $request->get('description'),
+            'created_at'  => date('Y-m-d H:i:s'),
+            'updated_at'  => date('Y-m-d H:i:s')
+        ]);
+
+        return redirect()->route('outservice.index');
     }
 
     /**
@@ -57,7 +85,12 @@ class OutserviceController extends Controller
      */
     public function edit(Outservice $outservice)
     {
-        //
+        $dateRangeFormat = date('d-m-Y', strtotime($outservice->from_date)) . ' - ' . date('d-m-Y', strtotime($outservice->to_date));
+
+        return view('outservice.edit')
+            ->with('title', 'Habitación en Mantenimiento - Editar')
+            ->with('outservice', $outservice)
+            ->with('dateRangeFormat', $dateRangeFormat);
     }
 
     /**
@@ -67,9 +100,18 @@ class OutserviceController extends Controller
      * @param  \App\Outservice  $outservice
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Outservice $outservice)
+    public function update(EditOutServiceRequest $request, Outservice $outservice)
     {
-        //
+        $arrDateRange = explode(' - ', $request->get('dateRange'));
+
+        $outservice->update([
+            'from_date'   => date('Y-m-d', strtotime($arrDateRange[0])),
+            'to_date'     => date('Y-m-d', strtotime($arrDateRange[1])),
+            'room_id'     => $request->get('room'),
+            'description' => $request->get('description')
+        ]);
+
+        return redirect()->route('outservice.index');
     }
 
     /**
@@ -80,6 +122,8 @@ class OutserviceController extends Controller
      */
     public function destroy(Outservice $outservice)
     {
-        //
+        $outservice->delete();
+
+        return redirect()->route('outservice.index');
     }
 }

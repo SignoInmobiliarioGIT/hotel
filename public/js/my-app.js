@@ -14,6 +14,28 @@ class DataTable {
     }
 }
 
+class DataTableWithExport {
+    static init(tag) {
+        $(tag).DataTable({
+            dom: 'Bfrtip',
+            "paging": true,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
+            },
+            buttons: [
+                'excelHtml5',
+                'csvHtml5',
+                'pdfHtml5'
+            ]
+        });
+    }
+}
+
 class DateRangePicker {
 
     constructor(options) {
