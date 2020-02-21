@@ -69,8 +69,6 @@
     <script>
         $(function () {
 
-            roomIdSelected = null;
-
             setTimeout(() => {
                 getDateRangeOutservice();
             }, 500)
@@ -90,7 +88,7 @@
                     //VALIDATE DATE
                     if(arrDateRange.length == 2) {
 
-                        var url = "/api/get-rooms-available/" + arrDateRange[0] + '/' + arrDateRange[1] + '/' + roomIdSelected;
+                        var url = "/api/get-rooms-available/" + arrDateRange[0] + '/' + arrDateRange[1];
 
                         $.get(url, function (data, textStatus, jqXHR) {
                             loadAvailableRooms(data);
