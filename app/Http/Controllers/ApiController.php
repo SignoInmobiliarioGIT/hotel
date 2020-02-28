@@ -37,10 +37,17 @@ class ApiController extends Controller
         //Merge Two Arrays
         $arrReservationsReservedRoomId = array_merge($arrReservationsReservedRoomId, $arrReservationsExtendedDateRoomId);
 
-        //Find room outservices
+        //Get room outservices
         $queryOutserviceFromDate = Outservice::whereBetween('from_date', [$fromDate, $toDate]);
         $outservices = OutService::whereBetween('to_date', [$fromDate, $toDate])->orderBy('room_id', 'ASC')->union($queryOutserviceFromDate)->get();
         $arrOutservicesRoomsId = (!$outservices->isEmpty()) ? $outservices->pluck('room_id')->toArray() : [];
+
+        //Get room outservices extended date
+        $outservicesExtended = Outservice::where('from_date', '<', $fromDate)->where('to_date', '>', $toDate)->orderBy('room_id', 'ASC')->get();
+
+        if (!$outservicesExtended->isEmpty()) {
+            $arrOutservicesRoomsId = array_merge($arrOutservicesRoomsId, $outservicesExtended->pluck('room_id')->toArray());
+        }
 
         if ((!is_null($room)) && ($key = array_search($room, $arrOutservicesRoomsId)) !== false) {
             unset($arrOutservicesRoomsId[$key]);
@@ -48,8 +55,6 @@ class ApiController extends Controller
 
         //Join Two Arrays for queries
         $arrRoomsReservedId = array_merge($arrReservationsReservedRoomId, $arrOutservicesRoomsId);
-
-        dd($arrRoomsReservedId);
 
         $roomsAvailable = Room::whereNotIn('id', $arrRoomsReservedId)->orderBy('name', 'ASC')->get();
 
