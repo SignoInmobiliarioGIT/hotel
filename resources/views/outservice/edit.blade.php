@@ -73,7 +73,7 @@
             var roomIdSelected = '{{ $outservice->room_id }}';
 
             setTimeout(() => {
-                getDateRangeOutservice();
+                getDateRangeOutservice();                
             }, 500)
 
             $('#btn-filter-rooms-available').on('click', function(event) {                
@@ -91,7 +91,11 @@
                     //VALIDATE DATE
                     if(arrDateRange.length == 2) {
 
-                        var url = "/api/get-rooms-available/" + arrDateRange[0] + '/' + arrDateRange[1] + '/' + roomIdSelected;
+                        if(roomIdSelected !== null) {
+                            var url = "/api/get-rooms-available/" + arrDateRange[0] + '/' + arrDateRange[1] + '/' + roomIdSelected;
+                        } else {
+                            var url = "/api/get-rooms-available/" + arrDateRange[0] + '/' + arrDateRange[1];
+                        }
 
                         $.get(url, function (data, textStatus, jqXHR) {
                             loadAvailableRooms(data);
@@ -107,6 +111,7 @@
                 $.each(rooms, function (key, room) { 
                     if(room.id == roomIdSelected) {
                         options += '<option value="' + room.id + '" selected>' + room.name + '</option>';
+                        roomIdSelected = null;
                     } else {
                         options += '<option value="' + room.id + '">' + room.name + '</option>';
                     }
